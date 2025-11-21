@@ -11,6 +11,15 @@ const tabStyles = `
     text-align: left !important;
     justify-content: flex-start !important;
   }
+  .compact-tabs [role="tablist"] [role="tab"] {
+    width: auto !important;
+    min-width: auto !important;
+    padding: 8px 16px !important;
+  }
+  .compact-tabs [role="tablist"] {
+    width: auto !important;
+    display: inline-flex !important;
+  }
 `
 
 export default function TabsInterface() {
@@ -192,8 +201,9 @@ export default function TabsInterface() {
               label: "Protect",
               value: "protect",
               content: [
-                <TabsField
-                  key="guardrails-nested"
+                <div className="compact-tabs">
+                  <TabsField
+                    key="guardrails-nested"
                   tabs={[
                     {
                       label: "Guardrails",
@@ -290,6 +300,7 @@ export default function TabsInterface() {
                     }
                   ]}
                 />
+                </div>
               ]
             },
             {
