@@ -1,4 +1,4 @@
-import { TabsField, HeadingField, RichTextDisplayField } from '@pglevy/sailwind'
+import { TabsField, HeadingField, RichTextDisplayField, CardLayout } from '@pglevy/sailwind'
 import { Link } from 'wouter'
 
 export default function TabsInterface() {
@@ -29,10 +29,20 @@ export default function TabsInterface() {
                       label: "Policies",
                       value: "policies",
                       content: [
-                        <RichTextDisplayField 
-                          key="policies"
-                          value={["This is the policies content within guardrails."]} 
-                        />
+                        <div key="policies-cards" className="space-y-4">
+                          <CardLayout padding="STANDARD" showShadow={true}>
+                            <HeadingField text="Data Privacy Policy" size="MEDIUM" marginBelow="LESS" />
+                            <RichTextDisplayField value={["Ensures all data handling complies with privacy regulations and company standards."]} />
+                          </CardLayout>
+                          <CardLayout padding="STANDARD" showShadow={true}>
+                            <HeadingField text="Access Control Policy" size="MEDIUM" marginBelow="LESS" />
+                            <RichTextDisplayField value={["Defines user permissions and access levels for system resources."]} />
+                          </CardLayout>
+                          <CardLayout padding="STANDARD" showShadow={true}>
+                            <HeadingField text="Security Compliance Policy" size="MEDIUM" marginBelow="LESS" />
+                            <RichTextDisplayField value={["Maintains security standards and compliance requirements across all operations."]} />
+                          </CardLayout>
+                        </div>
                       ]
                     },
                     {
