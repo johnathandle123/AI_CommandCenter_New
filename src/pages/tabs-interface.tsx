@@ -1,12 +1,15 @@
-import { TabsField, HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, DropdownField, TagField, SliderField, Icon, StampField } from '@pglevy/sailwind'
+import { TabsField, HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, DropdownField, SliderField, Icon, StampField, TagField } from '@pglevy/sailwind'
 import { Link } from 'wouter'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Plus } from 'lucide-react'
 
 const tabStyles = `
   .fixed-height-tabs [data-orientation="vertical"] [role="tablist"] [role="tab"] {
     height: 48px !important;
     min-height: 48px !important;
     max-height: 48px !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
   }
 `
 
@@ -48,6 +51,21 @@ export default function TabsInterface() {
     }
   ])
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const openMenus = document.querySelectorAll('.dropdown-menu:not(.hidden)')
+      openMenus.forEach(menu => {
+        const button = menu.previousElementSibling
+        if (!menu.contains(event.target as Node) && !button?.contains(event.target as Node)) {
+          menu.classList.add('hidden')
+        }
+      })
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
+
   const getSensitivityStamp = (sensitivity: string) => {
     const config = {
       'Low': { backgroundColor: 'green-50', color: 'green-500' },
@@ -56,6 +74,21 @@ export default function TabsInterface() {
       'Critical': { backgroundColor: 'red-50', color: 'red-500' }
     }
     return config[sensitivity as keyof typeof config] || { backgroundColor: 'gray-50', color: 'gray-500' }
+  }
+
+  const getTypeStamp = (type: string) => {
+    const typeConfig = {
+      'Harmful Content': { icon: 'AlertTriangle', backgroundColor: 'red-50', iconColor: 'red-500' },
+      'Profanity': { icon: 'MessageSquareX', backgroundColor: 'red-50', iconColor: 'red-500' },
+      'PII Exposure & Confidentiality': { icon: 'Shield', backgroundColor: 'blue-50', iconColor: 'blue-500' },
+      'Tone': { icon: 'MessageCircle', backgroundColor: 'gray-50', iconColor: 'gray-500' },
+      'Logic': { icon: 'Brain', backgroundColor: 'blue-50', iconColor: 'blue-500' },
+      'Performance': { icon: 'Zap', backgroundColor: 'green-50', iconColor: 'green-500' },
+      'Data Protection': { icon: 'Shield', backgroundColor: 'blue-50', iconColor: 'blue-500' },
+      'Access Control': { icon: 'Lock', backgroundColor: 'gray-50', iconColor: 'gray-500' },
+      'Compliance': { icon: 'CheckCircle', backgroundColor: 'green-50', iconColor: 'green-500' }
+    }
+    return typeConfig[type as keyof typeof typeConfig] || { icon: 'Shield', backgroundColor: 'gray-50', iconColor: 'gray-500' }
   }
 
   const editGuardrail = (index: number) => {
@@ -85,19 +118,6 @@ export default function TabsInterface() {
 
   const deleteGuardrail = (index: number) => {
     setGuardrails(guardrails.filter((_, i) => i !== index))
-  }
-    const typeConfig = {
-      'Harmful Content': { icon: 'AlertTriangle', backgroundColor: 'red-50', iconColor: 'red-500' },
-      'Profanity': { icon: 'MessageSquareX', backgroundColor: 'red-50', iconColor: 'red-500' },
-      'PII Exposure & Confidentiality': { icon: 'Shield', backgroundColor: 'blue-50', iconColor: 'blue-500' },
-      'Tone': { icon: 'MessageCircle', backgroundColor: 'gray-50', iconColor: 'gray-500' },
-      'Logic': { icon: 'Brain', backgroundColor: 'blue-50', iconColor: 'blue-500' },
-      'Performance': { icon: 'Zap', backgroundColor: 'green-50', iconColor: 'green-500' },
-      'Data Protection': { icon: 'Shield', backgroundColor: 'blue-50', iconColor: 'blue-500' },
-      'Access Control': { icon: 'Lock', backgroundColor: 'gray-50', iconColor: 'gray-500' },
-      'Compliance': { icon: 'CheckCircle', backgroundColor: 'green-50', iconColor: 'green-500' }
-    }
-    return typeConfig[type as keyof typeof typeConfig] || { icon: 'Shield', backgroundColor: 'gray-50', iconColor: 'gray-500' }
   }
 
   const addGuardrail = () => {
@@ -159,6 +179,16 @@ export default function TabsInterface() {
             orientation="VERTICAL"
             tabs={[
             {
+              label: "Home",
+              value: "home",
+              content: [
+                <RichTextDisplayField 
+                  key="home"
+                  value={["Welcome to the main dashboard. This is your central hub for all system operations."]} 
+                />
+              ]
+            },
+            {
               label: "Protect",
               value: "protect",
               content: [
@@ -172,37 +202,45 @@ export default function TabsInterface() {
                         <div key="policies-content" className="space-y-4">
                           <div className="flex justify-between items-center mb-6">
                             <HeadingField text="Guardrails" size="LARGE" marginBelow="NONE" />
-                            <ButtonWidget 
-                              label="Add Guardrails" 
-                              style="SOLID" 
-                              color="ACCENT"
+                            <button 
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                               onClick={() => setShowModal(true)}
-                            />
+                            >
+                              <Plus size={16} />
+                              Add Guardrails
+                            </button>
                           </div>
-                          <div className="space-y-4">
+                          <div className="space-y-4 overflow-visible">
                             {guardrails.map((guardrail, index) => {
                               const typeStamp = getTypeStamp(guardrail.type)
                               const sensitivityStamp = getSensitivityStamp(guardrail.sensitivity)
                               return (
-                                <CardLayout key={index} padding="STANDARD" showShadow={true}>
+                                <div key={index} className="overflow-visible">
+                                  <CardLayout padding="STANDARD" showShadow={true}>
                                   <div className="relative">
                                     <div className="absolute top-0 right-0 flex items-center gap-2">
-                                      <div className={`text-${sensitivityStamp.color}`} title={`Sensitivity: ${guardrail.sensitivity}`}>
-                                        <StampField 
-                                          text={guardrail.sensitivity}
-                                          backgroundColor={sensitivityStamp.backgroundColor}
+                                      <div title={`Sensitivity: ${guardrail.sensitivity}`}>
+                                        <TagField 
+                                          tags={[{
+                                            text: guardrail.sensitivity,
+                                            backgroundColor: sensitivityStamp.backgroundColor
+                                          }]}
                                           size="SMALL"
+                                          marginBelow="NONE"
                                         />
                                       </div>
                                       <div className="relative">
                                         <button className="p-1 hover:bg-gray-100 rounded" onClick={(e) => {
                                           e.stopPropagation()
                                           const menu = e.currentTarget.nextElementSibling as HTMLElement
+                                          const rect = e.currentTarget.getBoundingClientRect()
+                                          menu.style.top = `${rect.bottom + 4}px`
+                                          menu.style.left = `${rect.right - 96}px`
                                           menu.classList.toggle('hidden')
                                         }}>
                                           <Icon icon="MoreVertical" size="SMALL" />
                                         </button>
-                                        <div className="hidden absolute right-0 top-8 bg-white border rounded shadow-lg z-10 min-w-24">
+                                        <div className="dropdown-menu hidden fixed bg-white border-gray-300 border rounded shadow-lg z-50 min-w-24" style={{top: '0px', left: '0px'}}>
                                           <button 
                                             className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
                                             onClick={() => editGuardrail(index)}
@@ -233,6 +271,7 @@ export default function TabsInterface() {
                                     </div>
                                   </div>
                                 </CardLayout>
+                                </div>
                               )
                             })}
                           </div>
@@ -254,30 +293,30 @@ export default function TabsInterface() {
               ]
             },
             {
-              label: "Monitoring",
-              value: "monitoring",
+              label: "Monitor",
+              value: "monitor",
               content: [
                 <RichTextDisplayField 
-                  key="monitoring"
-                  value={["This is the monitoring tab with system monitoring information."]} 
+                  key="monitor"
+                  value={["This is the monitor tab with system monitoring information."]} 
                 />
               ]
             },
             {
-              label: "Observability",
-              value: "observability",
+              label: "Observe",
+              value: "observe",
               content: [
                 <RichTextDisplayField 
-                  key="observability"
-                  value={["This is the observability tab for system insights and analytics."]} 
+                  key="observe"
+                  value={["This is the observe tab for system insights and analytics."]} 
                 />
               ]
             },
             {
-              label: "Analytics",
-              value: "analytics",
+              label: "Events",
+              value: "events",
               content: [
-                <div key="analytics-content" className="space-y-4">
+                <div key="events-content" className="space-y-4">
                   <CardLayout padding="STANDARD" showShadow={true}>
                     <HeadingField text="Performance Metrics" size="MEDIUM" marginBelow="LESS" />
                     <RichTextDisplayField value={["Real-time performance data and system health indicators."]} />
