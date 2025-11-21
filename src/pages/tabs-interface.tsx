@@ -20,7 +20,6 @@ export default function TabsInterface() {
             {
               label: "Guardrails",
               value: "guardrails",
-              icon: "shield-check",
               content: [
                 <TabsField
                   key="guardrails-nested"
@@ -62,7 +61,6 @@ export default function TabsInterface() {
             {
               label: "Monitoring",
               value: "monitoring",
-              icon: "activity",
               content: [
                 <RichTextDisplayField 
                   key="monitoring"
@@ -73,7 +71,6 @@ export default function TabsInterface() {
             {
               label: "Observability",
               value: "observability",
-              icon: "eye",
               content: [
                 <RichTextDisplayField 
                   key="observability"
