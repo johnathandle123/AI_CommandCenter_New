@@ -1,38 +1,33 @@
-import { Route, Router, Switch } from 'wouter'
-
-// Import all pages
-import Home from './pages/home'
-import TaskDashboard from './pages/task-dashboard'
-import ApplicationStatus from './pages/application-status'
-import DocumentReview from './pages/document-review'
-import ThreeTabs from './pages/three-tabs'
+import { useState } from 'react'
+import { HeadingField } from '@pglevy/sailwind'
+import SideNavigation from './components/SideNavigation'
 import TabsInterface from './pages/tabs-interface'
-import NotFound from './pages/not-found'
-
-// Page registry for automatic TOC generation
-const pages = [
-  { path: '/', title: 'Home', component: Home },
-  { path: '/task-dashboard', title: 'Task Dashboard', component: TaskDashboard },
-  { path: '/application-status', title: 'Application Status', component: ApplicationStatus },
-  { path: '/document-review', title: 'Document Review', component: DocumentReview },
-  { path: '/three-tabs', title: 'Three Tabs', component: ThreeTabs },
-  { path: '/tabs-interface', title: 'Tabs Interface', component: TabsInterface },
-]
 
 function App() {
+  const [activeSection, setActiveSection] = useState('home')
+
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto p-6">
-          <Switch>
-            {pages.map(({ path, component: Component }) => (
-              <Route key={path} path={path} component={Component} />
-            ))}
-            <Route component={NotFound} />
-          </Switch>
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      <div className="app-header-sail border-b border-gray-200">
+        <div className="px-8 py-4">
+          <HeadingField
+            text="AI Command Center"
+            size="LARGE"
+            headingTag="H1"
+            marginBelow="NONE"
+          />
         </div>
       </div>
-    </Router>
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <SideNavigation 
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+        <div className="flex-1 overflow-auto">
+          <TabsInterface activeSection={activeSection} />
+        </div>
+      </div>
+    </div>
   )
 }
 
