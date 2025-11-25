@@ -18,6 +18,10 @@
   --gradient-header-bg: linear-gradient(90deg, #2322F0 0%, #E21496 57%, #FFC008 83%, #FFD948 100%);
   --gradient-header-overlay: linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 40%, rgba(255,255,255,0.95) 75%);
 
+  /* Custom Parachute/Teal Colors for Stamps */
+  --color-parachute-50: #E7F8F8;   /* Teal 0 - Light background */
+  --color-parachute-700: #31808B;  /* Teal 35 - Dark text/icon */
+
   /* Aurora Color Palette - mapped to consistent Tailwind steps (50, 100, 200, 500, 700, 900) */
 
   /* Red (Aurora: 0, 1, 2, 3, 35, 4) */
@@ -144,5 +148,19 @@
   .app-header-sail > * {
     position: relative;
     z-index: 1;
+  }
+
+  /* Override StampField STANDARD colors to use parachute/teal scheme */
+  .stamp-field-standard,
+  [class*="stamp"][class*="standard"],
+  .stamp-standard {
+    background-color: var(--color-parachute-50) !important;
+    color: var(--color-parachute-700) !important;
+  }
+  
+  .stamp-field-standard svg,
+  [class*="stamp"][class*="standard"] svg,
+  .stamp-standard svg {
+    color: var(--color-parachute-700) !important;
   }
 }

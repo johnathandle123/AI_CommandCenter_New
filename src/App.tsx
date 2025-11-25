@@ -4,12 +4,14 @@ import SideNavigation from './components/SideNavigation'
 import TabsInterface from './pages/tabs-interface'
 
 function App() {
-  const [activeSection, setActiveSection] = useState('home')
+  const [activeSection, setActiveSection] = useState('protect')
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <div className="app-header-sail border-b border-gray-200">
-        <div className="px-8 py-4">
+      {/* Gradient Header */}
+      <div className="app-header-sail px-8 py-4 relative">
+        <div className="app-header-overlay"></div>
+        <div className="relative z-10">
           <HeadingField
             text="AI Command Center"
             size="LARGE"
@@ -18,7 +20,9 @@ function App() {
           />
         </div>
       </div>
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      
+      {/* Main Content Area with Side Navigation */}
+      <div className="flex-1 flex overflow-hidden">
         <SideNavigation 
           activeSection={activeSection}
           onSectionChange={setActiveSection}
