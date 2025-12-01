@@ -1,4 +1,4 @@
-import { TabsField, HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, DropdownField, SliderField, Icon, StampField, TagField } from '@pglevy/sailwind'
+import { TabsField, HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, DropdownField, SliderField, Icon, TagField } from '@pglevy/sailwind'
 import { useState, useEffect } from 'react'
 import { Plus, TrendingDown, TrendingUp } from 'lucide-react'
 
@@ -97,11 +97,11 @@ const tabStyles = `
   }
   /* Semi-transparent card backgrounds */
   .compact-tabs [role="tabpanel"] div[class*="shadow-"] {
-    background-color: rgba(255, 255, 255, 0.6) !important;
+    background-color: rgba(255, 255, 255, 0.3) !important;
     backdrop-filter: blur(10px) !important;
     box-shadow: none !important;
     border-radius: 16px !important;
-    border: none !important;
+    border: 1px solid white !important;
   }
   .compact-tabs [role="tabpanel"] {
     padding-top: 0 !important;
@@ -147,7 +147,6 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
-  const [hoveredPoint, setHoveredPoint] = useState<{x: number, y: number, value: number, index: number} | null>(null)
   const [chartHover, setChartHover] = useState<{x: number, y: number, yCoord: number, value: number} | null>(null)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [selectedType, setSelectedType] = useState('')
@@ -439,9 +438,9 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                       <div className="page-header">
                         <div className="flex justify-between items-center">
                           <HeadingField text="Guardrail Performance" size="LARGE" marginBelow="NONE" />
-                          <div className="relative flex bg-gray-100 p-1 rounded-md">
+                          <div className="relative flex p-1 rounded-md">
                             <div 
-                              className="absolute bg-blue-500 rounded transition-all duration-300 ease-out"
+                              className="absolute bg-blue-900 rounded transition-all duration-300 ease-out"
                               style={{
                                 left: `calc(${['1D', '1W', '1M', '1Q', '1Y'].indexOf(timeRange) * 20}% + 4px)`,
                                 width: `calc(20% - 4px)`,
@@ -456,7 +455,7 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                                 className={`relative z-10 flex-1 px-3 py-1 text-sm rounded transition-colors duration-300 ${
                                   timeRange === period
                                     ? 'text-white'
-                                    : 'text-gray-600 hover:text-gray-800'
+                                    : 'text-blue-900 hover:text-blue-700'
                                 }`}
                               >
                                 {period}
@@ -471,12 +470,12 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                           <div className="grid grid-cols-2 gap-4 items-stretch">
                         {/* Total Guardrail Hits */}
                         <CardLayout padding="MORE" showShadow={true}>
-                          <div className="h-full flex flex-col justify-between">
-                          <div className="mb-3">
-                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white mb-3">
+                          <div className="h-full flex items-center gap-4">
+                          <div className="flex items-start gap-3 flex-1">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
                               <Icon icon="Shield" size="MEDIUM" />
                             </div>
-                          </div>
+                            <div className="flex-1">
                           <HeadingField text="Total Guardrail Hits" size="MEDIUM" marginBelow="NONE" />
                           <div className="flex items-center gap-2 mb-2">
                             <div className="text-4xl font-bold text-black">
@@ -490,21 +489,34 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                               <span>8.2%</span>
                             </div>
                           </div>
-                          <RichTextDisplayField value={[timeRange === '1D' ? 'Last 24 hours' : timeRange === '1W' ? 'Last week' : timeRange === '1M' ? 'Last month' : timeRange === '1Q' ? 'Last quarter' : 'Last year']} />
+                          <div className="text-gray-700 uppercase text-sm">
+                            {timeRange === '1D' ? 'Last 24 hours' : timeRange === '1W' ? 'Last week' : timeRange === '1M' ? 'Last month' : timeRange === '1Q' ? 'Last quarter' : 'Last year'}
+                          </div>
+                          </div>
+                          </div>
+                          <svg className="w-24 h-16 flex-shrink-0" viewBox="0 0 100 40" preserveAspectRatio="none">
+                            <polyline
+                              points="0,30 20,24 40,28 60,20 80,16 100,10"
+                              fill="none"
+                              stroke="#10b981"
+                              strokeWidth="1"
+                              opacity="0.6"
+                            />
+                          </svg>
                           </div>
                         </CardLayout>
 
                         {/* Guardrail Hit Rate */}
                         <CardLayout padding="MORE" showShadow={true}>
-                          <div className="h-full flex flex-col justify-between">
-                          <div className="mb-3">
-                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white mb-3">
+                          <div className="h-full flex items-center gap-4">
+                          <div className="flex items-start gap-3 flex-1">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
                               <Icon icon="TrendingUp" size="MEDIUM" />
                             </div>
-                          </div>
+                            <div className="flex-1">
                           <HeadingField text="Guardrail Hit Rate" size="MEDIUM" marginBelow="NONE" />
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="text-4xl font-bold text-orange-600">
+                            <div className="text-4xl font-bold text-black">
                               <AnimatedPercentage 
                                 value={timeRange === '1D' ? 12.3 : timeRange === '1W' ? 14.7 : timeRange === '1M' ? 11.8 : timeRange === '1Q' ? 13.2 : 12.9}
                               />
@@ -514,7 +526,20 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                               <span>3.5%</span>
                             </div>
                           </div>
-                          <RichTextDisplayField value={["Of total AI requests"]} />
+                          <div className="text-gray-700 uppercase text-sm">
+                            Of total AI requests
+                          </div>
+                          </div>
+                          </div>
+                          <svg className="w-24 h-16 flex-shrink-0" viewBox="0 0 100 40" preserveAspectRatio="none">
+                            <polyline
+                              points="0,20 20,24 40,18 60,26 80,30 100,36"
+                              fill="none"
+                              stroke="#dc2626"
+                              strokeWidth="1"
+                              opacity="0.6"
+                            />
+                          </svg>
                           </div>
                         </CardLayout>
                         </div>
@@ -522,7 +547,14 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                       {/* Activity Trend */}
                         <CardLayout padding="NONE" showShadow={true}>
                         <div className="p-4">
+                        <div className="flex items-start gap-3">
+                        <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                          <Icon icon="TrendingUp" size="MEDIUM" />
+                        </div>
+                        <div className="flex-1">
                         <HeadingField text="Activity Trend" size="MEDIUM" marginBelow="STANDARD" />
+                        </div>
+                        </div>
                         </div>
                         <div className="h-full min-h-[300px] relative group rounded-lg">
                           <svg className="w-full h-full" viewBox="0 0 100 50">
@@ -703,7 +735,14 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                         <div className="space-y-0">
                         {/* Top Violators */}
                         <CardLayout padding="MORE" showShadow={true}>
+                          <div className="flex items-start gap-3 mb-4">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                              <Icon icon="Users" size="MEDIUM" />
+                            </div>
+                            <div className="flex-1">
                           <HeadingField text="Top Violators (Agents)" size="MEDIUM" marginBelow="STANDARD" />
+                            </div>
+                          </div>
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
                               <span className="text-sm text-gray-700">gpt-4-turbo</span>
@@ -724,7 +763,14 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                           </div>
 
                           <div className="mt-6">
+                          <div className="flex items-start gap-3 mb-4">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                              <Icon icon="Shield" size="MEDIUM" />
+                            </div>
+                            <div className="flex-1">
                           <HeadingField text="Top Violators (Guardrail Type)" size="MEDIUM" marginBelow="STANDARD" />
+                            </div>
+                          </div>
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
@@ -1084,7 +1130,7 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
   }
 
   return (
-    <div className="min-h-screen bg-blue-100 w-full">
+    <div className="min-h-screen w-full bg-gradient-to-b from-blue-100 from-50% to-white">
       <style>{tabStyles}</style>
       <div className={`w-full ${activeSection === 'protect' ? '' : 'px-8 py-8'}`}>
         {renderContent()}
