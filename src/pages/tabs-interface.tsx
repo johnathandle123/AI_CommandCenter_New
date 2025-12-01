@@ -1,6 +1,6 @@
-import { TabsField, HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, DropdownField, SliderField, Icon, TagField } from '@pglevy/sailwind'
+import { TabsField, HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, DropdownField, SliderField, Icon, StampField, TagField } from '@pglevy/sailwind'
 import { useState, useEffect } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, TrendingDown, TrendingUp } from 'lucide-react'
 
 const AnimatedCounter = ({ value, duration = 600 }: { value: number; duration?: number }) => {
   const [displayValue, setDisplayValue] = useState(value)
@@ -95,6 +95,14 @@ const tabStyles = `
     border: none !important;
     pointer-events: none !important;
   }
+  /* Semi-transparent card backgrounds */
+  .compact-tabs [role="tabpanel"] div[class*="shadow-"] {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: none !important;
+    border-radius: 16px !important;
+    border: none !important;
+  }
   .compact-tabs [role="tabpanel"] {
     padding-top: 0 !important;
   }
@@ -111,7 +119,7 @@ const tabStyles = `
     z-index: 1 !important;
     border-bottom: 1px solid #e5e7eb !important;
     transition: box-shadow 0.2s ease !important;
-    padding: 0 32px 16px 32px !important;
+    padding: 16px 32px 16px 32px !important;
     margin: 0 -32px 0 -32px !important;
   }
   .page-header.scrolled {
@@ -140,6 +148,7 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
   const [hoveredPoint, setHoveredPoint] = useState<{x: number, y: number, value: number, index: number} | null>(null)
+  const [chartHover, setChartHover] = useState<{x: number, y: number, yCoord: number, value: number} | null>(null)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [selectedType, setSelectedType] = useState('')
   const [timeRange, setTimeRange] = useState('1D')
@@ -258,14 +267,6 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
       scope: "Department", 
       sensitivity: "Medium",
       action: "Warn"
-    },
-    {
-      name: "Security Compliance Policy",
-      description: "Maintains security standards and compliance requirements across all operations.",
-      type: "Compliance",
-      scope: "Global",
-      sensitivity: "Critical", 
-      action: "Block"
     }
   ])
 
@@ -465,34 +466,65 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-[3fr_1fr] gap-4 px-20 min-h-[calc(100vh-200px)]">
+                        <div className="space-y-0">
+                          <div className="grid grid-cols-2 gap-4 items-stretch">
                         {/* Total Guardrail Hits */}
-                        <CardLayout padding="STANDARD" showShadow={true}>
-                          <HeadingField text="Total Guardrail Hits" size="MEDIUM" marginBelow="LESS" />
-                          <div className="text-4xl font-bold text-black mb-2">
-                            <AnimatedCounter 
-                              value={timeRange === '1D' ? 1247 : timeRange === '1W' ? 8934 : timeRange === '1M' ? 34567 : timeRange === '1Q' ? 98234 : 412890}
-                            />
+                        <CardLayout padding="MORE" showShadow={true}>
+                          <div className="h-full flex flex-col justify-between">
+                          <div className="mb-3">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white mb-3">
+                              <Icon icon="Shield" size="MEDIUM" />
+                            </div>
+                          </div>
+                          <HeadingField text="Total Guardrail Hits" size="MEDIUM" marginBelow="NONE" />
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="text-4xl font-bold text-black">
+                              <AnimatedCounter 
+                                value={timeRange === '1D' ? 1247 : timeRange === '1W' ? 8934 : timeRange === '1M' ? 34567 : timeRange === '1Q' ? 98234 : 412890}
+                                duration={300}
+                              />
+                            </div>
+                            <div className="flex items-center gap-1 text-sm font-medium text-green-600">
+                              <TrendingDown size={16} />
+                              <span>8.2%</span>
+                            </div>
                           </div>
                           <RichTextDisplayField value={[timeRange === '1D' ? 'Last 24 hours' : timeRange === '1W' ? 'Last week' : timeRange === '1M' ? 'Last month' : timeRange === '1Q' ? 'Last quarter' : 'Last year']} />
+                          </div>
                         </CardLayout>
 
                         {/* Guardrail Hit Rate */}
-                        <CardLayout padding="STANDARD" showShadow={true}>
-                          <HeadingField text="Guardrail Hit Rate" size="MEDIUM" marginBelow="LESS" />
-                          <div className="text-4xl font-bold text-orange-600 mb-2">
-                            <AnimatedPercentage 
-                              value={timeRange === '1D' ? 12.3 : timeRange === '1W' ? 14.7 : timeRange === '1M' ? 11.8 : timeRange === '1Q' ? 13.2 : 12.9}
-                            />
+                        <CardLayout padding="MORE" showShadow={true}>
+                          <div className="h-full flex flex-col justify-between">
+                          <div className="mb-3">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white mb-3">
+                              <Icon icon="TrendingUp" size="MEDIUM" />
+                            </div>
+                          </div>
+                          <HeadingField text="Guardrail Hit Rate" size="MEDIUM" marginBelow="NONE" />
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="text-4xl font-bold text-orange-600">
+                              <AnimatedPercentage 
+                                value={timeRange === '1D' ? 12.3 : timeRange === '1W' ? 14.7 : timeRange === '1M' ? 11.8 : timeRange === '1Q' ? 13.2 : 12.9}
+                              />
+                            </div>
+                            <div className="flex items-center gap-1 text-sm font-medium text-red-600">
+                              <TrendingUp size={16} />
+                              <span>3.5%</span>
+                            </div>
                           </div>
                           <RichTextDisplayField value={["Of total AI requests"]} />
+                          </div>
                         </CardLayout>
-                      </div>
+                        </div>
 
                       {/* Activity Trend */}
-                      <CardLayout padding="STANDARD" showShadow={true}>
+                        <CardLayout padding="NONE" showShadow={true}>
+                        <div className="p-4">
                         <HeadingField text="Activity Trend" size="MEDIUM" marginBelow="STANDARD" />
-                        <div className="h-64 relative group bg-white rounded-lg">
+                        </div>
+                        <div className="h-full min-h-[300px] relative group rounded-lg">
                           <svg className="w-full h-full" viewBox="0 0 100 50">
                             {/* Gradient definitions */}
                             <defs>
@@ -504,170 +536,245 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                                 <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
                                 <stop offset="100%" stopColor="#6366f1" stopOpacity="0.05" />
                               </linearGradient>
+                              {chartHover && (
+                                <mask id="hoverMask">
+                                  <rect x="0" y="0" width="100" height="50" fill="white" opacity="0.05" />
+                                  <circle
+                                    cx={chartHover.x}
+                                    cy="25"
+                                    r="35"
+                                    fill="url(#radialGradient)"
+                                  />
+                                </mask>
+                              )}
+                              {chartHover && (
+                                <radialGradient id="radialGradient">
+                                  <stop offset="0%" stopColor="white" stopOpacity="1" />
+                                  <stop offset="40%" stopColor="white" stopOpacity="0.9" />
+                                  <stop offset="70%" stopColor="white" stopOpacity="0.5" />
+                                  <stop offset="100%" stopColor="white" stopOpacity="0" />
+                                </radialGradient>
+                              )}
                             </defs>
                             
                             {/* Grid lines */}
                             <g stroke="#e2e8f0" strokeWidth="0.1" opacity="0.5">
                               {[10, 20, 30, 40].map(y => (
-                                <line key={y} x1="5" y1={y} x2="95" y2={y} />
+                                <line key={y} x1="0" y1={y} x2="100" y2={y} />
                               ))}
                             </g>
                             
                             {/* Area fill */}
-                            <polygon
+                            <path
                               fill="url(#areaGradient)"
-                              points={`5,50 ${timeRange === '1D' ? "5,37 15,30 25,35 35,22 45,27 55,17 65,21 75,15 85,20 95,12" :
-                                     timeRange === '1W' ? "5,40 15,32 25,27 35,23 45,30 55,20 65,18 75,16 85,21 95,11" :
-                                     timeRange === '1M' ? "5,35 15,31 25,33 35,25 45,28 55,21 65,22 75,17 85,18 95,13" :
-                                     timeRange === '1Q' ? "5,38 15,33 25,31 35,26 45,31 55,23 65,20 75,18 85,22 95,15" :
-                                     "5,36 15,35 25,32 35,27 45,30 55,22 65,23 75,20 85,21 95,16"} 95,50`}
-                              style={{ transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                              mask={chartHover ? "url(#hoverMask)" : undefined}
+                              style={{ transition: 'd 0.3s ease-out' }}
+                              d={timeRange === '1D' ? "M0,50 L0,37 C3,35 7,32 10,30 C13,28 17,32 20,35 C23,38 27,25 30,22 C33,19 37,24 40,27 C43,30 47,20 50,17 C53,14 57,18 60,21 C63,24 67,17 70,15 C73,13 77,17 80,20 C83,23 87,14 90,12 C93,10 97,12 100,12 L100,50 Z" :
+                                 timeRange === '1W' ? "M0,50 L0,40 C3,38 7,34 10,32 C13,30 17,28 20,27 C23,26 27,24 30,23 C33,22 37,27 40,30 C43,33 47,23 50,20 C53,17 57,18 60,18 C63,18 67,16 70,16 C73,16 77,19 80,21 C83,23 87,13 90,11 C93,9 97,11 100,11 L100,50 Z" :
+                                 timeRange === '1M' ? "M0,50 L0,35 C3,34 7,32 10,31 C13,30 17,32 20,33 C23,34 27,27 30,25 C33,23 37,26 40,28 C43,30 47,23 50,21 C53,19 57,21 60,22 C63,23 67,18 70,17 C73,16 77,17 80,18 C83,19 87,14 90,13 C93,12 97,13 100,13 L100,50 Z" :
+                                 timeRange === '1Q' ? "M0,50 L0,38 C3,37 7,34 10,33 C13,32 17,31 20,31 C23,31 27,27 30,26 C33,25 37,29 40,31 C43,33 47,25 50,23 C53,21 57,20 60,20 C63,20 67,18 70,18 C73,18 77,21 80,22 C83,23 87,16 90,15 C93,14 97,15 100,15 L100,50 Z" :
+                                 "M0,50 L0,36 C3,36 7,35 10,35 C13,35 17,33 20,32 C23,31 27,28 30,27 C33,26 37,29 40,30 C43,31 47,24 50,22 C53,20 57,22 60,23 C63,24 67,21 70,20 C73,19 77,20 80,21 C83,22 87,17 90,16 C93,15 97,16 100,16 L100,50 Z"}
                             />
                             
                             {/* Main line */}
-                            <polyline
+                            <path
                               fill="none"
                               stroke="url(#lineGradient)"
-                              strokeWidth="0.8"
+                              strokeWidth="0.2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
+                              mask={chartHover ? "url(#hoverMask)" : undefined}
                               filter="drop-shadow(0 2px 4px rgba(99, 102, 241, 0.2))"
-                              points={timeRange === '1D' ? "5,37 15,30 25,35 35,22 45,27 55,17 65,21 75,15 85,20 95,12" :
-                                     timeRange === '1W' ? "5,40 15,32 25,27 35,23 45,30 55,20 65,18 75,16 85,21 95,11" :
-                                     timeRange === '1M' ? "5,35 15,31 25,33 35,25 45,28 55,21 65,22 75,17 85,18 95,13" :
-                                     timeRange === '1Q' ? "5,38 15,33 25,31 35,26 45,31 55,23 65,20 75,18 85,22 95,15" :
-                                     "5,36 15,35 25,32 35,27 45,30 55,22 65,23 75,20 85,21 95,16"}
-                              style={{ transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                              style={{ transition: 'd 0.3s ease-out' }}
+                              d={timeRange === '1D' ? "M0,37 C3,35 7,32 10,30 C13,28 17,32 20,35 C23,38 27,25 30,22 C33,19 37,24 40,27 C43,30 47,20 50,17 C53,14 57,18 60,21 C63,24 67,17 70,15 C73,13 77,17 80,20 C83,23 87,14 90,12 C93,10 97,12 100,12" :
+                                 timeRange === '1W' ? "M0,40 C3,38 7,34 10,32 C13,30 17,28 20,27 C23,26 27,24 30,23 C33,22 37,27 40,30 C43,33 47,23 50,20 C53,17 57,18 60,18 C63,18 67,16 70,16 C73,16 77,19 80,21 C83,23 87,13 90,11 C93,9 97,11 100,11" :
+                                 timeRange === '1M' ? "M0,35 C3,34 7,32 10,31 C13,30 17,32 20,33 C23,34 27,27 30,25 C33,23 37,26 40,28 C43,30 47,23 50,21 C53,19 57,21 60,22 C63,23 67,18 70,17 C73,16 77,17 80,18 C83,19 87,14 90,13 C93,12 97,13 100,13" :
+                                 timeRange === '1Q' ? "M0,38 C3,37 7,34 10,33 C13,32 17,31 20,31 C23,31 27,27 30,26 C33,25 37,29 40,31 C43,33 47,25 50,23 C53,21 57,20 60,20 C63,20 67,18 70,18 C73,18 77,21 80,22 C83,23 87,16 90,15 C93,14 97,15 100,15" :
+                                 "M0,36 C3,36 7,35 10,35 C13,35 17,33 20,32 C23,31 27,28 30,27 C33,26 37,29 40,30 C43,31 47,24 50,22 C53,20 57,22 60,23 C63,24 67,21 70,20 C73,19 77,20 80,21 C83,22 87,17 90,16 C93,15 97,16 100,16"}
                             />
                             
-                            {/* Data points */}
-                            {(timeRange === '1D' ? [[5,37], [15,30], [25,35], [35,22], [45,27], [55,17], [65,21], [75,15], [85,20], [95,12]] :
-                              timeRange === '1W' ? [[5,40], [15,32], [25,27], [35,23], [45,30], [55,20], [65,18], [75,16], [85,21], [95,11]] :
-                              timeRange === '1M' ? [[5,35], [15,31], [25,33], [35,25], [45,28], [55,21], [65,22], [75,17], [85,18], [95,13]] :
-                              timeRange === '1Q' ? [[5,38], [15,33], [25,31], [35,26], [45,31], [55,23], [65,20], [75,18], [85,22], [95,15]] :
-                              [[5,36], [15,35], [25,32], [35,27], [45,30], [55,22], [65,23], [75,20], [85,21], [95,16]]
-                            ).map(([x, y], i) => (
-                              <g key={i}>
-                                <circle 
-                                  cx={x} 
-                                  cy={y} 
-                                  r="1.5" 
-                                  fill="white" 
+                            {/* Hover line and dot */}
+                            {chartHover && (
+                              <>
+                                <line
+                                  x1={chartHover.x + 0.5}
+                                  y1="0"
+                                  x2={chartHover.x + 0.5}
+                                  y2="50"
                                   stroke="#6366f1"
-                                  strokeWidth="0.8"
-                                  className="hover:r-2 cursor-pointer"
-                                  filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
-                                  style={{ transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)' }}
-                                  onMouseEnter={(e) => {
-                                    const rect = e.currentTarget.getBoundingClientRect()
-                                    setHoveredPoint({
-                                      x: rect.left + rect.width / 2,
-                                      y: rect.top,
-                                      value: Math.round((50 - y) * 10),
-                                      index: i
-                                    })
-                                  }}
-                                  onMouseLeave={() => setHoveredPoint(null)}
+                                  strokeWidth="0.2"
+                                  strokeDasharray="0.5,0.5"
+                                  opacity="0.4"
                                 />
-                              </g>
-                            ))}
+                                <circle
+                                  cx={chartHover.x + 0.5}
+                                  cy={chartHover.yCoord}
+                                  r="0.6"
+                                  fill="white"
+                                  stroke="#6366f1"
+                                  strokeWidth="0.2"
+                                />
+                              </>
+                            )}
+                            
+                            {/* Transparent overlay for hover detection */}
+                            <rect
+                              x="0"
+                              y="0"
+                              width="100"
+                              height="50"
+                              fill="transparent"
+                              onMouseMove={(e) => {
+                                const svg = e.currentTarget.ownerSVGElement
+                                if (!svg) return
+                                const rect = svg.getBoundingClientRect()
+                                const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100))
+                                
+                                // Get data points for current time range
+                                const dataPoints = timeRange === '1D' ? [[0,37], [10,30], [20,35], [30,22], [40,27], [50,17], [60,21], [70,15], [80,20], [90,12], [100,12]] :
+                                  timeRange === '1W' ? [[0,40], [10,32], [20,27], [30,23], [40,30], [50,20], [60,18], [70,16], [80,21], [90,11], [100,11]] :
+                                  timeRange === '1M' ? [[0,35], [10,31], [20,33], [30,25], [40,28], [50,21], [60,22], [70,17], [80,18], [90,13], [100,13]] :
+                                  timeRange === '1Q' ? [[0,38], [10,33], [20,31], [30,26], [40,31], [50,23], [60,20], [70,18], [80,22], [90,15], [100,15]] :
+                                  [[0,36], [10,35], [20,32], [30,27], [40,30], [50,22], [60,23], [70,20], [80,21], [90,16], [100,16]]
+                                
+                                // Find the segment and use quadratic interpolation for better curve approximation
+                                let leftPoint = dataPoints[0]
+                                let rightPoint = dataPoints[1]
+                                let segmentIndex = 0
+                                
+                                for (let i = 0; i < dataPoints.length - 1; i++) {
+                                  if (x >= dataPoints[i][0] && x <= dataPoints[i + 1][0]) {
+                                    leftPoint = dataPoints[i]
+                                    rightPoint = dataPoints[i + 1]
+                                    segmentIndex = i
+                                    break
+                                  }
+                                }
+                                
+                                // Use quadratic interpolation with neighboring points for smoother curve
+                                const t = (x - leftPoint[0]) / (rightPoint[0] - leftPoint[0])
+                                
+                                // Get control point influence from neighbors
+                                const prevPoint = segmentIndex > 0 ? dataPoints[segmentIndex - 1] : leftPoint
+                                const nextPoint = segmentIndex < dataPoints.length - 2 ? dataPoints[segmentIndex + 2] : rightPoint
+                                
+                                // Approximate cubic bezier with weighted interpolation
+                                const cp1y = leftPoint[1] + (rightPoint[1] - prevPoint[1]) * 0.3
+                                const cp2y = rightPoint[1] - (nextPoint[1] - leftPoint[1]) * 0.3
+                                
+                                // Cubic bezier formula
+                                const interpolatedY = 
+                                  Math.pow(1-t, 3) * leftPoint[1] +
+                                  3 * Math.pow(1-t, 2) * t * cp1y +
+                                  3 * (1-t) * Math.pow(t, 2) * cp2y +
+                                  Math.pow(t, 3) * rightPoint[1]
+                                
+                                setChartHover({
+                                  x: x,
+                                  y: e.clientY,
+                                  yCoord: interpolatedY,
+                                  value: Math.round((50 - interpolatedY) * 10)
+                                })
+                              }}
+                              onMouseLeave={() => setChartHover(null)}
+                            />
                           </svg>
                           <div className="absolute bottom-2 left-4 text-xs text-gray-600 font-medium">
                             Guardrail hits over {timeRange === '1D' ? 'last 24 hours' : timeRange === '1W' ? 'last week' : timeRange === '1M' ? 'last month' : timeRange === '1Q' ? 'last quarter' : 'last year'}
                           </div>
                           
                           {/* Popover */}
-                          {hoveredPoint && (
+                          {chartHover && (
                             <div 
                               className="fixed bg-gray-900 text-white px-3 py-2 rounded-lg shadow-lg text-sm z-50 pointer-events-none"
                               style={{
-                                left: hoveredPoint.x - 50,
-                                top: hoveredPoint.y - 40,
+                                left: chartHover.x,
+                                top: chartHover.y - 40,
                                 transform: 'translateX(-50%)'
                               }}
                             >
-                              <div className="font-medium">{hoveredPoint.value} hits</div>
-                              <div className="text-gray-300 text-xs">Point {hoveredPoint.index + 1}</div>
+                              <div className="font-medium">{chartHover.value} hits</div>
                             </div>
                           )}
                         </div>
                       </CardLayout>
+                        </div>
 
-                      <div className="grid grid-cols-2 gap-6">
-                        {/* Top Violators (Agents) */}
-                        <CardLayout padding="STANDARD" showShadow={true}>
+                        <div className="space-y-0">
+                        {/* Top Violators */}
+                        <CardLayout padding="MORE" showShadow={true}>
                           <HeadingField text="Top Violators (Agents)" size="MEDIUM" marginBelow="STANDARD" />
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
                               <span className="text-sm text-gray-700">gpt-4-turbo</span>
-                              <span className="text-sm font-medium text-black underline">342 hits</span>
+                              <span className="text-sm font-medium text-red-600">342 hits</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <span className="text-sm text-gray-700">claude-3-opus</span>
-                              <span className="text-sm font-medium text-black underline">289 hits</span>
+                              <span className="text-sm font-medium text-red-600">289 hits</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <span className="text-sm text-gray-700">gemini-pro</span>
-                              <span className="text-sm font-medium text-black underline">156 hits</span>
+                              <span className="text-sm font-medium text-red-600">156 hits</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <span className="text-sm text-gray-700">llama-2-70b</span>
-                              <span className="text-sm font-medium text-black underline">98 hits</span>
+                              <span className="text-sm font-medium text-red-600">98 hits</span>
                             </div>
                           </div>
-                        </CardLayout>
 
-                        {/* Top Violators (Guardrail Type) */}
-                        <CardLayout padding="STANDARD" showShadow={true}>
+                          <div className="mt-6">
                           <HeadingField text="Top Violators (Guardrail Type)" size="MEDIUM" marginBelow="STANDARD" />
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#F2B3D1', color: '#FFFFFF'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#F2B3D1'}}>
                                   <Icon icon="Shield" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Data Protection</span>
                               </div>
-                              <span className="text-sm font-medium text-black underline">456 hits</span>
+                              <span className="text-sm font-medium text-red-600">456 hits</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#D4B5E8', color: '#FFFFFF'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#D4B5E8'}}>
                                   <Icon icon="AlertTriangle" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Harmful Content</span>
                               </div>
-                              <span className="text-sm font-medium text-black underline">298 hits</span>
+                              <span className="text-sm font-medium text-red-600">298 hits</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#9DD2E8', color: '#FFFFFF'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#9DD2E8'}}>
                                   <Icon icon="MessageSquareX" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Profanity</span>
                               </div>
-                              <span className="text-sm font-medium text-black underline">187 hits</span>
+                              <span className="text-sm font-medium text-red-600">187 hits</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#9DDAC7', color: '#FFFFFF'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#9DDAC7'}}>
                                   <Icon icon="CheckCircle" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Compliance</span>
                               </div>
-                              <span className="text-sm font-medium text-black underline">134 hits</span>
+                              <span className="text-sm font-medium text-red-600">134 hits</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#9BB1D6', color: '#FFFFFF'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#9BB1D6'}}>
                                   <Icon icon="Lock" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Access Control</span>
                               </div>
-                              <span className="text-sm font-medium text-black underline">89 hits</span>
+                              <span className="text-sm font-medium text-red-600">89 hits</span>
                             </div>
                           </div>
+                          </div>
                         </CardLayout>
+                        </div>
                       </div>
                     </div>
                   ]
@@ -689,13 +796,13 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                           </button>
                         </div>
                       </div>
-                      <div className="space-y-4 overflow-visible">
+                      <div className="space-y-4 overflow-visible px-20">
                         {guardrails.map((guardrail, index) => {
                           const typeStamp = getTypeStamp(guardrail.type, index)
                           const sensitivityStamp = getSensitivityStamp(guardrail.sensitivity)
                           return (
                             <div key={index} className="overflow-visible">
-                              <CardLayout padding="STANDARD" showShadow={true}>
+                              <CardLayout padding="MORE" showShadow={true}>
                               <div className="relative">
                                 <div className="absolute top-0 right-0 flex items-center gap-2">
                                   <div title={`Sensitivity: ${guardrail.sensitivity}`}>
@@ -977,7 +1084,7 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
   }
 
   return (
-    <div className="min-h-screen bg-blue-50 w-full">
+    <div className="min-h-screen bg-blue-100 w-full">
       <style>{tabStyles}</style>
       <div className={`w-full ${activeSection === 'protect' ? '' : 'px-8 py-8'}`}>
         {renderContent()}
