@@ -9,7 +9,7 @@ function App() {
   const [cardStyle, setCardStyle] = useState<'white' | 'glass'>('glass')
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+    <div className={`h-screen flex flex-col overflow-hidden ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gray-50'}`}>
       {/* Gradient Header */}
       <div className="app-header-sail py-4 relative">
         <div className="app-header-overlay"></div>
@@ -37,14 +37,15 @@ function App() {
       </div>
       
       {/* Main Content Area with Side Navigation */}
-      <div className={`flex-1 flex overflow-hidden ${cardStyle === 'glass' ? 'bg-gradient-to-b from-blue-100 from-50% to-white' : 'bg-gray-50'} relative`}>
+      <div className={`flex-1 flex overflow-hidden ${cardStyle === 'glass' ? 'bg-slate-100' : 'bg-gray-50'} relative`}>
         {/* Glassmorphism gradient orbs */}
         {cardStyle === 'glass' && (
           <>
-            <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-br from-blue-200/40 to-purple-200/40 rounded-full blur-3xl"></div>
-            <div className="absolute top-40 right-20 w-80 h-80 bg-gradient-to-br from-pink-200/30 to-blue-200/30 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-20 left-1/3 w-72 h-72 bg-gradient-to-br from-purple-200/30 to-blue-200/30 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-40 right-1/4 w-64 h-64 bg-gradient-to-br from-blue-200/40 to-cyan-200/40 rounded-full blur-3xl"></div>
+            <div className="absolute top-5 left-5 w-[600px] h-[600px] bg-gradient-to-br from-blue-400/25 to-purple-400/25 rounded-full blur-[100px] z-0"></div>
+            <div className="absolute top-10 right-5 w-[500px] h-[500px] bg-gradient-to-br from-pink-400/20 to-orange-400/20 rounded-full blur-[100px] z-0"></div>
+            <div className="absolute bottom-5 left-5 w-[550px] h-[550px] bg-gradient-to-br from-purple-400/25 to-blue-400/25 rounded-full blur-[100px] z-0"></div>
+            <div className="absolute bottom-5 right-5 w-[450px] h-[450px] bg-gradient-to-br from-cyan-400/20 to-teal-400/20 rounded-full blur-[100px] z-0"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-indigo-400/18 to-purple-400/18 rounded-full blur-[100px] z-0"></div>
           </>
         )}
         

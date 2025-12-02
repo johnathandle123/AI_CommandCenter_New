@@ -1,5 +1,5 @@
-import { TabsField, HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, SliderField, Icon, TagField } from '@pglevy/sailwind'
-import { useState, useEffect } from 'react'
+import { HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, SliderField, Icon, TagField } from '@pglevy/sailwind'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, TrendingDown, TrendingUp } from 'lucide-react'
 
 const AnimatedCounter = ({ value, duration = 600 }: { value: number; duration?: number }) => {
@@ -66,6 +66,26 @@ const AnimatedPercentage = ({ value, duration = 800 }: { value: number; duration
   }, [value, duration, displayValue, prevValue])
 
   return <span>{displayValue.toFixed(1)}%</span>
+}
+
+const getCardStyles = (cardStyle: 'white' | 'glass') => {
+  const cardBg = cardStyle === 'glass' 
+    ? 'background-color: rgba(255, 255, 255, 0.3) !important; backdrop-filter: blur(20px) !important; border: 1px solid white !important; box-shadow: none !important;'
+    : 'background-color: white !important;'
+  
+  const bodyBg = cardStyle === 'glass' ? 'body { background: transparent !important; }' : ''
+  
+  return `
+    ${bodyBg}
+    .grid div[class*="shadow-"],
+    .space-y-4 div[class*="shadow-"],
+    .grid div.bg-white,
+    .space-y-0 div.bg-white,
+    .space-y-4 div.bg-white {
+      ${cardBg}
+      border-radius: 8px !important;
+    }
+  `
 }
 
 const tabStyles = `
@@ -149,17 +169,31 @@ const tabStyles = `
 
 interface TabsInterfaceProps {
   activeSection: string
+  cardStyle?: 'white' | 'glass'
 }
 
-export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
+export default function TabsInterface({ activeSection, cardStyle = 'glass' }: TabsInterfaceProps) {
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
   const [chartHover, setChartHover] = useState<{x: number, y: number, yCoord: number, value: number} | null>(null)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [selectedType, setSelectedType] = useState('')
+  const performanceRef = useRef<HTMLButtonElement>(null)
+  const configurationRef = useRef<HTMLButtonElement>(null)
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
   const [timeRange, setTimeRange] = useState('1D')
   const [wizardStep, setWizardStep] = useState(1)
+  const [protectTab, setProtectTab] = useState<'performance' | 'configuration'>('performance')
+  
+  useEffect(() => {
+    const activeRef = protectTab === 'performance' ? performanceRef : configurationRef
+    if (activeRef.current) {
+      const { offsetLeft, offsetWidth } = activeRef.current
+      setUnderlineStyle({ left: offsetLeft, width: offsetWidth })
+    }
+  }, [protectTab])
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -440,54 +474,95 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
     switch (activeSection) {
       case 'home':
         return (
-          <RichTextDisplayField 
-            value={["Welcome to the main dashboard. This is your central hub for all system operations."]} 
-          />
+          <div>
+            <style>{getCardStyles(cardStyle)}</style>
+            <RichTextDisplayField 
+              value={["Welcome to the main dashboard. This is your central hub for all system operations."]} 
+            />
+          </div>
         )
       
       case 'protect':
+        const currentTab = protectTab as 'performance' | 'configuration'
+        const headerBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
-          <div className="compact-tabs h-full w-full">
-            <TabsField
-              tabs={[
-                {
-                  label: "Performance",
-                  value: "performance",
-                  content: [
-                    <div key="performance-content" className="mt-0">
-                      <div className="page-header">
-                        <div className="flex justify-between items-center">
-                          <HeadingField text="Guardrail Performance" size="LARGE" marginBelow="NONE" />
-                          <div className="relative flex p-1 rounded-md">
-                            <div 
-                              className="absolute bg-blue-900 rounded transition-all duration-300 ease-out"
-                              style={{
-                                left: `calc(${['1D', '1W', '1M', '1Q', '1Y'].indexOf(timeRange) * 20}% + 4px)`,
-                                width: `calc(20% - 4px)`,
-                                top: '4px',
-                                bottom: '4px'
-                              }}
-                            />
-                            {['1D', '1W', '1M', '1Q', '1Y'].map((period) => (
-                              <button
-                                key={period}
-                                onClick={() => setTimeRange(period)}
-                                className={`relative z-10 flex-1 px-3 py-1 text-sm rounded transition-colors duration-300 ${
-                                  timeRange === period
-                                    ? 'text-white'
-                                    : 'text-blue-900 hover:text-blue-700'
-                                }`}
-                              >
-                                {period}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+          <div className="h-full w-full" style={{ background: 'transparent' }}>
+            <style>{getCardStyles(cardStyle)}</style>
+            <div className={`sticky top-0 z-10 ${headerBg} border-b px-8 py-4 flex flex-col justify-center ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
+              <div className="relative flex gap-8 mb-4 border-b border-white/30">
+                <button
+                  ref={performanceRef}
+                  onClick={() => setProtectTab('performance')}
+                  className={`px-2 py-2 transition-colors font-medium ${
+                    currentTab === 'performance'
+                      ? 'text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Performance
+                </button>
+                <button
+                  ref={configurationRef}
+                  onClick={() => setProtectTab('configuration')}
+                  className={`px-2 py-2 transition-colors font-medium ${
+                    // @ts-ignore - TypeScript narrows type inside conditional
+                    currentTab === 'configuration'
+                      ? 'text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Configuration
+                </button>
+                <div 
+                  className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out"
+                  style={{
+                    left: `${underlineStyle.left}px`,
+                    width: `${underlineStyle.width}px`
+                  }}
+                />
+              </div>
+              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
+                <HeadingField text={currentTab === 'performance' ? "Guardrail Performance" : "Guardrail Configuration"} size="LARGE" marginBelow="NONE" />
+                {currentTab === 'performance' ? (
+                  <div className="relative flex p-1 rounded-md">
+                    <div 
+                      className="absolute bg-blue-900 rounded transition-all duration-300 ease-out"
+                      style={{
+                        left: `calc(${['1D', '1W', '1M', '1Q', '1Y'].indexOf(timeRange) * 20}% + 4px)`,
+                        width: `calc(20% - 4px)`,
+                        top: '4px',
+                        bottom: '4px'
+                      }}
+                    />
+                    {['1D', '1W', '1M', '1Q', '1Y'].map((range) => (
+                      <button
+                        key={range}
+                        onClick={() => setTimeRange(range)}
+                        className={`relative z-10 px-4 py-1 text-sm font-medium transition-colors ${
+                          timeRange === range ? 'text-white' : 'text-gray-700 hover:text-gray-900'
+                        }`}
+                      >
+                        {range}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <button 
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                    onClick={() => setShowModal(true)}
+                  >
+                    <Plus size={16} />
+                    Add Guardrails
+                  </button>
+                )}
+              </div>
+            </div>
+            {currentTab === 'performance' ? (
+              <div key="performance-content" className="mt-6" style={{ background: 'transparent' }}>
                       
-                      <div className="grid grid-cols-[3fr_1fr] gap-4 px-20 min-h-[calc(100vh-200px)]">
-                        <div className="space-y-0">
-                          <div className="grid grid-cols-2 gap-4 items-stretch">
+                      <div className="grid grid-cols-[3fr_1fr] gap-4 px-20 min-h-[calc(100vh-200px)]" style={{ background: 'transparent' }}>
+                        <div className="space-y-0" style={{ background: 'transparent' }}>
+                          <div className="grid grid-cols-2 gap-4 items-stretch" style={{ background: 'transparent' }}>
                         {/* Total Guardrail Hits */}
                         <CardLayout padding="MORE" showShadow={true}>
                           <div className="h-full flex items-center gap-4">
@@ -875,26 +950,9 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                         </div>
                       </div>
                     </div>
-                  ]
-                },
-                {
-                  label: "Configuration",
-                  value: "guardrails",
-                  content: [
-                    <div key="policies-content" className="mt-0">
-                      <div className="page-header">
-                        <div className="flex justify-between items-center">
-                          <HeadingField text="Guardrail Configuration" size="LARGE" marginBelow="NONE" />
-                          <button 
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                            onClick={() => setShowModal(true)}
-                          >
-                            <Plus size={16} />
-                            Add Guardrails
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-4 overflow-visible px-20">
+            ) : (
+              <div key="policies-content" className="mt-6" style={{ background: 'transparent' }}>
+                      <div className="space-y-4 overflow-visible px-20" style={{ background: 'transparent' }}>
                         {guardrails.map((guardrail, index) => {
                           const typeStamp = getTypeStamp(guardrail.type, index)
                           const sensitivityStamp = getSensitivityStamp(guardrail.sensitivity)
@@ -958,18 +1016,7 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
                         })}
                       </div>
                     </div>
-                  ]
-                },
-                {
-                  label: "",
-                  value: "spacer",
-                  disabled: true,
-                  content: [
-                    <div key="spacer-content" className="w-full"></div>
-                  ]
-                }
-              ]}
-            />
+            )}
           </div>
         )
       
@@ -1182,7 +1229,7 @@ export default function TabsInterface({ activeSection }: TabsInterfaceProps) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-blue-100 from-50% to-white">
+    <div className={`min-h-screen w-full ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gradient-to-b from-blue-100 from-50% to-white'}`}>
       <style>{tabStyles}</style>
       <div className={`w-full ${activeSection === 'protect' ? '' : 'px-8 py-8'}`}>
         {renderContent()}
