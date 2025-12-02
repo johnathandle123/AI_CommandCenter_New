@@ -10,6 +10,7 @@ interface SideNavigationProps {
   activeSection: string
   onSectionChange: (section: string) => void
   className?: string
+  cardStyle?: 'white' | 'glass'
 }
 
 const navigationItems: NavItem[] = [
@@ -40,11 +41,15 @@ const navigationItems: NavItem[] = [
   }
 ]
 
-export default function SideNavigation({ activeSection, onSectionChange, className = '' }: SideNavigationProps) {
+export default function SideNavigation({ activeSection, onSectionChange, className = '', cardStyle = 'glass' }: SideNavigationProps) {
   const activeIndex = navigationItems.findIndex(item => item.id === activeSection)
   
+  const bgStyle = cardStyle === 'glass' 
+    ? { backgroundColor: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
+    : { backgroundColor: 'white' }
+  
   return (
-    <div className={`w-64 bg-white border-r border-gray-200 flex flex-col ${className}`}>
+    <div className={`w-64 border-r border-white flex flex-col ${className}`} style={bgStyle}>
       <nav className="relative flex flex-col p-4 space-y-2">
         <div 
           className="absolute left-4 right-4 bg-blue-500 rounded-md transition-all duration-300 ease-out"
