@@ -1,4 +1,4 @@
-import { Home, Shield, Monitor, Eye, List } from 'lucide-react'
+import { Home, Shield, Monitor, Eye, List, Sparkles } from 'lucide-react'
 
 interface NavItem {
   id: string
@@ -38,6 +38,11 @@ const navigationItems: NavItem[] = [
     id: 'events',
     label: 'Events',
     icon: List
+  },
+  {
+    id: 'insights',
+    label: 'Insights',
+    icon: Sparkles
   }
 ]
 
@@ -61,6 +66,7 @@ export default function SideNavigation({ activeSection, onSectionChange, classNa
         {navigationItems.map((item) => {
           const Icon = item.icon
           const isActive = activeSection === item.id
+          const isInsights = item.id === 'insights'
           
           return (
             <button
@@ -68,14 +74,34 @@ export default function SideNavigation({ activeSection, onSectionChange, classNa
               onClick={() => onSectionChange(item.id)}
               className={`
                 relative z-10 flex items-center gap-3 px-4 py-3 rounded-md transition-colors text-left duration-300
-                ${isActive 
+                ${isActive && !isInsights
                   ? 'text-white' 
+                  : isInsights
+                  ? ''
                   : 'text-gray-600 hover:text-blue-500'
                 }
               `}
+              style={isInsights ? {
+                background: 'transparent',
+                backgroundImage: 'linear-gradient(90deg, #2322F0 0%, #E21496 57%, #FFC008 83%, #FFD948 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              } : undefined}
             >
-              <Icon size={20} />
-              <span className="font-medium">{item.label}</span>
+              {isInsights ? (
+                <>
+                  <span className="text-purple-500">
+                    <Icon size={20} />
+                  </span>
+                  <span className="font-medium">{item.label}</span>
+                </>
+              ) : (
+                <>
+                  <Icon size={20} />
+                  <span className="font-medium">{item.label}</span>
+                </>
+              )}
             </button>
           )
         })}

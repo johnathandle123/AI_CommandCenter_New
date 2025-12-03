@@ -1,4 +1,4 @@
-import { HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, SliderField, Icon, TagField } from '@pglevy/sailwind'
+import { HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, Icon, TagField } from '@pglevy/sailwind'
 import { useState, useEffect, useRef } from 'react'
 import { Plus, TrendingDown, TrendingUp } from 'lucide-react'
 
@@ -70,7 +70,7 @@ const AnimatedPercentage = ({ value, duration = 800 }: { value: number; duration
 
 const getCardStyles = (cardStyle: 'white' | 'glass') => {
   const cardBg = cardStyle === 'glass' 
-    ? 'background-color: rgba(255, 255, 255, 0.3) !important; backdrop-filter: blur(20px) !important; border: 1px solid white !important; box-shadow: none !important;'
+    ? 'background-color: rgba(255, 255, 255, 0.3) !important; backdrop-filter: blur(20px) !important; box-shadow: none !important;'
     : 'background-color: white !important;'
   
   const bodyBg = cardStyle === 'glass' ? 'body { background: transparent !important; }' : ''
@@ -83,7 +83,26 @@ const getCardStyles = (cardStyle: 'white' | 'glass') => {
     .space-y-0 div.bg-white,
     .space-y-4 div.bg-white {
       ${cardBg}
-      border-radius: 8px !important;
+      border-radius: 4px !important;
+      position: relative !important;
+      border: 1px solid rgba(255,255,255,0.5) !important;
+    }
+    .grid div[class*="shadow-"]::before,
+    .space-y-4 div[class*="shadow-"]::before,
+    .grid div.bg-white::before,
+    .space-y-0 div.bg-white::before,
+    .space-y-4 div.bg-white::before {
+      content: '' !important;
+      position: absolute !important;
+      inset: -1px !important;
+      border-radius: 4px !important;
+      padding: 1px !important;
+      background: linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0.1), rgba(255,255,255,0)) !important;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0) !important;
+      -webkit-mask-composite: xor !important;
+      mask-composite: exclude !important;
+      pointer-events: none !important;
+      z-index: -1 !important;
     }
   `
 }
@@ -157,6 +176,8 @@ const tabStyles = `
   }
   [data-radix-dialog-overlay], .dialog-overlay, .modal-backdrop, .scrim, [data-state="open"] {
     z-index: 2147483646 !important;
+    background-color: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(40px) !important;
   }
   div[style*="position: fixed"], div[style*="z-index"] {
     z-index: 2147483645 !important;
@@ -164,6 +185,8 @@ const tabStyles = `
   [role="dialog"] {
     max-width: 850px !important;
     width: 850px !important;
+    background-color: white !important;
+    backdrop-filter: none !important;
   }
 `
 
@@ -185,6 +208,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
   const [timeRange, setTimeRange] = useState('1D')
   const [wizardStep, setWizardStep] = useState(1)
   const [protectTab, setProtectTab] = useState<'performance' | 'configuration'>('performance')
+  const [scrollState, setScrollState] = useState({ top: true, bottom: false })
+  const [protectScrolled, setProtectScrolled] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
     const activeRef = protectTab === 'performance' ? performanceRef : configurationRef
@@ -193,6 +219,25 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
       setUnderlineStyle({ left: offsetLeft, width: offsetWidth })
     }
   }, [protectTab])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current
+        setScrollState({
+          top: scrollTop === 0,
+          bottom: scrollTop + clientHeight >= scrollHeight - 1
+        })
+      }
+    }
+
+    const scrollEl = scrollRef.current
+    if (scrollEl) {
+      handleScroll()
+      scrollEl.addEventListener('scroll', handleScroll)
+      return () => scrollEl.removeEventListener('scroll', handleScroll)
+    }
+  }, [showModal, wizardStep])
   
   const [formData, setFormData] = useState({
     name: '',
@@ -200,9 +245,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
     scope: '',
     sensitivity: 2,
     action: '',
-    notification: false,
-    notificationType: '',
-    notificationMessage: ''
+    actionMessage: ''
   })
   const [filters, setFilters] = useState({
     timestamp: '',
@@ -336,6 +379,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
           header.classList.remove('scrolled')
         }
       })
+      setProtectScrolled((window.pageYOffset || document.documentElement.scrollTop) > 0)
     }
 
     document.addEventListener('click', handleClickOutside)
@@ -372,7 +416,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
       'Tone': { icon: 'MessageCircle' },
       'Logic': { icon: 'Brain' },
       'Performance': { icon: 'Zap' },
-      'Data Protection': { icon: 'Shield' },
+      'Data Protection': { icon: 'Database' },
       'Access Control': { icon: 'Lock' },
       'Compliance': { icon: 'CheckCircle' }
     }
@@ -392,9 +436,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
       scope: guardrail.scope,
       sensitivity: ['', 'Low', 'Medium', 'High', 'Critical'].indexOf(guardrail.sensitivity),
       action: guardrail.action,
-      notification: false,
-      notificationType: '',
-      notificationMessage: ''
+      actionMessage: ''
     })
     const typeMap = {
       'Harmful Content': 'harmful',
@@ -464,9 +506,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
       scope: '',
       sensitivity: 2,
       action: '',
-      notification: false,
-      notificationType: '',
-      notificationMessage: ''
+      actionMessage: ''
     })
   }
 
@@ -488,7 +528,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            <div className={`sticky top-0 z-10 ${headerBg} border-b px-8 py-4 flex flex-col justify-center ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
+            <div className={`sticky top-0 z-10 ${headerBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${protectScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
               <div className="relative flex gap-8 mb-4 border-b border-white/30">
                 <button
                   ref={performanceRef}
@@ -833,11 +873,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                           {/* Popover */}
                           {chartHover && (
                             <div 
-                              className="fixed bg-gray-900 text-white px-3 py-2 rounded-lg shadow-lg text-sm z-50 pointer-events-none"
+                              className="absolute bg-white/90 backdrop-blur-lg text-black px-3 py-2 rounded-lg shadow-lg text-sm z-50 pointer-events-none border border-white/50 h-8 flex items-center"
                               style={{
-                                left: chartHover.x,
-                                top: chartHover.y - 40,
-                                transform: 'translateX(-50%)'
+                                left: `${chartHover.x}%`,
+                                top: `${(chartHover.yCoord / 50) * 100}%`,
+                                transform: 'translate(-50%, calc(-100% - 16px))'
                               }}
                             >
                               <div className="font-medium">{chartHover.value} hits</div>
@@ -901,8 +941,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#F2B3D1'}}>
-                                  <Icon icon="Shield" size="MEDIUM" />
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#F2B3D1'}}>
+                                  <Icon icon="Database" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Data Protection</span>
                               </div>
@@ -910,7 +950,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#D4B5E8'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#D4B5E8'}}>
                                   <Icon icon="AlertTriangle" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Harmful Content</span>
@@ -919,7 +959,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#9DD2E8'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#9DD2E8'}}>
                                   <Icon icon="MessageSquareX" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Profanity</span>
@@ -928,7 +968,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#9DDAC7'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#9DDAC7'}}>
                                   <Icon icon="CheckCircle" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Compliance</span>
@@ -937,7 +977,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: '#9BB1D6'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#9BB1D6'}}>
                                   <Icon icon="Lock" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Access Control</span>
@@ -1000,7 +1040,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                                 </div>
                                 <div className="flex items-start gap-3 pr-20">
                                   <div title={guardrail.type}>
-                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full" style={{backgroundColor: typeStamp.bg, color: typeStamp.color}}>
+                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: typeStamp.bg}}>
                                       <Icon icon={typeStamp.icon} size="MEDIUM" />
                                     </div>
                                   </div>
@@ -1243,35 +1283,36 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
         }}
         title={editingIndex !== null ? "Edit Guardrail" : "Add Guardrail"}
       >
-        <div className="flex flex-col" style={{ width: '800px', height: '600px' }}>
+        <div className="flex flex-col relative" style={{ width: '800px', height: '600px' }}>
           {/* Progress Indicator */}
-          <div className="flex items-center justify-center gap-8 mb-6 pb-6 border-b">
+          <div className={`pb-6 pt-2 px-6 bg-white relative z-30 -mx-6 transition-shadow duration-300 ${!scrollState.top ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''}`}>
+            <div className="flex items-center justify-center">
             {[
               { num: 1, label: 'General' },
-              { num: 2, label: 'Security Level' },
-              { num: 3, label: 'Result' },
-              { num: 4, label: 'Review' }
+              { num: 2, label: 'Result' },
+              { num: 3, label: 'Review' }
             ].map((step, idx) => (
               <div key={step.num} className="flex items-center">
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                     wizardStep >= step.num ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
                   }`}>
                     {step.num}
                   </div>
-                  <span className={`text-xs mt-2 transition-all duration-300 ${
+                  <span className={`text-xs transition-all duration-300 whitespace-nowrap ${
                     wizardStep >= step.num ? 'text-blue-500 font-semibold' : 'text-gray-500'
                   }`}>{step.label}</span>
                 </div>
-                {idx < 3 && <div className={`w-16 h-1 mx-4 transition-all duration-300 ${
+                {idx < 2 && <div className={`w-24 h-1 mx-4 -mt-6 transition-all duration-300 ${
                   wizardStep > step.num ? 'bg-blue-500' : 'bg-gray-200'
                 }`} />}
               </div>
             ))}
+            </div>
           </div>
 
           {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto px-2">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto px-2 py-6 relative z-0">
             {/* Step 1: General */}
             {wizardStep === 1 && (
               <div className="space-y-4 animate-in fade-in duration-300">
@@ -1287,7 +1328,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                     placeholder="Describe what this guardrail does"
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none"
+                    className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none relative z-0"
                   />
                 </div>
                 <div>
@@ -1319,160 +1360,63 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
               </div>
             )}
 
-            {/* Step 2: Security Level */}
+            {/* Step 2: Result */}
             {wizardStep === 2 && (
               <div className="space-y-4 animate-in fade-in duration-300">
-                <div className="bg-blue-50 p-4 rounded-lg mb-4">
-                  <HeadingField text="About Security Levels" size="SMALL" marginBelow="LESS" />
-                  <RichTextDisplayField value={["Security levels determine how strictly the guardrail is enforced. Higher levels provide stronger protection but may impact user experience."]} />
-                </div>
-                <SliderField 
-                  label="Sensitivity Level"
-                  min={1}
-                  max={4}
-                  step={1}
-                  value={formData.sensitivity}
-                  onChange={(value) => setFormData({...formData, sensitivity: Array.isArray(value) ? value[0] : value})}
-                />
-                <div className="grid grid-cols-4 gap-2 text-center text-sm">
-                  <div className={`p-2 rounded transition-all duration-200 ${formData.sensitivity === 1 ? 'bg-green-100 font-semibold' : 'bg-gray-50'}`}>Low</div>
-                  <div className={`p-2 rounded transition-all duration-200 ${formData.sensitivity === 2 ? 'bg-yellow-100 font-semibold' : 'bg-gray-50'}`}>Medium</div>
-                  <div className={`p-2 rounded transition-all duration-200 ${formData.sensitivity === 3 ? 'bg-orange-100 font-semibold' : 'bg-gray-50'}`}>High</div>
-                  <div className={`p-2 rounded transition-all duration-200 ${formData.sensitivity === 4 ? 'bg-red-100 font-semibold' : 'bg-gray-50'}`}>Critical</div>
-                </div>
-                
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg animate-in fade-in duration-200">
-                  {formData.sensitivity === 1 && (
-                    <div>
-                      <div className="font-semibold text-green-700 mb-2">Low Sensitivity</div>
-                      <div className="text-sm text-gray-700 mb-2">Minimal enforcement with high tolerance for edge cases. Suitable for non-critical content monitoring.</div>
-                      <div className="text-sm text-gray-600 italic">Example: Flagging potentially inappropriate language but allowing most content through.</div>
-                    </div>
-                  )}
-                  {formData.sensitivity === 2 && (
-                    <div>
-                      <div className="font-semibold text-yellow-700 mb-2">Medium Sensitivity</div>
-                      <div className="text-sm text-gray-700 mb-2">Balanced approach with moderate enforcement. Good for general-purpose content filtering.</div>
-                      <div className="text-sm text-gray-600 italic">Example: Blocking clear violations while allowing borderline cases with warnings.</div>
-                    </div>
-                  )}
-                  {formData.sensitivity === 3 && (
-                    <div>
-                      <div className="font-semibold text-orange-700 mb-2">High Sensitivity</div>
-                      <div className="text-sm text-gray-700 mb-2">Strict enforcement with low tolerance. Recommended for regulated industries or sensitive data.</div>
-                      <div className="text-sm text-gray-600 italic">Example: Blocking any content that might contain PII or confidential information.</div>
-                    </div>
-                  )}
-                  {formData.sensitivity === 4 && (
-                    <div>
-                      <div className="font-semibold text-red-700 mb-2">Critical Sensitivity</div>
-                      <div className="text-sm text-gray-700 mb-2">Maximum enforcement with zero tolerance. Use for mission-critical security requirements.</div>
-                      <div className="text-sm text-gray-600 italic">Example: Immediately blocking and logging any attempt to access restricted systems or data.</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Result */}
-            {wizardStep === 3 && (
-              <div className="space-y-4 animate-in fade-in duration-300">
                 <HeadingField text="Enforcement Action" size="SMALL" marginBelow="LESS" />
-                <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-3">
                   {[
                     { value: 'block', label: 'Block', desc: 'Prevent the action completely', icon: 'Ban' },
                     { value: 'warn', label: 'Warn', desc: 'Show warning but allow action', icon: 'AlertTriangle' },
-                    { value: 'log', label: 'Log', desc: 'Record event without blocking', icon: 'FileText' },
                     { value: 'redirect', label: 'Redirect', desc: 'Route to alternative flow', icon: 'ArrowRight' }
                   ].map((action) => (
                     <div
                       key={action.value}
                       className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                        formData.action === action.value ? 'border-blue-500 bg-blue-50 scale-105' : 'border-gray-200 hover:border-gray-300'
+                        formData.action === action.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => setFormData({...formData, action: action.value})}
                     >
                       <div className="flex items-start gap-3">
                         <Icon icon={action.icon as any} size="MEDIUM" />
-                        <div>
+                        <div className="flex-1">
                           <div className="font-semibold">{action.label}</div>
                           <div className="text-sm text-gray-600">{action.desc}</div>
+                          
+                          {formData.action === action.value && (
+                            <div className="mt-3 animate-in fade-in duration-200">
+                              <label className="block text-sm font-medium mb-2">Message</label>
+                              <textarea 
+                                placeholder="Enter the message to display when this guardrail is triggered"
+                                value={formData.actionMessage}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setFormData({...formData, actionMessage: e.target.value})
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-full h-24 p-3 border border-gray-300 rounded-md resize-none relative z-0"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-                
-                <div className={`mt-6 p-4 border-2 rounded-lg transition-all duration-200 ${
-                  formData.notification ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                }`}>
-                  <label className="flex items-center gap-2 cursor-pointer mb-4">
-                    <input 
-                      type="checkbox" 
-                      checked={formData.notification}
-                      onChange={(e) => setFormData({...formData, notification: e.target.checked})}
-                      className="w-4 h-4"
-                    />
-                    <span className="font-semibold">Send User Notification</span>
-                  </label>
-                  
-                  {formData.notification && (
-                    <div className="space-y-3 animate-in fade-in duration-200">
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input 
-                            type="radio" 
-                            name="notificationType"
-                            value="app"
-                            checked={formData.notificationType === 'app'}
-                            onChange={(e) => setFormData({...formData, notificationType: e.target.value})}
-                            className="w-4 h-4"
-                          />
-                          <span>In-App Message</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input 
-                            type="radio" 
-                            name="notificationType"
-                            value="email"
-                            checked={formData.notificationType === 'email'}
-                            onChange={(e) => setFormData({...formData, notificationType: e.target.value})}
-                            className="w-4 h-4"
-                          />
-                          <span>Email</span>
-                        </label>
-                      </div>
-                      
-                      {formData.notificationType && (
-                        <div className="animate-in fade-in duration-200">
-                          <label className="block text-sm font-medium mb-2">Notification Message</label>
-                          <textarea 
-                            placeholder="Enter the message to send to users"
-                            value={formData.notificationMessage}
-                            onChange={(e) => setFormData({...formData, notificationMessage: e.target.value})}
-                            className="w-full h-24 p-3 border border-gray-300 rounded-md resize-none"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
               </div>
             )}
 
-            {/* Step 4: Review */}
-            {wizardStep === 4 && (
+            {/* Step 3: Review */}
+            {wizardStep === 3 && (
               <div className="space-y-4 animate-in fade-in duration-300">
                 <HeadingField text="Review Your Guardrail" size="SMALL" marginBelow="STANDARD" />
                 <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                   <div><span className="font-semibold">Name:</span> {formData.name || 'Not specified'}</div>
                   <div><span className="font-semibold">Description:</span> {formData.description || 'Not specified'}</div>
                   <div><span className="font-semibold">Type:</span> {selectedType || 'Not selected'}</div>
-                  <div><span className="font-semibold">Sensitivity:</span> {['', 'Low', 'Medium', 'High', 'Critical'][formData.sensitivity]}</div>
                   <div><span className="font-semibold">Action:</span> {formData.action || 'Not selected'}</div>
-                  <div><span className="font-semibold">Notification:</span> {formData.notification ? `Yes (${formData.notificationType})` : 'No'}</div>
-                  {formData.notification && formData.notificationMessage && (
-                    <div><span className="font-semibold">Message:</span> {formData.notificationMessage}</div>
+                  {formData.actionMessage && (
+                    <div><span className="font-semibold">Message:</span> {formData.actionMessage}</div>
                   )}
                 </div>
               </div>
@@ -1480,15 +1424,17 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
           </div>
 
           {/* Fixed Footer */}
-          <div className="flex justify-between pt-4 mt-4 border-t">
-            <ButtonWidget 
-              label="Back" 
-              style="OUTLINE" 
-              color="SECONDARY" 
-              onClick={() => setWizardStep(Math.max(1, wizardStep - 1))}
-              disabled={wizardStep === 1}
-            />
-            {wizardStep < 4 ? (
+          <div className={`flex justify-between pt-4 pb-2 px-6 bg-white relative z-30 -mx-6 transition-shadow duration-300 ${!scrollState.bottom ? 'shadow-[0_-8px_16px_-8px_rgba(0,0,0,0.08)]' : ''}`}>
+            {wizardStep > 1 && (
+              <ButtonWidget 
+                label="Back" 
+                style="OUTLINE" 
+                color="SECONDARY" 
+                onClick={() => setWizardStep(Math.max(1, wizardStep - 1))}
+              />
+            )}
+            {wizardStep === 1 && <div />}
+            {wizardStep < 3 ? (
               <ButtonWidget 
                 label="Next" 
                 style="SOLID" 
