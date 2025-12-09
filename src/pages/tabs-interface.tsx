@@ -1,6 +1,7 @@
 import { HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, Icon, TagField } from '@pglevy/sailwind'
 import { useState, useEffect, useRef } from 'react'
 import { Plus, TrendingDown, TrendingUp } from 'lucide-react'
+import GuardrailDetail from './guardrail-detail'
 
 const AnimatedCounter = ({ value, duration = 600 }: { value: number; duration?: number }) => {
   const [displayValue, setDisplayValue] = useState(value)
@@ -247,6 +248,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
     action: '',
     actionMessage: ''
   })
+  const [selectedGuardrail, setSelectedGuardrail] = useState<number | null>(null)
   const [filters, setFilters] = useState({
     timestamp: '',
     traceId: '',
@@ -528,6 +530,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
+            {selectedGuardrail === null && (
             <div className={`sticky top-0 z-10 ${headerBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${protectScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
               <div className="relative flex gap-8 mb-4 border-b border-white/30">
                 <button
@@ -597,6 +600,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                 )}
               </div>
             </div>
+            )}
             {currentTab === 'performance' ? (
               <div key="performance-content" className="mt-6" style={{ background: 'transparent' }}>
                       
@@ -991,6 +995,18 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                       </div>
                     </div>
             ) : (
+              selectedGuardrail !== null ? (
+                <GuardrailDetail
+                  guardrail={guardrails[selectedGuardrail]}
+                  onBack={() => setSelectedGuardrail(null)}
+                  onSave={(data) => {
+                    const updated = [...guardrails]
+                    updated[selectedGuardrail] = { ...updated[selectedGuardrail], ...data }
+                    setGuardrails(updated)
+                    setSelectedGuardrail(null)
+                  }}
+                />
+              ) : (
               <div key="policies-content" className="mt-6" style={{ background: 'transparent' }}>
                       <div className="space-y-4 overflow-visible px-20" style={{ background: 'transparent' }}>
                         {guardrails.map((guardrail, index) => {
@@ -999,7 +1015,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                           return (
                             <div key={index} className="overflow-visible">
                               <CardLayout padding="MORE" showShadow={true}>
-                              <div className="relative">
+                              <div className="relative cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedGuardrail(index)}>
                                 <div className="absolute top-0 right-0 flex items-center gap-2">
                                   <div title={`Sensitivity: ${guardrail.sensitivity}`}>
                                     <TagField 
@@ -1025,13 +1041,19 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                                     <div className="dropdown-menu hidden fixed bg-white border-gray-300 border rounded shadow-lg z-50 min-w-24" style={{top: '0px', left: '0px'}}>
                                       <button 
                                         className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
-                                        onClick={() => editGuardrail(index)}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          editGuardrail(index)
+                                        }}
                                       >
                                         Edit
                                       </button>
                                       <button 
                                         className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-sm text-red-600"
-                                        onClick={() => deleteGuardrail(index)}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          deleteGuardrail(index)
+                                        }}
                                       >
                                         Delete
                                       </button>
@@ -1056,6 +1078,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                         })}
                       </div>
                     </div>
+              )
             )}
           </div>
         )
