@@ -191,6 +191,705 @@ const tabStyles = `
   }
 `
 
+interface Metric {
+  id: string
+  name: string
+  type: string
+  gridWidth: number
+  gridHeight: number
+  gridX: number
+  gridY: number
+  visible: boolean
+}
+
+interface LayoutHistory {
+  metrics: Metric[]
+  timestamp: number
+}
+
+interface ConstraintFeedback {
+  cardId: string
+  message: string
+  timestamp: number
+}
+
+const METRIC_TYPES = [
+  'CPU Usage', 'Memory Usage', 'Network I/O', 'Disk Usage', 
+  'Response Time', 'Throughput', 'Error Rate', 'Active Users',
+  'Database Connections', 'Cache Hit Rate', 'Queue Length', 'Latency'
+]
+
+function PerformanceDashboard() {
+  const [metrics, setMetrics] = useState<Metric[]>([
+    { id: 'cpu', name: 'CPU Usage', type: 'CPU Usage', gridWidth: 4, gridHeight: 3, gridX: 0, gridY: 0, visible: true },
+    { id: 'memory', name: 'Memory Usage', type: 'Memory Usage', gridWidth: 4, gridHeight: 3, gridX: 4, gridY: 0, visible: true },
+    { id: 'network', name: 'Network I/O', type: 'Network I/O', gridWidth: 3, gridHeight: 3, gridX: 0, gridY: 3, visible: true },
+    { id: 'disk', name: 'Disk Usage', type: 'Disk Usage', gridWidth: 3, gridHeight: 3, gridX: 3, gridY: 3, visible: true }
+  ])
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [dragging, setDragging] = useState<{ id: string, startX: number, startY: number, offsetX: number, offsetY: number } | null>(null)
+  const [resizing, setResizing] = useState<{ id: string, startX: number, startY: number, startWidth: number, startHeight: number, handle: string } | null>(null)
+  const [dropIndicator, setDropIndicator] = useState<{ x: number, y: number, width: number, height: number } | null>(null)
+  const [selectedCard, setSelectedCard] = useState<string | null>(null)
+  const [history, setHistory] = useState<LayoutHistory[]>([])
+  const [loading, setLoading] = useState<Set<string>>(new Set())
+  const [constraintFeedback, setConstraintFeedback] = useState<ConstraintFeedback | null>(null)
+  const [vibrating, setVibrating] = useState<Set<string>>(new Set())
+  const [resizeCursor, setResizeCursor] = useState<string>('se-resize')
+
+  const GRID_COLS = 12
+  const GRID_ROWS = 12
+  const CELL_SIZE = 60
+  const MIN_SIZE = 2
+  const DEFAULT_WIDTH = 4
+  const DEFAULT_HEIGHT = 3
+  const GUTTER = 1
+
+  const smartResize = (cardId: string, direction: string, delta: number) => {
+    const card = metrics.find(m => m.id === cardId)
+    if (!card) return false
+
+    let newWidth = card.gridWidth
+    let newHeight = card.gridHeight
+
+    if (direction.includes('e')) {
+      const maxExpansion = GRID_COLS - card.gridX
+      const availableSpace = getAvailableSpaceRight(card)
+      newWidth = Math.min(maxExpansion, card.gridWidth + Math.min(delta, availableSpace))
+    }
+    if (direction.includes('s')) {
+      const maxExpansion = GRID_ROWS - card.gridY
+      const availableSpace = getAvailableSpaceBelow(card)
+      newHeight = Math.min(maxExpansion, card.gridHeight + Math.min(delta, availableSpace))
+    }
+
+    // Check if resize would violate constraints
+    const wouldViolateConstraints = checkResizeConstraints(card, newWidth, newHeight)
+    if (wouldViolateConstraints.length > 0) {
+      showConstraintFeedback(wouldViolateConstraints[0])
+      return false
+    }
+
+    setMetrics(prev => prev.map(m => 
+      m.id === cardId ? { ...m, gridWidth: newWidth, gridHeight: newHeight } : m
+    ))
+    return true
+  }
+
+  const getAvailableSpaceRight = (card: Metric) => {
+    let space = 0
+    for (let x = card.gridX + card.gridWidth; x < GRID_COLS; x++) {
+      if (isGridOccupied(x, card.gridY, 1, card.gridHeight, card.id)) break
+      space++
+    }
+    return space
+  }
+
+  const getAvailableSpaceBelow = (card: Metric) => {
+    let space = 0
+    for (let y = card.gridY + card.gridHeight; y < GRID_ROWS; y++) {
+      if (isGridOccupied(card.gridX, y, card.gridWidth, 1, card.id)) break
+      space++
+    }
+    return space
+  }
+
+  const checkResizeConstraints = (card: Metric, newWidth: number, newHeight: number) => {
+    const violations = []
+    const affectedCards = metrics.filter(m => 
+      m.visible && m.id !== card.id &&
+      card.gridX < m.gridX + m.gridWidth &&
+      card.gridX + newWidth > m.gridX &&
+      card.gridY < m.gridY + m.gridHeight &&
+      card.gridY + newHeight > m.gridY
+    )
+
+    for (const affected of affectedCards) {
+      if (affected.gridWidth <= MIN_SIZE || affected.gridHeight <= MIN_SIZE) {
+        violations.push(affected.id)
+      }
+    }
+    return violations
+  }
+
+  const showConstraintFeedback = (cardId: string) => {
+    setConstraintFeedback({
+      cardId,
+      message: `Cannot resize: Card ${cardId} is at minimum size (${MIN_SIZE}×${MIN_SIZE})`,
+      timestamp: Date.now()
+    })
+    
+    setVibrating(prev => new Set([...prev, cardId]))
+    setResizeCursor('not-allowed')
+    
+    setTimeout(() => {
+      setConstraintFeedback(null)
+      setVibrating(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(cardId)
+        return newSet
+      })
+      setResizeCursor('se-resize')
+    }, 2000)
+  }
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('dashboard-layout')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        setMetrics(parsed.metrics || metrics)
+        setHistory(parsed.history || [])
+      } catch (e) {
+        console.warn('Failed to load saved layout')
+      }
+    }
+  }, [])
+
+  // Save to localStorage on changes
+  useEffect(() => {
+    const saveData = { metrics, history }
+    localStorage.setItem('dashboard-layout', JSON.stringify(saveData))
+  }, [metrics, history])
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedCard) return
+      
+      const card = metrics.find(m => m.id === selectedCard)
+      if (!card) return
+
+      let newX = card.gridX
+      let newY = card.gridY
+      let newWidth = card.gridWidth
+      let newHeight = card.gridHeight
+
+      switch (e.key) {
+        case 'ArrowLeft':
+          newX = Math.max(0, card.gridX - 1)
+          break
+        case 'ArrowRight':
+          newX = Math.min(GRID_COLS - card.gridWidth, card.gridX + 1)
+          break
+        case 'ArrowUp':
+          newY = Math.max(0, card.gridY - 1)
+          break
+        case 'ArrowDown':
+          newY = Math.min(GRID_ROWS - card.gridHeight, card.gridY + 1)
+          break
+        case '+':
+          if (e.shiftKey) {
+            newHeight = Math.min(GRID_ROWS - card.gridY, card.gridHeight + 1)
+          } else {
+            newWidth = Math.min(GRID_COLS - card.gridX, card.gridWidth + 1)
+          }
+          break
+        case '-':
+          if (e.shiftKey) {
+            newHeight = Math.max(MIN_SIZE, card.gridHeight - 1)
+          } else {
+            newWidth = Math.max(MIN_SIZE, card.gridWidth - 1)
+          }
+          break
+        case 'z':
+          if (e.ctrlKey || e.metaKey) {
+            undo()
+            return
+          }
+          break
+        default:
+          return
+      }
+
+      e.preventDefault()
+      
+      if (!isGridOccupied(newX, newY, newWidth, newHeight, selectedCard)) {
+        saveToHistory()
+        setMetrics(prev => prev.map(m => 
+          m.id === selectedCard ? { ...m, gridX: newX, gridY: newY, gridWidth: newWidth, gridHeight: newHeight } : m
+        ))
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [selectedCard, metrics])
+
+  const gridToPixel = (gridPos: number) => gridPos * CELL_SIZE
+  const pixelToGrid = (pixel: number) => Math.round(pixel / CELL_SIZE)
+
+  const isGridOccupied = (x: number, y: number, width: number, height: number, excludeId?: string) => {
+    return metrics.some(m => 
+      m.visible && m.id !== excludeId &&
+      x < m.gridX + m.gridWidth &&
+      x + width > m.gridX &&
+      y < m.gridY + m.gridHeight &&
+      y + height > m.gridY
+    )
+  }
+
+  const findAvailablePosition = (width: number, height: number, excludeId?: string) => {
+    for (let y = 0; y <= GRID_ROWS - height; y++) {
+      for (let x = 0; x <= GRID_COLS - width; x++) {
+        if (!isGridOccupied(x, y, width, height, excludeId)) {
+          return { x, y }
+        }
+      }
+    }
+    return { x: 0, y: 0 }
+  }
+
+  const compactLayout = () => {
+    setMetrics(prev => {
+      const updated = [...prev].filter(m => m.visible)
+      updated.sort((a, b) => a.gridY - b.gridY || a.gridX - b.gridX)
+      
+      // Reset positions and compact to top-left
+      let currentY = 0
+      const rowGroups: Metric[][] = []
+      
+      updated.forEach(card => {
+        const existingRow = rowGroups.find(row => 
+          row.length > 0 && currentY + card.gridHeight <= GRID_ROWS
+        )
+        
+        if (existingRow) {
+          existingRow.push(card)
+        } else {
+          rowGroups.push([card])
+          currentY += card.gridHeight + GUTTER
+        }
+      })
+      
+      // Position cards in rows
+      let y = 0
+      rowGroups.forEach(row => {
+        if (row.length === 1) {
+          // Single card takes full width
+          row[0].gridX = 0
+          row[0].gridWidth = GRID_COLS
+          row[0].gridY = y
+        } else {
+          // Distribute cards equally
+          const cardWidth = Math.floor((GRID_COLS - (row.length - 1) * GUTTER) / row.length)
+          row.forEach((card, index) => {
+            card.gridX = index * (cardWidth + GUTTER)
+            card.gridWidth = cardWidth
+            card.gridY = y
+          })
+        }
+        y += Math.max(...row.map(c => c.gridHeight)) + GUTTER
+      })
+      
+      return prev.map(m => updated.find(u => u.id === m.id) || m)
+    })
+  }
+
+  const saveToHistory = () => {
+    setHistory(prev => [...prev.slice(-9), { metrics: [...metrics], timestamp: Date.now() }])
+  }
+
+  const undo = () => {
+    if (history.length > 0) {
+      const lastState = history[history.length - 1]
+      setMetrics(lastState.metrics)
+      setHistory(prev => prev.slice(0, -1))
+    }
+  }
+
+  const pushCardsAway = (newX: number, newY: number, newWidth: number, newHeight: number, draggedId: string) => {
+    const affectedCards = metrics.filter(m => 
+      m.visible && m.id !== draggedId &&
+      newX < m.gridX + m.gridWidth &&
+      newX + newWidth > m.gridX &&
+      newY < m.gridY + m.gridHeight &&
+      newY + newHeight > m.gridY
+    )
+
+    if (affectedCards.length > 0) {
+      saveToHistory()
+      setMetrics(prev => {
+        const updated = [...prev]
+        
+        affectedCards.forEach(card => {
+          const cardIndex = updated.findIndex(m => m.id === card.id)
+          if (cardIndex !== -1) {
+            const newPos = findAvailablePosition(card.gridWidth, card.gridHeight, card.id)
+            updated[cardIndex] = { ...updated[cardIndex], gridX: newPos.x, gridY: newPos.y }
+          }
+        })
+        
+        const draggedIndex = updated.findIndex(m => m.id === draggedId)
+        if (draggedIndex !== -1) {
+          updated[draggedIndex] = { ...updated[draggedIndex], gridX: newX, gridY: newY }
+        }
+        
+        return updated
+      })
+    } else {
+      setMetrics(prev => prev.map(m => 
+        m.id === draggedId ? { ...m, gridX: newX, gridY: newY } : m
+      ))
+    }
+  }
+
+  const addNewCard = () => {
+    const newId = `card-${Date.now()}`
+    const pos = findAvailablePosition(DEFAULT_WIDTH, DEFAULT_HEIGHT)
+    const newCard: Metric = {
+      id: newId,
+      name: 'New Metric',
+      type: METRIC_TYPES[0],
+      gridWidth: DEFAULT_WIDTH,
+      gridHeight: DEFAULT_HEIGHT,
+      gridX: pos.x,
+      gridY: pos.y,
+      visible: true
+    }
+    
+    saveToHistory()
+    setMetrics(prev => [...prev, newCard])
+  }
+
+  const removeCard = (id: string) => {
+    saveToHistory()
+    setMetrics(prev => prev.filter(m => m.id !== id))
+    setTimeout(compactLayout, 100)
+  }
+
+  const changeMetricType = (id: string, newType: string) => {
+    setLoading(prev => new Set([...prev, id]))
+    
+    setTimeout(() => {
+      setMetrics(prev => prev.map(m => 
+        m.id === id ? { ...m, type: newType, name: newType } : m
+      ))
+      setLoading(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(id)
+        return newSet
+      })
+    }, 500)
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showDropdown && !(event.target as Element).closest('.dropdown-container')) {
+        setShowDropdown(false)
+      }
+      if (selectedCard && !(event.target as Element).closest(`[data-card-id="${selectedCard}"]`)) {
+        setSelectedCard(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showDropdown, selectedCard])
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (dragging) {
+        const rect = document.querySelector('.dashboard-grid')?.getBoundingClientRect()
+        if (rect) {
+          const draggedCard = metrics.find(m => m.id === dragging.id)
+          if (draggedCard) {
+            const newX = Math.max(0, Math.min(GRID_COLS - draggedCard.gridWidth, pixelToGrid(e.clientX - rect.left - dragging.offsetX)))
+            const newY = Math.max(0, Math.min(GRID_ROWS - draggedCard.gridHeight, pixelToGrid(e.clientY - rect.top - dragging.offsetY)))
+            
+            setDropIndicator({
+              x: newX,
+              y: newY,
+              width: draggedCard.gridWidth,
+              height: draggedCard.gridHeight
+            })
+            
+            setMetrics(prev => prev.map(m => 
+              m.id === dragging.id ? { ...m, gridX: newX, gridY: newY } : m
+            ))
+          }
+        }
+      }
+      
+      if (resizing) {
+        const deltaX = Math.floor((e.clientX - resizing.startX) / CELL_SIZE)
+        const deltaY = Math.floor((e.clientY - resizing.startY) / CELL_SIZE)
+        
+        if (Math.abs(deltaX) > 0 || Math.abs(deltaY) > 0) {
+          const success = smartResize(resizing.id, resizing.handle, Math.max(Math.abs(deltaX), Math.abs(deltaY)))
+          if (!success) {
+            setResizeCursor('not-allowed')
+          }
+        }
+      }
+    }
+
+    const handleMouseUp = () => {
+      if (dragging) {
+        const draggedMetric = metrics.find(m => m.id === dragging.id)
+        if (draggedMetric) {
+          pushCardsAway(draggedMetric.gridX, draggedMetric.gridY, draggedMetric.gridWidth, draggedMetric.gridHeight, dragging.id)
+          setTimeout(compactLayout, 100)
+        }
+        setDropIndicator(null)
+      }
+      if (resizing) {
+        saveToHistory()
+      }
+      setDragging(null)
+      setResizing(null)
+    }
+
+    if (dragging || resizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [dragging, resizing, metrics])
+
+  const toggleMetric = (id: string) => {
+    setMetrics(prev => {
+      const updated = prev.map(m => 
+        m.id === id ? { ...m, visible: !m.visible } : m
+      )
+      
+      if (!prev.find(m => m.id === id)?.visible) {
+        const card = updated.find(m => m.id === id)
+        if (card) {
+          const pos = findAvailablePosition(card.gridWidth, card.gridHeight, id)
+          card.gridX = pos.x
+          card.gridY = pos.y
+        }
+      }
+      
+      return updated
+    })
+    setTimeout(compactLayout, 100)
+  }
+
+  const startDrag = (id: string, e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    saveToHistory()
+    setDragging({
+      id,
+      startX: e.clientX,
+      startY: e.clientY,
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top
+    })
+    setSelectedCard(id)
+  }
+
+  const startResize = (id: string, handle: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const metric = metrics.find(m => m.id === id)
+    if (!metric) return
+    
+    saveToHistory()
+    setResizing({
+      id,
+      startX: e.clientX,
+      startY: e.clientY,
+      startWidth: metric.gridWidth,
+      startHeight: metric.gridHeight,
+      handle
+    })
+  }
+
+  const visibleMetrics = metrics.filter(m => m.visible)
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex gap-2">
+          <button
+            onClick={addNewCard}
+            className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+          >
+            + Add Card
+          </button>
+          <button
+            onClick={undo}
+            disabled={history.length === 0}
+            className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700 disabled:opacity-50"
+          >
+            ↶ Undo
+          </button>
+          <button
+            onClick={compactLayout}
+            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+          >
+            ⚡ Compact
+          </button>
+        </div>
+        
+        <div className="relative dropdown-container">
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Show ▼
+          </button>
+          {showDropdown && (
+            <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-20">
+              {metrics.map(metric => (
+                <label key={metric.id} className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={metric.visible}
+                    onChange={() => toggleMetric(metric.id)}
+                    className="mr-2"
+                  />
+                  {metric.name}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="relative dashboard-grid bg-gray-50 rounded-lg p-4 border-2 border-gray-200 w-full" style={{ height: GRID_ROWS * CELL_SIZE + 32 }}>
+        {/* Grid background */}
+        <div className="absolute inset-4 pointer-events-none opacity-20">
+          {Array.from({ length: GRID_ROWS + 1 }).map((_, row) => (
+            <div key={`row-${row}`} className="absolute w-full border-t border-gray-400" style={{ top: row * CELL_SIZE }} />
+          ))}
+          {Array.from({ length: GRID_COLS + 1 }).map((_, col) => (
+            <div key={`col-${col}`} className="absolute h-full border-l border-gray-400" style={{ left: `${(col / GRID_COLS) * 100}%` }} />
+          ))}
+        </div>
+        
+        {/* Drop indicator */}
+        {dropIndicator && (
+          <div 
+            className="absolute border-2 border-blue-500 bg-blue-100 opacity-50 rounded-lg pointer-events-none z-10"
+            style={{
+              left: `calc(${(dropIndicator.x / GRID_COLS) * 100}% + 16px)`,
+              top: gridToPixel(dropIndicator.y) + 16,
+              width: `calc(${(dropIndicator.width / GRID_COLS) * 100}% - 32px)`,
+              height: gridToPixel(dropIndicator.height)
+            }}
+          />
+        )}
+        
+        {visibleMetrics.map(metric => (
+          <div 
+            key={metric.id}
+            data-card-id={metric.id}
+            className={`absolute bg-white rounded-lg border-2 group cursor-move transition-all duration-200 ${
+              selectedCard === metric.id ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'
+            } ${
+              dragging?.id === metric.id ? 'shadow-2xl z-20 scale-105' : 'shadow-sm hover:shadow-md'
+            } ${
+              vibrating.has(metric.id) ? 'animate-pulse bg-red-50 border-red-300' : ''
+            }`}
+            style={{
+              left: `calc(${(metric.gridX / GRID_COLS) * 100}% + 16px)`,
+              top: gridToPixel(metric.gridY) + 16 + (metric.gridY > 0 ? GUTTER * 4 : 0),
+              width: `calc(${(metric.gridWidth / GRID_COLS) * 100}% - ${metric.gridX > 0 || metric.gridX + metric.gridWidth < GRID_COLS ? GUTTER * 4 : 32}px)`,
+              height: gridToPixel(metric.gridHeight) - (metric.gridY > 0 || metric.gridY + metric.gridHeight < GRID_ROWS ? GUTTER * 4 : 0),
+              animation: vibrating.has(metric.id) ? 'shake 0.5s ease-in-out infinite' : 'none'
+            }}
+            onMouseDown={(e) => startDrag(metric.id, e)}
+            onClick={() => setSelectedCard(metric.id)}
+            tabIndex={0}
+            role="button"
+            aria-label={`${metric.name} card. Use arrow keys to move, +/- to resize, Delete to remove.`}
+          >
+            <div className="p-3 h-full flex flex-col">
+              <div className="flex justify-between items-start mb-2">
+                <select
+                  value={metric.type}
+                  onChange={(e) => changeMetricType(metric.id, e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-sm font-medium text-gray-900 bg-transparent border-none outline-none cursor-pointer hover:bg-gray-50 rounded px-1"
+                >
+                  {METRIC_TYPES.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={(e) => { e.stopPropagation(); removeCard(metric.id); }}
+                  className="text-gray-400 hover:text-red-500 text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Remove card"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="flex-1 flex items-center justify-center text-gray-500 relative">
+                {loading.has(metric.id) ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    Loading...
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600 mb-1">
+                      {Math.floor(Math.random() * 100)}%
+                    </div>
+                    <div className="text-xs text-gray-400">Live Data</div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Resize handles with dynamic cursor */}
+            <div
+              className={`absolute bottom-0 right-0 w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-500 rounded-tl-md ${
+                resizeCursor === 'not-allowed' ? 'cursor-not-allowed bg-red-500' : 'cursor-se-resize'
+              }`}
+              onMouseDown={(e) => startResize(metric.id, 'se', e)}
+              title="Resize diagonally"
+            ></div>
+            
+            <div
+              className={`absolute top-2 right-0 w-2 h-[calc(100%-16px)] opacity-0 group-hover:opacity-100 transition-opacity ${
+                resizeCursor === 'not-allowed' ? 'cursor-not-allowed' : 'cursor-e-resize'
+              }`}
+              onMouseDown={(e) => startResize(metric.id, 'e', e)}
+              title="Resize horizontally"
+            ></div>
+            
+            <div
+              className={`absolute bottom-0 left-2 w-[calc(100%-16px)] h-2 opacity-0 group-hover:opacity-100 transition-opacity ${
+                resizeCursor === 'not-allowed' ? 'cursor-not-allowed' : 'cursor-s-resize'
+              }`}
+              onMouseDown={(e) => startResize(metric.id, 's', e)}
+              title="Resize vertically"
+            ></div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Constraint feedback message */}
+      {constraintFeedback && (
+        <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg shadow-lg z-30 animate-bounce">
+          {constraintFeedback.message}
+        </div>
+      )}
+      
+      {selectedCard && (
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
+          <strong>Keyboard shortcuts:</strong> Arrow keys to move • +/- to resize • Shift + +/- to resize height • Ctrl+Z to undo
+        </div>
+      )}
+      
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-2px); }
+          75% { transform: translateX(2px); }
+        }
+      `}</style>
+    </div>
+  )
+}
+
 interface TabsInterfaceProps {
   activeSection: string
   cardStyle?: 'white' | 'glass'
@@ -205,12 +904,17 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
   const [selectedType, setSelectedType] = useState('')
   const performanceRef = useRef<HTMLButtonElement>(null)
   const configurationRef = useRef<HTMLButtonElement>(null)
+  const observePerformanceRef = useRef<HTMLButtonElement>(null)
+  const observeEventsRef = useRef<HTMLButtonElement>(null)
   const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
+  const [observeUnderlineStyle, setObserveUnderlineStyle] = useState({ left: 0, width: 0 })
   const [timeRange, setTimeRange] = useState('1D')
   const [wizardStep, setWizardStep] = useState(1)
   const [protectTab, setProtectTab] = useState<'performance' | 'configuration'>('performance')
+  const [observeTab, setObserveTab] = useState<'performance' | 'events'>('performance')
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
+  const [observeScrolled, setObserveScrolled] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
@@ -220,6 +924,14 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
       setUnderlineStyle({ left: offsetLeft, width: offsetWidth })
     }
   }, [protectTab])
+
+  useEffect(() => {
+    const activeRef = observeTab === 'performance' ? observePerformanceRef : observeEventsRef
+    if (activeRef.current) {
+      const { offsetLeft, offsetWidth } = activeRef.current
+      setObserveUnderlineStyle({ left: offsetLeft, width: offsetWidth })
+    }
+  }, [observeTab])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -382,6 +1094,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
         }
       })
       setProtectScrolled((window.pageYOffset || document.documentElement.scrollTop) > 0)
+      setObserveScrolled((window.pageYOffset || document.documentElement.scrollTop) > 0)
     }
 
     document.addEventListener('click', handleClickOutside)
@@ -1086,15 +1799,62 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
       case 'monitor':
         return (
           <RichTextDisplayField 
-            value={["This is the monitor tab with system monitoring information."]} 
+            value={["This is the evaluate tab with system evaluation information."]} 
           />
         )
       
       case 'observe':
+        const observeCurrentTab = observeTab as 'performance' | 'events'
+        const observeHeaderBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
-          <RichTextDisplayField 
-            value={["This is the observe tab for system insights and analytics."]} 
-          />
+          <div className="h-full w-full" style={{ background: 'transparent' }}>
+            <style>{getCardStyles(cardStyle)}</style>
+            <div className={`sticky top-0 z-10 ${observeHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${observeScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
+              <div className="relative flex gap-8 mb-4 border-b border-white/30">
+                <button
+                  ref={observePerformanceRef}
+                  onClick={() => setObserveTab('performance')}
+                  className={`px-2 py-2 transition-colors font-medium ${
+                    observeCurrentTab === 'performance'
+                      ? 'text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Performance
+                </button>
+                <button
+                  ref={observeEventsRef}
+                  onClick={() => setObserveTab('events')}
+                  className={`px-2 py-2 transition-colors font-medium ${
+                    observeCurrentTab === 'events'
+                      ? 'text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Events
+                </button>
+                <div 
+                  className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out"
+                  style={{
+                    left: `${observeUnderlineStyle.left}px`,
+                    width: `${observeUnderlineStyle.width}px`
+                  }}
+                />
+              </div>
+              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
+                <HeadingField text={observeCurrentTab === 'performance' ? "System Performance" : "System Events"} size="LARGE" marginBelow="NONE" />
+              </div>
+            </div>
+            <div className="px-8 py-6">
+              {observeCurrentTab === 'performance' ? (
+                <PerformanceDashboard />
+              ) : (
+                <RichTextDisplayField 
+                  value={["Event logs and system activity monitoring."]} 
+                />
+              )}
+            </div>
+          </div>
         )
       
       case 'events':
@@ -1294,7 +2054,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
   return (
     <div className={`min-h-screen w-full ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gradient-to-b from-blue-100 from-50% to-white'}`}>
       <style>{tabStyles}</style>
-      <div className={`w-full ${activeSection === 'protect' ? '' : 'px-8 py-8'}`}>
+      <div className={`w-full ${activeSection === 'protect' || activeSection === 'observe' ? '' : 'px-8 py-8'}`}>
         {renderContent()}
       </div>
 

@@ -1,4 +1,4 @@
-import { Home, Shield, Monitor, Eye, List, Sparkles } from 'lucide-react'
+import { Home, Shield, CheckCircle, Eye, List, Sparkles } from 'lucide-react'
 
 interface NavItem {
   id: string
@@ -26,8 +26,8 @@ const navigationItems: NavItem[] = [
   },
   {
     id: 'monitor',
-    label: 'Monitor',
-    icon: Monitor
+    label: 'Evaluate',
+    icon: CheckCircle
   },
   {
     id: 'observe',
@@ -54,7 +54,7 @@ export default function SideNavigation({ activeSection, onSectionChange, classNa
     : { backgroundColor: 'white' }
   
   return (
-    <div className={`w-64 border-r ${cardStyle === 'glass' ? 'border-white' : 'border-gray-200'} flex flex-col ${className}`} style={bgStyle}>
+    <div className={`w-64 border-r ${cardStyle === 'glass' ? 'border-white' : 'border-gray-200'} flex flex-col h-full ${className}`} style={bgStyle}>
       <nav className="relative flex flex-col p-4 space-y-2">
         <div 
           className="absolute left-4 right-4 bg-blue-500 rounded-md transition-all duration-300 ease-out"
