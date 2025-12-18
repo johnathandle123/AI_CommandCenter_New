@@ -1,6 +1,11 @@
 import { HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, Icon, TagField } from '@pglevy/sailwind'
 import { useState, useEffect, useRef } from 'react'
 import { Plus, TrendingDown, TrendingUp } from 'lucide-react'
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import GuardrailDetail from './guardrail-detail'
 
 const AnimatedCounter = ({ value, duration = 600 }: { value: number; duration?: number }) => {
@@ -191,6 +196,111 @@ const tabStyles = `
   }
 `
 
+function DraggableCard({ id, title, data, color, unit, change, getPerformanceStamp }: {
+  id: string
+  title: string
+  data: number[][]
+  color: string
+  unit: string
+  change: number
+  getPerformanceStamp: (title: string) => { icon: string; bg: string }
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  const stamp = getPerformanceStamp(title)
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <CardLayout padding="NONE" showShadow={true}>
+        <div className="p-4 cursor-grab active:cursor-grabbing">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                <Icon icon={stamp.icon} size="MEDIUM" />
+              </div>
+              <div className="flex-1">
+                <HeadingField text={title} size="MEDIUM" marginBelow="NONE" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-lg font-bold text-gray-900">
+                {Math.round((50 - data[data.length - 1][1]) * 10)}{unit}
+              </div>
+              <div className={`flex items-center gap-1 text-sm font-medium ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {change >= 0 ? '↗' : '↘'}
+                <span>{Math.abs(change)}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="h-32 relative group">
+          <svg className="w-full h-full" viewBox="0 0 100 50">
+            <defs>
+              <linearGradient id={`lineGradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor={color} />
+                <stop offset="100%" stopColor={color} stopOpacity="0.8" />
+              </linearGradient>
+              <linearGradient id={`areaGradient-${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor={color} stopOpacity="0.8" />
+                <stop offset="100%" stopColor={color} stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            
+            {/* Grid lines */}
+            <g stroke="#e2e8f0" strokeWidth="0.1" opacity="0.5">
+              {[10, 20, 30, 40].map(y => (
+                <line key={y} x1="0" y1={y} x2="100" y2={y} />
+              ))}
+              {[20, 40, 60, 80].map(x => (
+                <line key={x} x1={x} y1="0" x2={x} y2="50" />
+              ))}
+            </g>
+            
+            {/* Area under curve */}
+            <path
+              d={`M ${data.map(([x, y]) => `${x},${y}`).join(' L ')} L 100,50 L 0,50 Z`}
+              fill={`url(#areaGradient-${id})`}
+            />
+            
+            {/* Line */}
+            <path
+              d={`M ${data.map(([x, y]) => `${x},${y}`).join(' L ')}`}
+              stroke={`url(#lineGradient-${id})`}
+              strokeWidth="1.5"
+              fill="none"
+            />
+            
+            {/* Data points */}
+            {data.map(([x, y], i) => (
+              <circle
+                key={i}
+                cx={x}
+                cy={y}
+                r="1.5"
+                fill={color}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+              />
+            ))}
+          </svg>
+        </div>
+      </CardLayout>
+    </div>
+  )
+}
+
 function PerformanceDashboard() {
   const generateLineData = (trend: 'up' | 'down') => {
     const baseData = Array.from({ length: 11 }, (_, i) => [i * 10, 0])
@@ -226,7 +336,7 @@ function PerformanceDashboard() {
 
   const blueColor = '#6366f1'
 
-  const cards = [
+  const initialCards = [
     { id: 'cost', title: 'Cost', data: generateLineData('up'), color: blueColor, unit: '$', change: 5.2 },
     { id: 'latency', title: 'Latency', data: generateLineData('down'), color: blueColor, unit: 'ms', change: -3.1 },
     { id: 'requests', title: 'Requests', data: generateLineData('up'), color: blueColor, unit: 'req/min', change: 8.7 },
@@ -236,75 +346,51 @@ function PerformanceDashboard() {
     { id: 'uncertainty', title: 'Uncertainty', data: generateLineData('down'), color: blueColor, unit: '%', change: -1.9 }
   ]
 
+  const [cards, setCards] = useState(initialCards)
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+
+    if (active.id !== over?.id) {
+      setCards((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over?.id)
+
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }
+
   return (
-    <div className="grid grid-cols-3 gap-4">
-      {cards.map(({ id, title, data, color, unit, change }) => {
-        const stamp = getPerformanceStamp(title)
-        return (
-          <CardLayout key={id} padding="NONE" showShadow={true}>
-            <div className="p-4">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
-                    <Icon icon={stamp.icon} size="MEDIUM" />
-                  </div>
-                  <div className="flex-1">
-                    <HeadingField text={title} size="MEDIUM" marginBelow="NONE" />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-lg font-bold text-gray-900">
-                    {Math.round((50 - data[data.length - 1][1]) * 10)}{unit}
-                  </div>
-                  <div className={`flex items-center gap-1 text-sm font-medium ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {change >= 0 ? '↗' : '↘'}
-                    <span>{Math.abs(change)}%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="h-32 relative group">
-              <svg className="w-full h-full" viewBox="0 0 100 50">
-                <defs>
-                  <linearGradient id={`lineGradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor={color} />
-                    <stop offset="100%" stopColor={color} stopOpacity="0.8" />
-                  </linearGradient>
-                  <linearGradient id={`areaGradient-${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor={color} stopOpacity="0.8" />
-                    <stop offset="100%" stopColor={color} stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                
-                {/* Grid lines */}
-                <g stroke="#e2e8f0" strokeWidth="0.1" opacity="0.5">
-                  {[10, 20, 30, 40].map(y => (
-                    <line key={y} x1="0" y1={y} x2="100" y2={y} />
-                  ))}
-                </g>
-                
-                {/* Area fill */}
-                <path
-                  fill={`url(#areaGradient-${id})`}
-                  d={`M0,50 L${data.map(([x, y]) => `${x},${y}`).join(' L')} L100,50 Z`}
-                />
-                
-                {/* Main line */}
-                <path
-                  fill="none"
-                  stroke={color}
-                  strokeWidth="0.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  filter={`drop-shadow(0 2px 4px ${color}33)`}
-                  d={`M${data.map(([x, y]) => `${x},${y}`).join(' L')}`}
-                />
-              </svg>
-            </div>
-          </CardLayout>
-        )
-      })}
-    </div>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={cards.map(card => card.id)} strategy={rectSortingStrategy}>
+        <div className="grid grid-cols-3 gap-4">
+          {cards.map((card) => (
+            <DraggableCard
+              key={card.id}
+              id={card.id}
+              title={card.title}
+              data={card.data}
+              color={card.color}
+              unit={card.unit}
+              change={card.change}
+              getPerformanceStamp={getPerformanceStamp}
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
   )
 }
 
