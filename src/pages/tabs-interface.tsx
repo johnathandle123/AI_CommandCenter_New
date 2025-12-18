@@ -192,46 +192,85 @@ const tabStyles = `
 `
 
 function PerformanceDashboard() {
-  const generateLineData = () => {
-    return Array.from({ length: 11 }, (_, i) => [
-      i * 10,
-      Math.floor(Math.random() * 30) + 10
-    ])
+  const generateLineData = (trend: 'up' | 'down') => {
+    const baseData = Array.from({ length: 11 }, (_, i) => [i * 10, 0])
+    
+    if (trend === 'up') {
+      // Upward trending line
+      return baseData.map(([x], i) => [
+        x,
+        35 - (i * 2) + Math.random() * 4 - 2 // Start high, trend down (inverted Y axis)
+      ])
+    } else {
+      // Downward trending line  
+      return baseData.map(([x], i) => [
+        x,
+        15 + (i * 2) + Math.random() * 4 - 2 // Start low, trend up (inverted Y axis)
+      ])
+    }
   }
 
+  const getPerformanceStamp = (title: string) => {
+    const stampConfig = {
+      'Cost': { icon: 'DollarSign', bg: '#F2B3D1' },
+      'Latency': { icon: 'Clock', bg: '#D4B5E8' },
+      'Requests': { icon: 'Activity', bg: '#9DD2E8' },
+      'API Failures': { icon: 'AlertTriangle', bg: '#9DDAC7' },
+      'Input Tokens': { icon: 'ArrowDown', bg: '#9BB1D6' },
+      'Output Tokens': { icon: 'ArrowUp', bg: '#F2B3D1' },
+      'Uncertainty': { icon: 'HelpCircle', bg: '#D4B5E8' }
+    }
+    
+    return stampConfig[title as keyof typeof stampConfig] || { icon: 'BarChart3', bg: '#9DD2E8' }
+  }
+
+  const blueColor = '#6366f1'
+
   const cards = [
-    { title: 'Response Time', data: generateLineData(), color: '#3b82f6', unit: 'ms' },
-    { title: 'Token Usage', data: generateLineData(), color: '#10b981', unit: 'tokens' },
-    { title: 'Request Volume', data: generateLineData(), color: '#f59e0b', unit: 'req/min' },
-    { title: 'Error Rate', data: generateLineData(), color: '#ef4444', unit: '%' },
-    { title: 'Latency', data: generateLineData(), color: '#8b5cf6', unit: 'ms' },
-    { title: 'Throughput', data: generateLineData(), color: '#06b6d4', unit: 'ops/sec' },
-    { title: 'Cache Hit Rate', data: generateLineData(), color: '#84cc16', unit: '%' },
-    { title: 'Model Performance', data: generateLineData(), color: '#f97316', unit: 'score' },
-    { title: 'Cost Analysis', data: generateLineData(), color: '#ec4899', unit: '$' }
+    { id: 'cost', title: 'Cost', data: generateLineData('up'), color: blueColor, unit: '$', change: 5.2 },
+    { id: 'latency', title: 'Latency', data: generateLineData('down'), color: blueColor, unit: 'ms', change: -3.1 },
+    { id: 'requests', title: 'Requests', data: generateLineData('up'), color: blueColor, unit: 'req/min', change: 8.7 },
+    { id: 'api-failures', title: 'API Failures', data: generateLineData('down'), color: blueColor, unit: '%', change: -2.4 },
+    { id: 'input-tokens', title: 'Input Tokens', data: generateLineData('up'), color: blueColor, unit: 'tokens', change: 12.3 },
+    { id: 'output-tokens', title: 'Output Tokens', data: generateLineData('up'), color: blueColor, unit: 'tokens', change: 7.8 },
+    { id: 'uncertainty', title: 'Uncertainty', data: generateLineData('down'), color: blueColor, unit: '%', change: -1.9 }
   ]
 
   return (
     <div className="grid grid-cols-3 gap-4">
-      {cards.map(({ title, data, color, unit }, index) => {
-        const safeId = title.replace(/\s+/g, '-').toLowerCase()
+      {cards.map(({ id, title, data, color, unit, change }) => {
+        const stamp = getPerformanceStamp(title)
         return (
-          <CardLayout key={title} padding="NONE" showShadow={true}>
+          <CardLayout key={id} padding="NONE" showShadow={true}>
             <div className="p-4">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="flex-1">
-                  <HeadingField text={title} size="MEDIUM" marginBelow="NONE" />
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                    <Icon icon={stamp.icon} size="MEDIUM" />
+                  </div>
+                  <div className="flex-1">
+                    <HeadingField text={title} size="MEDIUM" marginBelow="NONE" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="text-lg font-bold text-gray-900">
+                    {Math.round((50 - data[data.length - 1][1]) * 10)}{unit}
+                  </div>
+                  <div className={`flex items-center gap-1 text-sm font-medium ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {change >= 0 ? '↗' : '↘'}
+                    <span>{Math.abs(change)}%</span>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="h-32 relative group rounded-lg">
+            <div className="h-32 relative group">
               <svg className="w-full h-full" viewBox="0 0 100 50">
                 <defs>
-                  <linearGradient id={`lineGradient-${safeId}-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                  <linearGradient id={`lineGradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor={color} />
                     <stop offset="100%" stopColor={color} stopOpacity="0.8" />
                   </linearGradient>
-                  <linearGradient id={`areaGradient-${safeId}-${index}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                  <linearGradient id={`areaGradient-${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor={color} stopOpacity="0.8" />
                     <stop offset="100%" stopColor={color} stopOpacity="0" />
                   </linearGradient>
@@ -246,7 +285,7 @@ function PerformanceDashboard() {
                 
                 {/* Area fill */}
                 <path
-                  fill={`url(#areaGradient-${safeId}-${index})`}
+                  fill={`url(#areaGradient-${id})`}
                   d={`M0,50 L${data.map(([x, y]) => `${x},${y}`).join(' L')} L100,50 Z`}
                 />
                 
@@ -261,12 +300,6 @@ function PerformanceDashboard() {
                   d={`M${data.map(([x, y]) => `${x},${y}`).join(' L')}`}
                 />
               </svg>
-            </div>
-            <div className="px-4 pb-4">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Current: {Math.round((50 - data[data.length - 1][1]) * 10)}{unit}</span>
-                <span className="text-green-600">↗ +5.2%</span>
-              </div>
             </div>
           </CardLayout>
         )
@@ -301,6 +334,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
   const [observeScrolled, setObserveScrolled] = useState(false)
+  const [selectedCall, setSelectedCall] = useState<any>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
@@ -347,97 +381,6 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
     actionMessage: ''
   })
   const [selectedGuardrail, setSelectedGuardrail] = useState<number | null>(null)
-  const [filters, setFilters] = useState({
-    timestamp: '',
-    traceId: '',
-    userId: '',
-    modelId: '',
-    scope: '',
-    latency: '',
-    tokenCount: '',
-    cost: '',
-    status: '',
-    policyId: '',
-    action: '',
-    measureType: '',
-    sensitivity: '',
-    reviewStatus: '',
-    toxicity: '',
-    hallucination: '',
-    relevance: '',
-    piiFound: ''
-  })
-
-  const [eventsData] = useState([
-    {
-      timestamp: '2024-11-21 18:42:15',
-      traceId: 'trace-001-abc',
-      userId: 'user-12345',
-      modelId: 'gpt-4-turbo',
-      scope: 'Global',
-      latency: '1,250',
-      tokenCount: '2,847',
-      cost: '$0.0425',
-      status: '200 - Success',
-      policyId: 'policy-001',
-      action: 'Allow',
-      measureType: 'Content Filter',
-      sensitivity: 'Medium',
-      reviewStatus: 'Not Required',
-      toxicity: '0.02',
-      hallucination: '0.01',
-      relevance: '0.95',
-      piiFound: 'Yes'
-    },
-    {
-      timestamp: '2024-11-21 18:41:32',
-      traceId: 'trace-002-def',
-      userId: 'user-67890',
-      modelId: 'claude-3-opus',
-      scope: 'Department',
-      latency: '890',
-      tokenCount: '1,523',
-      cost: '$0.0287',
-      status: '403 - Blocked',
-      policyId: 'policy-002',
-      action: 'Block',
-      measureType: 'PII Detection',
-      sensitivity: 'High',
-      reviewStatus: 'Pending',
-      toxicity: '0.85',
-      hallucination: '0.12',
-      relevance: '0.78',
-      piiFound: 'Yes'
-    },
-    {
-      timestamp: '2024-11-21 18:40:18',
-      traceId: 'trace-003-ghi',
-      userId: 'user-11111',
-      modelId: 'gemini-pro',
-      scope: 'Project',
-      latency: '2,100',
-      tokenCount: '3,456',
-      cost: '$0.0612',
-      status: '200 - Success',
-      policyId: 'policy-003',
-      action: 'Warn',
-      measureType: 'Toxicity Check',
-      sensitivity: 'Low',
-      reviewStatus: 'Not Required',
-      toxicity: '0.15',
-      hallucination: '0.03',
-      relevance: '0.92',
-      piiFound: 'No'
-    }
-  ])
-
-  const filteredEvents = eventsData.filter(event => {
-    return Object.entries(filters).every(([key, value]) => {
-      if (!value) return true
-      const eventValue = event[key as keyof typeof event]?.toLowerCase() || ''
-      return eventValue.includes(value.toLowerCase())
-    })
-  })
 
   const [guardrails, setGuardrails] = useState([
     {
@@ -709,7 +652,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                         {/* Total Guardrail Hits */}
                         <CardLayout padding="MORE" showShadow={true}>
                           <div className="h-full flex items-center gap-4">
-                          <div className="flex items-start gap-3 flex-1">
+                          <div className="flex items-center gap-3 flex-1">
                             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
                               <Icon icon="Shield" size="MEDIUM" />
                             </div>
@@ -757,7 +700,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                         {/* Guardrail Hit Rate */}
                         <CardLayout padding="MORE" showShadow={true}>
                           <div className="h-full flex items-center gap-4">
-                          <div className="flex items-start gap-3 flex-1">
+                          <div className="flex items-center gap-3 flex-1">
                             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
                               <Icon icon="TrendingUp" size="MEDIUM" />
                             </div>
@@ -805,7 +748,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                       {/* Activity Trend */}
                         <CardLayout padding="NONE" showShadow={true}>
                         <div className="p-4">
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-3">
                         <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
                           <Icon icon="TrendingUp" size="MEDIUM" />
                         </div>
@@ -993,7 +936,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                         <div className="space-y-0">
                         {/* Top Violators */}
                         <CardLayout padding="MORE" showShadow={true}>
-                          <div className="flex items-start gap-3 mb-4">
+                          <div className="flex items-center gap-3 mb-4">
                             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
                               <Icon icon="Box" size="MEDIUM" />
                             </div>
@@ -1033,7 +976,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                           </div>
 
                           <div className="mt-6">
-                          <div className="flex items-start gap-3 mb-4">
+                          <div className="flex items-center gap-3 mb-4">
                             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
                               <Icon icon="Shield" size="MEDIUM" />
                             </div>
@@ -1227,9 +1170,30 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
                   }}
                 />
               </div>
+              {selectedCall && (
+                <div className="mb-2">
+                  <button 
+                    onClick={() => setSelectedCall(null)}
+                    className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  >
+                    ← Back to AI Calls
+                  </button>
+                </div>
+              )}
               <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
-                <HeadingField text={observeCurrentTab === 'performance' ? "System Performance" : "System Events"} size="LARGE" marginBelow="NONE" />
-                {observeCurrentTab === 'performance' && (
+                <div className="flex items-center gap-3">
+                  <HeadingField text={selectedCall ? selectedCall.callId : (observeCurrentTab === 'performance' ? "System Performance" : "System Events")} size="LARGE" marginBelow="NONE" />
+                  {selectedCall && (
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                      selectedCall.status === 'Success' ? 'bg-green-100 text-green-800' :
+                      selectedCall.status === 'Error' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {selectedCall.status}
+                    </span>
+                  )}
+                </div>
+                {observeCurrentTab === 'performance' && !selectedCall && (
                   <div className="relative flex p-1 rounded-md">
                     <div 
                       className="absolute bg-blue-900 rounded transition-all duration-300 ease-out"
@@ -1258,196 +1222,174 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
             <div className="px-20 py-6">
               {observeCurrentTab === 'performance' ? (
                 <PerformanceDashboard />
-              ) : (
-                <RichTextDisplayField 
-                  value={["Event logs and system activity monitoring."]} 
-                />
-              )}
-            </div>
-          </div>
-        )
-      
-      case 'events':
-        return (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center mb-6">
-              <HeadingField text="Events" size="LARGE" marginBelow="NONE" />
-            </div>
-            
-            {/* Filters */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
-                    </svg>
+              ) : selectedCall ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-[2fr_1fr] gap-6">
+                    {/* Input/Output Panel */}
+                    <div className="space-y-6">
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <HeadingField text="Input" size="MEDIUM" marginBelow="STANDARD" />
+                        <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
+                          {selectedCall.input}
+                        </div>
+                      </CardLayout>
+                      
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <HeadingField text="Output" size="MEDIUM" marginBelow="STANDARD" />
+                        <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap">
+                          {selectedCall.output}
+                        </div>
+                      </CardLayout>
+                    </div>
+                    
+                    {/* Call Data Panel */}
+                    <div className="space-y-4">
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <HeadingField text="Call Metrics" size="MEDIUM" marginBelow="STANDARD" />
+                        <div className="space-y-4">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Latency:</span>
+                            <span className="font-medium">{selectedCall.latency}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Cost:</span>
+                            <span className="font-medium">{selectedCall.cost}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Tokens:</span>
+                            <span className="font-medium">{selectedCall.tokens}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Accuracy:</span>
+                            <span className="font-medium">{(selectedCall.accuracy * 100).toFixed(1)}%</span>
+                          </div>
+                        </div>
+                      </CardLayout>
+                      
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <HeadingField text="Content Analysis" size="MEDIUM" marginBelow="STANDARD" />
+                        <div className="space-y-4">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Input Toxicity:</span>
+                            <span className="font-medium">{(selectedCall.inputToxicity * 100).toFixed(1)}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Output Toxicity:</span>
+                            <span className="font-medium">{(selectedCall.outputToxicity * 100).toFixed(1)}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Input PII:</span>
+                            <span className="font-medium">{selectedCall.inputPII}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Output PII:</span>
+                            <span className="font-medium">{selectedCall.outputPII}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Input Tone:</span>
+                            <span className="font-medium">{selectedCall.inputTone}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Output Tone:</span>
+                            <span className="font-medium">{selectedCall.outputTone}</span>
+                          </div>
+                        </div>
+                      </CardLayout>
+                    </div>
                   </div>
-                  <HeadingField text="Filters" size="MEDIUM" marginBelow="NONE" />
                 </div>
-                <button 
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
-                  onClick={() => setFilters({
-                    timestamp: '', traceId: '', userId: '', modelId: '', scope: '', latency: '',
-                    tokenCount: '', cost: '', status: '', policyId: '', action: '', measureType: '',
-                    sensitivity: '', reviewStatus: '', toxicity: '', hallucination: '', relevance: '', piiFound: ''
-                  })}
-                >
-                  Clear All
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Timestamp</label>
-                  <input
-                    type="text"
-                    placeholder="Filter by timestamp"
-                    value={filters.timestamp}
-                    onChange={(e) => setFilters({...filters, timestamp: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
+              ) : (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div className="px-6 py-4 border-b border-gray-100">
+                      <HeadingField text="AI Calls" size="MEDIUM" marginBelow="NONE" />
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full">
+                        <thead className="bg-white">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Timestamp</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Call ID</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Model</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">User</th>
+                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Status</th>
+                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Tokens</th>
+                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Latency</th>
+                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Cost</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {[
+                            { 
+                              timestamp: '2024-12-18 13:25:42', 
+                              callId: 'call-001-xyz', 
+                              model: 'gpt-4-turbo', 
+                              user: 'john.smith', 
+                              status: 'Success', 
+                              tokens: 1247, 
+                              latency: '245ms', 
+                              cost: '$0.024',
+                              input: 'Can you help me write a professional email to schedule a meeting with our client about the quarterly review?',
+                              output: 'I\'d be happy to help you write a professional email for scheduling a client meeting. Here\'s a draft:\n\nSubject: Quarterly Review Meeting - [Client Name]\n\nDear [Client Name],\n\nI hope this email finds you well. As we approach the end of the quarter, I would like to schedule our quarterly review meeting to discuss your account performance, upcoming initiatives, and address any questions you may have.\n\nWould you be available for a meeting during the week of [Date Range]? I\'m flexible with timing and can accommodate your schedule. The meeting should take approximately 60 minutes and can be conducted either in-person at your office or via video conference, whichever you prefer.\n\nPlease let me know your availability, and I\'ll send a calendar invitation with the agenda.\n\nThank you for your continued partnership.\n\nBest regards,\n[Your Name]',
+                              accuracy: 0.94,
+                              inputToxicity: 0.02,
+                              outputToxicity: 0.01,
+                              inputPII: 'None',
+                              outputPII: 'Template placeholders',
+                              inputTone: 'Professional',
+                              outputTone: 'Professional'
+                            },
+                            { 
+                              timestamp: '2024-12-18 13:24:18', 
+                              callId: 'call-002-abc', 
+                              model: 'claude-3-opus', 
+                              user: 'jane.doe', 
+                              status: 'Success', 
+                              tokens: 892, 
+                              latency: '189ms', 
+                              cost: '$0.018',
+                              input: 'Explain the concept of machine learning in simple terms for a beginner.',
+                              output: 'Machine learning is like teaching a computer to recognize patterns and make predictions, similar to how humans learn from experience.\n\nImagine you\'re learning to recognize different dog breeds. At first, you might not know the difference between a Golden Retriever and a Labrador. But after seeing many examples of each breed with their names, you start to notice patterns - Golden Retrievers tend to have longer, fluffier coats, while Labs have shorter, denser fur.\n\nMachine learning works similarly:\n\n1. **Training**: We show the computer thousands of examples (like photos of dogs with breed labels)\n2. **Pattern Recognition**: The computer finds patterns in the data that humans might miss\n3. **Prediction**: When shown a new photo, the computer can predict the breed based on learned patterns\n\nThis same principle applies to many applications: email spam detection, recommendation systems, voice recognition, and medical diagnosis. The computer learns from data to make intelligent decisions without being explicitly programmed for every possible scenario.',
+                              accuracy: 0.97,
+                              inputToxicity: 0.01,
+                              outputToxicity: 0.00,
+                              inputPII: 'None',
+                              outputPII: 'None',
+                              inputTone: 'Neutral',
+                              outputTone: 'Educational'
+                            },
+                            { timestamp: '2024-12-18 13:23:55', callId: 'call-003-def', model: 'gpt-4-turbo', user: 'mike.wilson', status: 'Error', tokens: 0, latency: '1.2s', cost: '$0.000', input: 'Error occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
+                            { timestamp: '2024-12-18 13:22:31', callId: 'call-004-ghi', model: 'gemini-pro', user: 'sarah.jones', status: 'Success', tokens: 1456, latency: '312ms', cost: '$0.029', input: 'Sample input', output: 'Sample output', accuracy: 0.89, inputToxicity: 0.03, outputToxicity: 0.02, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'Informative' },
+                            { timestamp: '2024-12-18 13:21:07', callId: 'call-005-jkl', model: 'claude-3-opus', user: 'david.brown', status: 'Success', tokens: 734, latency: '156ms', cost: '$0.015', input: 'Sample input', output: 'Sample output', accuracy: 0.92, inputToxicity: 0.01, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Professional', outputTone: 'Professional' },
+                            { timestamp: '2024-12-18 13:19:43', callId: 'call-006-mno', model: 'gpt-4-turbo', user: 'lisa.garcia', status: 'Success', tokens: 1089, latency: '278ms', cost: '$0.021', input: 'Sample input', output: 'Sample output', accuracy: 0.95, inputToxicity: 0.02, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Casual', outputTone: 'Friendly' },
+                            { timestamp: '2024-12-18 13:18:29', callId: 'call-007-pqr', model: 'gemini-pro', user: 'tom.anderson', status: 'Timeout', tokens: 0, latency: '30s', cost: '$0.000', input: 'Timeout occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
+                            { timestamp: '2024-12-18 13:17:15', callId: 'call-008-stu', model: 'claude-3-opus', user: 'amy.taylor', status: 'Success', tokens: 967, latency: '203ms', cost: '$0.019', input: 'Sample input', output: 'Sample output', accuracy: 0.91, inputToxicity: 0.01, outputToxicity: 0.00, inputPII: 'None', outputPII: 'None', inputTone: 'Technical', outputTone: 'Explanatory' }
+                          ].map((call, index) => (
+                            <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCall(call)}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.timestamp}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">{call.callId}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.model}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.user}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center">
+                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                  call.status === 'Success' ? 'bg-green-100 text-green-800' :
+                                  call.status === 'Error' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {call.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{call.tokens}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{call.latency}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">{call.cost}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Trace ID</label>
-                  <input
-                    type="text"
-                    placeholder="Filter by trace ID"
-                    value={filters.traceId}
-                    onChange={(e) => setFilters({...filters, traceId: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">User ID</label>
-                  <input
-                    type="text"
-                    placeholder="Filter by user ID"
-                    value={filters.userId}
-                    onChange={(e) => setFilters({...filters, userId: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Model</label>
-                  <select
-                    value={filters.modelId}
-                    onChange={(e) => setFilters({...filters, modelId: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
-                  >
-                    <option value="">All Models</option>
-                    <option value="gpt-4">GPT-4</option>
-                    <option value="claude">Claude</option>
-                    <option value="gemini">Gemini</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Status</label>
-                  <select
-                    value={filters.status}
-                    onChange={(e) => setFilters({...filters, status: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
-                  >
-                    <option value="">All Status</option>
-                    <option value="success">Success</option>
-                    <option value="blocked">Blocked</option>
-                    <option value="warning">Warning</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Sensitivity</label>
-                  <select
-                    value={filters.sensitivity}
-                    onChange={(e) => setFilters({...filters, sensitivity: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
-                  >
-                    <option value="">All Levels</option>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">PII Found</label>
-                  <select
-                    value={filters.piiFound}
-                    onChange={(e) => setFilters({...filters, piiFound: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
-                  >
-                    <option value="">All</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Action</label>
-                  <input
-                    type="text"
-                    placeholder="Filter by action"
-                    value={filters.action}
-                    onChange={(e) => setFilters({...filters, action: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Timestamp</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Trace ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Initiating User ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">AI Agent / Model ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Application Scope</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Total Latency (ms)</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Token Count (Total)</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Cost (USD)</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Error Code / Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Guardrail Policy ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Enforcement Action</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Measure Type (Trigger)</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Config Sensitivity</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Human Review Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Eval Score: Toxicity</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Eval Score: Hallucination</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Eval Score: Relevance</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">PII Found Flag</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredEvents.map((event, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.timestamp}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.traceId}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.userId}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.modelId}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.scope}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.latency}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.tokenCount}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.cost}</td>
-                      <td className={`px-4 py-3 text-sm whitespace-nowrap ${event.status.includes('Success') ? 'text-green-600' : 'text-red-600'}`}>{event.status}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.policyId}</td>
-                      <td className={`px-4 py-3 text-sm whitespace-nowrap ${event.action === 'Allow' ? 'text-gray-900' : event.action === 'Block' ? 'text-red-600' : 'text-yellow-600'}`}>{event.action}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.measureType}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.sensitivity}</td>
-                      <td className={`px-4 py-3 text-sm whitespace-nowrap ${event.reviewStatus === 'Pending' ? 'text-orange-600' : 'text-gray-900'}`}>{event.reviewStatus}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.toxicity}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.hallucination}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{event.relevance}</td>
-                      <td className={`px-4 py-3 text-sm whitespace-nowrap ${event.piiFound === 'Yes' ? 'text-red-600' : 'text-green-600'}`}>{event.piiFound}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              )}
             </div>
           </div>
         )
