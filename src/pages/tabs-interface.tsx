@@ -398,9 +398,10 @@ function PerformanceDashboard() {
 interface TabsInterfaceProps {
   activeSection: string
   cardStyle?: 'white' | 'glass'
+  onSectionChange?: (section: string) => void
 }
 
-export default function TabsInterface({ activeSection, cardStyle = 'glass' }: TabsInterfaceProps) {
+export default function TabsInterface({ activeSection, cardStyle = 'glass', onSectionChange }: TabsInterfaceProps) {
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
@@ -643,12 +644,119 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
   const renderContent = () => {
     switch (activeSection) {
       case 'home':
+        const homeHeaderBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
-          <div>
+          <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            <RichTextDisplayField 
-              value={["Welcome to the main dashboard. This is your central hub for all system operations."]} 
-            />
+            <div className={`sticky top-0 z-10 ${homeHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300`} style={{ borderRadius: 0, minHeight: '140px' }}>
+              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
+                <HeadingField text="Hello User" size="LARGE" marginBelow="NONE" />
+              </div>
+            </div>
+            
+            <div className="mt-6 px-20">
+              {/* KPI Cards */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <CardLayout padding="MORE" showShadow={true}>
+                  <div className="h-full flex items-center gap-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                        <Icon icon="DollarSign" size="MEDIUM" />
+                      </div>
+                      <div className="flex-1">
+                        <HeadingField text="Cost" size="MEDIUM" marginBelow="NONE" />
+                        <div className="text-4xl font-bold text-black">$12,450</div>
+                        <div className="text-gray-700 uppercase text-sm">Current Month</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardLayout>
+                
+                <CardLayout padding="MORE" showShadow={true}>
+                  <div className="h-full flex items-center gap-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                        <Icon icon="Shield" size="MEDIUM" />
+                      </div>
+                      <div className="flex-1">
+                        <HeadingField text="Guardrail Hits" size="MEDIUM" marginBelow="NONE" />
+                        <div className="text-4xl font-bold text-black">247</div>
+                        <div className="text-gray-700 uppercase text-sm">Last 24 Hours</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardLayout>
+                
+                <CardLayout padding="MORE" showShadow={true}>
+                  <div className="h-full flex items-center gap-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                        <Icon icon="FileText" size="MEDIUM" />
+                      </div>
+                      <div className="flex-1">
+                        <HeadingField text="Requirements" size="MEDIUM" marginBelow="NONE" />
+                        <div className="text-4xl font-bold text-black">18</div>
+                        <div className="text-gray-700 uppercase text-sm">Active</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardLayout>
+              </div>
+
+              {/* Navigation Cards */}
+              <div className="space-y-4">
+                <div 
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => onSectionChange?.('protect')}
+                >
+                  <CardLayout padding="MORE" showShadow={true}>
+                    <div className="flex items-center gap-4">
+                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                        <Icon icon="Shield" size="MEDIUM" />
+                      </div>
+                      <div className="flex-1">
+                        <HeadingField text="Protect" size="MEDIUM" marginBelow="LESS" />
+                        <p className="text-gray-700">Safeguard your AI systems with comprehensive security measures and guardrails to prevent unauthorized access and misuse.</p>
+                      </div>
+                    </div>
+                  </CardLayout>
+                </div>
+
+                <div 
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => onSectionChange?.('monitor')}
+                >
+                  <CardLayout padding="MORE" showShadow={true}>
+                    <div className="flex items-center gap-4">
+                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                        <Icon icon="CheckCircle" size="MEDIUM" />
+                      </div>
+                      <div className="flex-1">
+                        <HeadingField text="Evaluate" size="MEDIUM" marginBelow="LESS" />
+                        <p className="text-gray-700">Assess and measure AI model performance, accuracy, and compliance with established standards and requirements.</p>
+                      </div>
+                    </div>
+                  </CardLayout>
+                </div>
+
+                <div 
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => onSectionChange?.('observe')}
+                >
+                  <CardLayout padding="MORE" showShadow={true}>
+                    <div className="flex items-center gap-4">
+                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                        <Icon icon="Eye" size="MEDIUM" />
+                      </div>
+                      <div className="flex-1">
+                        <HeadingField text="Observe" size="MEDIUM" marginBelow="LESS" />
+                        <p className="text-gray-700">Monitor AI system behavior in real-time, track metrics, and gain insights into usage patterns and anomalies.</p>
+                      </div>
+                    </div>
+                  </CardLayout>
+                </div>
+              </div>
+            </div>
           </div>
         )
       
@@ -1212,10 +1320,138 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass' }: Ta
         )
       
       case 'monitor':
+        const evaluateHeaderBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
-          <RichTextDisplayField 
-            value={["This is the evaluate tab with system evaluation information."]} 
-          />
+          <div className="h-full w-full" style={{ background: 'transparent' }}>
+            <style>{getCardStyles(cardStyle)}</style>
+            <div className={`sticky top-0 z-10 ${evaluateHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300`} style={{ borderRadius: 0, minHeight: '140px' }}>
+              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
+                <HeadingField text="Galileo Evaluate" size="LARGE" marginBelow="NONE" />
+                <ButtonWidget
+                  label="New Evaluation Run"
+                  style="SOLID"
+                  color="ACCENT"
+                  size="STANDARD"
+                />
+              </div>
+            </div>
+            
+            <div className="mt-6 px-20">
+              {/* Core Features Overview */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <CardLayout padding="MORE" showShadow={true}>
+                  <div className="flex items-center gap-4">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                      <Icon icon="Activity" size="MEDIUM" />
+                    </div>
+                    <div className="flex-1">
+                      <HeadingField text="Tracing & Visualizations" size="MEDIUM" marginBelow="LESS" />
+                      <p className="text-gray-600 text-sm">Track end-to-end execution of queries</p>
+                    </div>
+                  </div>
+                </CardLayout>
+                
+                <CardLayout padding="MORE" showShadow={true}>
+                  <div className="flex items-center gap-4">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                      <Icon icon="BarChart" size="MEDIUM" />
+                    </div>
+                    <div className="flex-1">
+                      <HeadingField text="Guardrail Metrics" size="MEDIUM" marginBelow="LESS" />
+                      <p className="text-gray-600 text-sm">Research-backed evaluation metrics</p>
+                    </div>
+                  </div>
+                </CardLayout>
+                
+                <CardLayout padding="MORE" showShadow={true}>
+                  <div className="flex items-center gap-4">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                      <Icon icon="Beaker" size="MEDIUM" />
+                    </div>
+                    <div className="flex-1">
+                      <HeadingField text="Experiment Management" size="MEDIUM" marginBelow="LESS" />
+                      <p className="text-gray-600 text-sm">Track experiments in one place</p>
+                    </div>
+                  </div>
+                </CardLayout>
+              </div>
+
+              {/* Recent Evaluation Runs */}
+              <CardLayout padding="MORE" showShadow={true} className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <HeadingField text="Recent Evaluation Runs" size="MEDIUM" marginBelow="NONE" />
+                  <ButtonWidget label="View All" style="OUTLINE" color="SECONDARY" size="SMALL" />
+                </div>
+                
+                <div className="space-y-3">
+                  {[
+                    { name: 'RAG Pipeline v2.1', status: 'Completed', score: 0.87, date: '2 hours ago' },
+                    { name: 'Customer Support Bot', status: 'Running', score: null, date: '4 hours ago' },
+                    { name: 'Content Generation', status: 'Completed', score: 0.92, date: '1 day ago' }
+                  ].map((run, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100">
+                          <Icon icon="Play" size="SMALL" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{run.name}</div>
+                          <div className="text-sm text-gray-500">{run.date}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {run.score && (
+                          <div className="text-right">
+                            <div className="font-medium text-green-600">{(run.score * 100).toFixed(0)}%</div>
+                            <div className="text-xs text-gray-500">Overall Score</div>
+                          </div>
+                        )}
+                        <TagField
+                          tags={[{
+                            text: run.status,
+                            backgroundColor: run.status === 'Completed' ? 'POSITIVE' : 'ACCENT'
+                          }]}
+                          size="SMALL"
+                          marginBelow="NONE"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardLayout>
+
+              {/* Workflow Steps */}
+              <CardLayout padding="MORE" showShadow={true}>
+                <HeadingField text="Evaluation Workflow" size="MEDIUM" marginBelow="STANDARD" />
+                
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-3">
+                      <span className="text-blue-600 font-bold">1</span>
+                    </div>
+                    <HeadingField text="Log Your Runs" size="SMALL" marginBelow="LESS" />
+                    <p className="text-gray-600 text-sm">Integrate into your system or test through Playground. Register metrics to define success.</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-3">
+                      <span className="text-green-600 font-bold">2</span>
+                    </div>
+                    <HeadingField text="Analyze Results" size="SMALL" marginBelow="LESS" />
+                    <p className="text-gray-600 text-sm">Identify poor performance, trace to broken steps, form hypotheses on root causes.</p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 mb-3">
+                      <span className="text-purple-600 font-bold">3</span>
+                    </div>
+                    <HeadingField text="Debug & Iterate" size="SMALL" marginBelow="LESS" />
+                    <p className="text-gray-600 text-sm">Tweak your system and run evaluations until quality bar is met.</p>
+                  </div>
+                </div>
+              </CardLayout>
+            </div>
+          </div>
         )
       
       case 'observe':

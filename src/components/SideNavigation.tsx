@@ -1,4 +1,4 @@
-import { Home, Shield, CheckCircle, Eye, List, Sparkles } from 'lucide-react'
+import { Home, Shield, CheckCircle, Eye, Sparkles } from 'lucide-react'
 
 interface NavItem {
   id: string
@@ -33,11 +33,6 @@ const navigationItems: NavItem[] = [
     id: 'observe',
     label: 'Observe',
     icon: Eye
-  },
-  {
-    id: 'events',
-    label: 'Events',
-    icon: List
   },
   {
     id: 'insights',

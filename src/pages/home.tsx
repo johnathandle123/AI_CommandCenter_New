@@ -1,84 +1,67 @@
-import { HeadingField, MessageBanner, RichTextDisplayField, TextItem } from '@pglevy/sailwind'
+import { HeadingField, CardLayout } from '@pglevy/sailwind'
 import { useLocation } from 'wouter'
 
 export default function Home() {
   const [, setLocation] = useLocation()
 
-  const pages = [
-    { title: 'Task Dashboard', path: '/task-dashboard', description: 'Example task management interface' },
-    { title: 'Application Status', path: '/application-status', description: 'Application tracking with milestones' },
-    { title: 'Document Review', path: '/document-review', description: 'Document approval workflow' },
-    { title: 'Three Tabs', path: '/three-tabs', description: 'Example page demonstrating a 3-tab layout' },
-    { title: 'Tabs Interface', path: '/tabs-interface', description: 'Simple 3-tab interface example' },
-  ]
-
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <HeadingField text="Sailwind Starter" size="LARGE_PLUS" fontWeight="BOLD" align="CENTER" />
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <HeadingField text="Hello User" size="LARGE" marginBelow="MORE" />
 
-      <MessageBanner
-        primaryText="Welcome to Sailwind Starter! This template is ready for rapid prototyping with SAIL-style components."
-        backgroundColor="INFO"
-        highlightColor="INFO"
-        icon="info"
-      />
-
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <HeadingField text="Example Pages" size="MEDIUM_PLUS" fontWeight="SEMI_BOLD" marginBelow="STANDARD" />
-        <div className="space-y-3">
-          {pages.map((page, index) => (
-            <div key={index}>
-              <RichTextDisplayField
-                value={[
-                  <TextItem
-                    key="title"
-                    text={page.title}
-                    color="ACCENT"
-                    size="MEDIUM"
-                    link={() => setLocation(page.path)}
-                    linkStyle="STANDALONE"
-                  />,
-                  <br key="br" />,
-                  <TextItem
-                    key="desc"
-                    text={page.description}
-                    color="SECONDARY"
-                    size="STANDARD"
-                  />
-                ]}
-                marginBelow="EVEN_LESS"
-              />
-            </div>
-          ))}
-        </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <CardLayout padding="MORE" showShadow={true}>
+          <div className="text-center">
+            <div className="text-gray-500 text-sm mb-2">Cost</div>
+            <div className="text-3xl font-bold text-blue-700">$12,450</div>
+          </div>
+        </CardLayout>
+        
+        <CardLayout padding="MORE" showShadow={true}>
+          <div className="text-center">
+            <div className="text-gray-500 text-sm mb-2">Guardrail Hits</div>
+            <div className="text-3xl font-bold text-blue-700">247</div>
+          </div>
+        </CardLayout>
+        
+        <CardLayout padding="MORE" showShadow={true}>
+          <div className="text-center">
+            <div className="text-gray-500 text-sm mb-2">Requirements</div>
+            <div className="text-3xl font-bold text-blue-700">18</div>
+          </div>
+        </CardLayout>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <HeadingField text="Getting Started" size="MEDIUM_PLUS" fontWeight="SEMI_BOLD" marginBelow="STANDARD" />
-        <div className="space-y-4 text-sm text-gray-700">
-          <div>
-            <h3 className="font-semibold mb-2">1. Create New Pages</h3>
-            <p>Add new .tsx files in <code className="bg-gray-100 px-2 py-1 rounded">src/pages/</code></p>
-            <p className="mt-1 text-gray-600">Example: <code className="bg-gray-100 px-2 py-1 rounded">src/pages/my-prototype.tsx</code></p>
-          </div>
+      {/* Navigation Cards */}
+      <div className="space-y-4">
+        <div 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => setLocation('/protect')}
+        >
+          <CardLayout padding="MORE" showShadow={true}>
+            <HeadingField text="Protect" size="MEDIUM" marginBelow="LESS" />
+            <p className="text-gray-700">Safeguard your AI systems with comprehensive security measures and guardrails to prevent unauthorized access and misuse.</p>
+          </CardLayout>
+        </div>
 
-          <div>
-            <h3 className="font-semibold mb-2">2. Register Routes</h3>
-            <p>Add your page to the routes array in <code className="bg-gray-100 px-2 py-1 rounded">src/App.tsx</code></p>
-          </div>
+        <div 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => setLocation('/evaluate')}
+        >
+          <CardLayout padding="MORE" showShadow={true}>
+            <HeadingField text="Evaluate" size="MEDIUM" marginBelow="LESS" />
+            <p className="text-gray-700">Assess and measure AI model performance, accuracy, and compliance with established standards and requirements.</p>
+          </CardLayout>
+        </div>
 
-          <div>
-            <h3 className="font-semibold mb-2">3. Import Sailwind Components</h3>
-            <p>Use any Sailwind component:</p>
-            <code className="block bg-gray-100 px-2 py-1 rounded mt-1">
-              import {`{ CardLayout, HeadingField, TextField }`} from '@pglevy/sailwind'
-            </code>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-2">4. Prompt Your LLM</h3>
-            <p>Describe the interface you want to prototype and let the LLM build it!</p>
-          </div>
+        <div 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => setLocation('/observe')}
+        >
+          <CardLayout padding="MORE" showShadow={true}>
+            <HeadingField text="Observe" size="MEDIUM" marginBelow="LESS" />
+            <p className="text-gray-700">Monitor AI system behavior in real-time, track metrics, and gain insights into usage patterns and anomalies.</p>
+          </CardLayout>
         </div>
       </div>
     </div>
