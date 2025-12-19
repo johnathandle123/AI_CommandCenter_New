@@ -42,8 +42,6 @@ const navigationItems: NavItem[] = [
 ]
 
 export default function SideNavigation({ activeSection, onSectionChange, className = '', cardStyle = 'glass' }: SideNavigationProps) {
-  const activeIndex = navigationItems.findIndex(item => item.id === activeSection)
-  
   const bgStyle = cardStyle === 'glass' 
     ? { backgroundColor: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }
     : { backgroundColor: 'white' }
@@ -51,13 +49,6 @@ export default function SideNavigation({ activeSection, onSectionChange, classNa
   return (
     <div className={`w-64 border-r ${cardStyle === 'glass' ? 'border-white' : 'border-gray-200'} flex flex-col h-full ${className}`} style={bgStyle}>
       <nav className="relative flex flex-col p-4 space-y-2">
-        <div 
-          className="absolute left-4 right-4 bg-blue-500 rounded-md transition-all duration-300 ease-out"
-          style={{
-            top: `${16 + activeIndex * 56}px`,
-            height: '48px'
-          }}
-        />
         {navigationItems.map((item) => {
           const Icon = item.icon
           const isActive = activeSection === item.id
@@ -69,14 +60,16 @@ export default function SideNavigation({ activeSection, onSectionChange, classNa
               onClick={() => onSectionChange(item.id)}
               className={`
                 relative z-10 flex items-center gap-3 px-4 py-3 rounded-md transition-colors text-left duration-300
-                ${isActive && !isInsights
-                  ? 'text-white' 
+                ${isActive
+                  ? isInsights 
+                    ? 'bg-blue-100 text-blue-500'
+                    : 'bg-blue-100 text-blue-500'
                   : isInsights
                   ? ''
                   : 'text-gray-600 hover:text-blue-500'
                 }
               `}
-              style={isInsights ? {
+              style={isInsights && !isActive ? {
                 background: 'transparent',
                 backgroundImage: 'linear-gradient(90deg, #2322F0 0%, #E21496 57%, #FFC008 83%, #FFD948 100%)',
                 WebkitBackgroundClip: 'text',
@@ -86,7 +79,7 @@ export default function SideNavigation({ activeSection, onSectionChange, classNa
             >
               {isInsights ? (
                 <>
-                  <span className="text-purple-500">
+                  <span className={isActive ? "text-blue-500" : "text-purple-500"}>
                     <Icon size={20} />
                   </span>
                   <span className="font-medium">{item.label}</span>

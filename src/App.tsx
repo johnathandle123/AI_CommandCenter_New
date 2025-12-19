@@ -1,24 +1,34 @@
 import { useState, useEffect } from 'react'
 import { Route, Switch } from 'wouter'
 import { HeadingField } from '@pglevy/sailwind'
-import { Brain, Grid3X3, Paintbrush, Settings } from 'lucide-react'
+import { Brain, Grid3X3, Paintbrush, Settings, Monitor, Database, Flag, FileText, Info, HelpCircle, Search } from 'lucide-react'
 import SideNavigation from './components/SideNavigation'
 import TabsInterface from './pages/tabs-interface'
 import Login from './pages/login'
+import Loading from './pages/loading'
 import Home from './pages/home'
 import Protect from './pages/protect'
 import Evaluate from './pages/evaluate'
 import Observe from './pages/observe'
 
 function MainApp() {
-  const [activeSection, setActiveSection] = useState('protect')
-  const [cardStyle, setCardStyle] = useState<'white' | 'glass'>('glass')
+  const [activeSection, setActiveSection] = useState('home')
+  const [cardStyle, setCardStyle] = useState<'white' | 'glass'>('white')
   const [showWaffleMenu, setShowWaffleMenu] = useState(false)
 
   const waffleApps = [
     { name: 'Appian Designer', icon: Paintbrush, color: 'bg-blue-500' },
     { name: 'Admin Console', icon: Settings, color: 'bg-green-500' },
-    { name: 'AI Command Center', icon: Brain, color: 'bg-purple-500', active: true }
+    { name: 'AI Command Center', icon: Brain, color: 'bg-purple-500', active: true },
+    { name: 'Operations Console', icon: Monitor, color: 'bg-orange-500' },
+    { name: 'Cloud Database', icon: Database, color: 'bg-teal-500' },
+    { name: 'Feature Flags', icon: Flag, color: 'bg-indigo-500' },
+    { name: 'System Logs', icon: FileText, color: 'bg-red-500' }
+  ]
+
+  const helpApps = [
+    { name: 'About Appian', icon: Info, color: 'bg-gray-500' },
+    { name: 'Help', icon: HelpCircle, color: 'bg-yellow-500' }
   ]
 
   useEffect(() => {
@@ -46,9 +56,10 @@ function MainApp() {
               size="LARGE"
               headingTag="H1"
               marginBelow="NONE"
+              fontWeight="BOLD"
             />
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <select 
               value={cardStyle}
               onChange={(e) => setCardStyle(e.target.value as 'white' | 'glass')}
@@ -57,36 +68,68 @@ function MainApp() {
               <option value="white" className="text-gray-900">White Cards</option>
               <option value="glass" className="text-gray-900">Glassmorphism</option>
             </select>
+            <button className="p-2 rounded-md hover:bg-white/20 transition-colors">
+              <Search size={20} className="text-black" />
+            </button>
             <button
               onClick={() => setShowWaffleMenu(!showWaffleMenu)}
-              className={`p-2 rounded-md transition-colors relative waffle-menu ${
-                showWaffleMenu ? 'bg-blue-500' : 'hover:bg-white/20'
-              }`}
+              className="p-2 rounded-md hover:bg-white/20 transition-colors relative waffle-menu"
             >
-              <Grid3X3 size={20} className={showWaffleMenu ? "text-white" : "text-black"} />
+              <Grid3X3 size={20} className={showWaffleMenu ? "text-blue-500" : "text-black"} />
             </button>
+            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-lime-500 text-white font-medium text-sm">
+              J
+            </div>
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/en/9/93/Appian_Logo.svg" 
+              alt="Appian" 
+              className="h-6"
+            />
           </div>
         </div>
       </div>
       
       {/* Waffle Menu Dropdown - Outside header to prevent shifting */}
       {showWaffleMenu && (
-        <div className="fixed top-20 right-8 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-[100] waffle-menu">
-          <div className="flex flex-col gap-1 w-64">
+        <div className="fixed top-20 right-8 bg-white rounded-lg shadow-lg border border-gray-200 p-3 z-[100] waffle-menu">
+          {/* Main Apps Section */}
+          <div className="grid grid-cols-3 gap-2 w-80 mb-3">
             {waffleApps.map((app, index) => {
               const Icon = app.icon
               return (
                 <button
                   key={index}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors text-left ${
-                    app.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-blue-500 hover:text-white'
+                  className={`flex flex-col items-center gap-2 p-3 rounded-md transition-colors text-left ${
+                    app.active ? 'bg-blue-100 text-blue-500' : 'text-gray-700 hover:text-blue-500'
                   }`}
                   onClick={() => setShowWaffleMenu(false)}
                 >
                   <div className={`${app.color} rounded-lg p-2 flex items-center justify-center`}>
-                    <Icon size={18} className="text-white" />
+                    <Icon size={16} className="text-white" />
                   </div>
-                  <span className="font-medium">{app.name}</span>
+                  <span className="font-medium text-xs text-center">{app.name}</span>
+                </button>
+              )
+            })}
+          </div>
+          
+          {/* Divider */}
+          <div className="border-t border-gray-200 mb-3"></div>
+          
+          {/* Help Section */}
+          <div className="grid grid-cols-3 gap-2">
+            {helpApps.map((app, index) => {
+              const Icon = app.icon
+              return (
+                <button
+                  key={index}
+                  className="flex flex-col items-center gap-2 p-3 rounded-md transition-colors text-left text-gray-700 hover:text-blue-500"
+                  onClick={() => setShowWaffleMenu(false)}
+                >
+                  <div className={`${app.color} rounded-lg p-2 flex items-center justify-center`}>
+                    <Icon size={16} className="text-white" />
+                  </div>
+                  <span className="font-medium text-xs text-center">{app.name}</span>
                 </button>
               )
             })}
@@ -125,6 +168,7 @@ function App() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/loading" component={Loading} />
       <Route path="/protect" component={Protect} />
       <Route path="/evaluate" component={Evaluate} />
       <Route path="/observe" component={Observe} />

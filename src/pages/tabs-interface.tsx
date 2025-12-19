@@ -1,6 +1,6 @@
 import { HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, Icon, TagField } from '@pglevy/sailwind'
 import { useState, useEffect, useRef } from 'react'
-import { Plus, TrendingDown, TrendingUp } from 'lucide-react'
+import { Plus, TrendingDown, TrendingUp, ArrowRight } from 'lucide-react'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable'
@@ -648,112 +648,204 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            <div className={`sticky top-0 z-10 ${homeHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300`} style={{ borderRadius: 0, minHeight: '140px' }}>
+            <div className={`sticky top-0 z-10 ${homeHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
               <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
-                <HeadingField text="Hello User" size="LARGE" marginBelow="NONE" />
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">👋</span>
+                  <h1 className="text-2xl font-bold text-left mt-0 mb-0 text-black">
+                    Hello Alex
+                  </h1>
+                </div>
               </div>
             </div>
             
             <div className="mt-6 px-20">
               {/* KPI Cards */}
               <div className="grid grid-cols-3 gap-4 mb-6">
-                <CardLayout padding="MORE" showShadow={true}>
-                  <div className="h-full flex items-center gap-4">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                <div className="bg-blue-500 rounded-lg shadow-md overflow-hidden">
+                  <div className="p-6 bg-transparent opacity-100 border-0">
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-lg p-3 flex items-center justify-center border border-white" style={{
+                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 100%)'
+                      }}>
                         <Icon icon="DollarSign" size="MEDIUM" />
                       </div>
                       <div className="flex-1">
-                        <HeadingField text="Cost" size="MEDIUM" marginBelow="NONE" />
-                        <div className="text-4xl font-bold text-black">$12,450</div>
-                        <div className="text-gray-700 uppercase text-sm">Current Month</div>
+                        <h3 className="text-lg font-normal text-left mt-0 mb-0 text-white">Cost</h3>
+                        <div className="flex items-center gap-3 mb-1">
+                          <div className="text-4xl font-bold text-white">$12,450</div>
+                          <div className="bg-blue-900 px-2 py-1 rounded-md flex items-center gap-1">
+                            <TrendingDown size={14} className="text-white" />
+                            <span className="text-white text-sm font-medium">8.2%</span>
+                          </div>
+                        </div>
+                        <div className="text-white uppercase text-sm tracking-wider">Current Month</div>
                       </div>
                     </div>
                   </div>
-                </CardLayout>
+                  <div className="relative">
+                    <svg className="w-full h-16" viewBox="0 0 200 60" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="costGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
+                          <stop offset="100%" stopColor="rgba(255,255,255,0.2)" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M0,45 C20,38 30,32 50,30 C70,28 80,22 100,20 C120,18 130,16 150,18 C170,20 180,8 200,5" 
+                            fill="none" stroke="white" strokeWidth="2" />
+                      <path d="M0,45 C20,38 30,32 50,30 C70,28 80,22 100,20 C120,18 130,16 150,18 C170,20 180,8 200,5 L200,60 L0,60 Z" 
+                            fill="url(#costGradient)" />
+                    </svg>
+                  </div>
+                </div>
                 
-                <CardLayout padding="MORE" showShadow={true}>
-                  <div className="h-full flex items-center gap-4">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                <div className="bg-orange-500 rounded-lg shadow-md overflow-hidden">
+                  <div className="p-6 bg-transparent opacity-100 border-0">
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-lg p-3 flex items-center justify-center border border-white" style={{
+                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 100%)'
+                      }}>
                         <Icon icon="Shield" size="MEDIUM" />
                       </div>
                       <div className="flex-1">
-                        <HeadingField text="Guardrail Hits" size="MEDIUM" marginBelow="NONE" />
-                        <div className="text-4xl font-bold text-black">247</div>
-                        <div className="text-gray-700 uppercase text-sm">Last 24 Hours</div>
+                        <h3 className="text-lg font-normal text-left mt-0 mb-0 text-white">Guardrail Hits</h3>
+                        <div className="flex items-center gap-3 mb-1">
+                          <div className="text-4xl font-bold text-white">247</div>
+                          <div className="bg-orange-800 px-2 py-1 rounded-md flex items-center gap-1">
+                            <TrendingDown size={14} className="text-white" />
+                            <span className="text-white text-sm font-medium">12.5%</span>
+                          </div>
+                        </div>
+                        <div className="text-white uppercase text-sm tracking-wider">Last 24 Hours</div>
                       </div>
                     </div>
                   </div>
-                </CardLayout>
+                  <div className="relative">
+                    <svg className="w-full h-16" viewBox="0 0 200 60" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="guardrailGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
+                          <stop offset="100%" stopColor="rgba(255,255,255,0.2)" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M0,35 C25,28 35,22 50,20 C65,18 75,12 100,15 C125,18 135,28 150,30 C175,32 185,28 200,25" 
+                            fill="none" stroke="white" strokeWidth="2" />
+                      <path d="M0,35 C25,28 35,22 50,20 C65,18 75,12 100,15 C125,18 135,28 150,30 C175,32 185,28 200,25 L200,60 L0,60 Z" 
+                            fill="url(#guardrailGradient)" />
+                    </svg>
+                  </div>
+                </div>
                 
-                <CardLayout padding="MORE" showShadow={true}>
-                  <div className="h-full flex items-center gap-4">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                <div className="bg-teal-500 rounded-lg shadow-md overflow-hidden">
+                  <div className="p-6 bg-transparent opacity-100 border-0">
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-lg p-3 flex items-center justify-center border border-white" style={{
+                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 100%)'
+                      }}>
                         <Icon icon="FileText" size="MEDIUM" />
                       </div>
                       <div className="flex-1">
-                        <HeadingField text="Requirements" size="MEDIUM" marginBelow="NONE" />
-                        <div className="text-4xl font-bold text-black">18</div>
-                        <div className="text-gray-700 uppercase text-sm">Active</div>
+                        <h3 className="text-lg font-normal text-left mt-0 mb-0 text-white">Requirements</h3>
+                        <div className="flex items-center gap-3 mb-1">
+                          <div className="text-4xl font-bold text-white">18</div>
+                          <div className="bg-teal-900 px-2 py-1 rounded-md flex items-center gap-1">
+                            <TrendingDown size={14} className="text-white" />
+                            <span className="text-white text-sm font-medium">3.1%</span>
+                          </div>
+                        </div>
+                        <div className="text-white uppercase text-sm tracking-wider">Active</div>
                       </div>
                     </div>
                   </div>
-                </CardLayout>
+                  <div className="relative">
+                    <svg className="w-full h-16" viewBox="0 0 200 60" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="requirementsGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
+                          <stop offset="100%" stopColor="rgba(255,255,255,0.2)" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M0,40 C25,37 35,34 50,32 C70,30 80,27 100,25 C120,23 130,21 150,20 C170,19 180,17 200,15" 
+                            fill="none" stroke="white" strokeWidth="2" />
+                      <path d="M0,40 C25,37 35,34 50,32 C70,30 80,27 100,25 C120,23 130,21 150,20 C170,19 180,17 200,15 L200,60 L0,60 Z" 
+                            fill="url(#requirementsGradient)" />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               {/* Navigation Cards */}
               <div className="space-y-4">
                 <div 
-                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  className="cursor-pointer hover:shadow-lg transition-shadow bg-white rounded-lg shadow-md p-6 relative group"
                   onClick={() => onSectionChange?.('protect')}
                 >
-                  <CardLayout padding="MORE" showShadow={true}>
-                    <div className="flex items-center gap-4">
-                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
-                        <Icon icon="Shield" size="MEDIUM" />
-                      </div>
-                      <div className="flex-1">
-                        <HeadingField text="Protect" size="MEDIUM" marginBelow="LESS" />
-                        <p className="text-gray-700">Safeguard your AI systems with comprehensive security measures and guardrails to prevent unauthorized access and misuse.</p>
-                      </div>
+                  <div className="flex items-center gap-4">
+                    <div className="rounded-lg p-3 flex items-center justify-center border" style={{
+                      background: 'linear-gradient(to bottom, rgba(34, 197, 94, 0.6) 0%, rgba(34, 197, 94, 0.1) 100%)',
+                      borderColor: '#22c55e'
+                    }}>
+                      <Icon icon="Shield" size="MEDIUM" />
                     </div>
-                  </CardLayout>
+                    <div className="flex-1">
+                      <HeadingField text="Protect" size="MEDIUM" marginBelow="LESS" />
+                      <p className="text-gray-700">Safeguard your AI systems with comprehensive security measures and guardrails to prevent unauthorized access and misuse.</p>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      <button className="bg-white text-black border border-gray-300 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium">
+                        Go to Protect
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div 
-                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  className="cursor-pointer hover:shadow-lg transition-shadow bg-white rounded-lg shadow-md p-6 relative group"
                   onClick={() => onSectionChange?.('monitor')}
                 >
-                  <CardLayout padding="MORE" showShadow={true}>
-                    <div className="flex items-center gap-4">
-                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
-                        <Icon icon="CheckCircle" size="MEDIUM" />
-                      </div>
-                      <div className="flex-1">
-                        <HeadingField text="Evaluate" size="MEDIUM" marginBelow="LESS" />
-                        <p className="text-gray-700">Assess and measure AI model performance, accuracy, and compliance with established standards and requirements.</p>
-                      </div>
+                  <div className="flex items-center gap-4">
+                    <div className="rounded-lg p-3 flex items-center justify-center border" style={{
+                      background: 'linear-gradient(to bottom, rgba(168, 85, 247, 0.6) 0%, rgba(168, 85, 247, 0.1) 100%)',
+                      borderColor: '#a855f7'
+                    }}>
+                      <Icon icon="CheckCircle" size="MEDIUM" />
                     </div>
-                  </CardLayout>
+                    <div className="flex-1">
+                      <HeadingField text="Evaluate" size="MEDIUM" marginBelow="LESS" />
+                      <p className="text-gray-700">Assess and measure AI model performance, accuracy, and compliance with established standards and requirements.</p>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      <button className="bg-white text-black border border-gray-300 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium">
+                        Go to Evaluate
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div 
-                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  className="cursor-pointer hover:shadow-lg transition-shadow bg-white rounded-lg shadow-md p-6 relative group"
                   onClick={() => onSectionChange?.('observe')}
                 >
-                  <CardLayout padding="MORE" showShadow={true}>
-                    <div className="flex items-center gap-4">
-                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
-                        <Icon icon="Eye" size="MEDIUM" />
-                      </div>
-                      <div className="flex-1">
-                        <HeadingField text="Observe" size="MEDIUM" marginBelow="LESS" />
-                        <p className="text-gray-700">Monitor AI system behavior in real-time, track metrics, and gain insights into usage patterns and anomalies.</p>
-                      </div>
+                  <div className="flex items-center gap-4">
+                    <div className="rounded-lg p-3 flex items-center justify-center border" style={{
+                      background: 'linear-gradient(to bottom, rgba(239, 68, 68, 0.6) 0%, rgba(239, 68, 68, 0.1) 100%)',
+                      borderColor: '#ef4444'
+                    }}>
+                      <Icon icon="Eye" size="MEDIUM" />
                     </div>
-                  </CardLayout>
+                    <div className="flex-1">
+                      <HeadingField text="Observe" size="MEDIUM" marginBelow="LESS" />
+                      <p className="text-gray-700">Monitor AI system behavior in real-time, track metrics, and gain insights into usage patterns and anomalies.</p>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      <button className="bg-white text-black border border-gray-300 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium">
+                        Go to Observe
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1324,8 +1416,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            <div className={`sticky top-0 z-10 ${evaluateHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300`} style={{ borderRadius: 0, minHeight: '140px' }}>
-              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
+            <div className={`sticky top-0 z-10 ${evaluateHeaderBg} border-b py-4 flex flex-col justify-center transition-shadow duration-300`} style={{ borderRadius: 0, minHeight: '140px' }}>
+              <div className="flex justify-between items-center px-8" style={{ minHeight: '48px' }}>
                 <HeadingField text="Galileo Evaluate" size="LARGE" marginBelow="NONE" />
                 <ButtonWidget
                   label="New Evaluation Run"
@@ -1336,9 +1428,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
               </div>
             </div>
             
-            <div className="mt-6 px-20">
+            <div className="mt-6">
               {/* Core Features Overview */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-3 gap-4 mb-6 px-20">
                 <CardLayout padding="MORE" showShadow={true}>
                   <div className="flex items-center gap-4">
                     <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
@@ -1377,7 +1469,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
               </div>
 
               {/* Recent Evaluation Runs */}
-              <CardLayout padding="MORE" showShadow={true} className="mb-6">
+              <CardLayout padding="MORE" showShadow={true} className="mb-6 mx-20">
                 <div className="flex justify-between items-center mb-4">
                   <HeadingField text="Recent Evaluation Runs" size="MEDIUM" marginBelow="NONE" />
                   <ButtonWidget label="View All" style="OUTLINE" color="SECONDARY" size="SMALL" />
@@ -1421,7 +1513,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
               </CardLayout>
 
               {/* Workflow Steps */}
-              <CardLayout padding="MORE" showShadow={true}>
+              <CardLayout padding="MORE" showShadow={true} className="mx-20">
                 <HeadingField text="Evaluation Workflow" size="MEDIUM" marginBelow="STANDARD" />
                 
                 <div className="grid grid-cols-3 gap-6">
@@ -1728,7 +1820,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   return (
     <div className={`min-h-screen w-full ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gradient-to-b from-blue-100 from-50% to-white'}`}>
       <style>{tabStyles}</style>
-      <div className={`w-full ${activeSection === 'protect' || activeSection === 'observe' ? '' : 'px-8 py-8'}`}>
+      <div className={`w-full ${activeSection === 'protect' || activeSection === 'observe' || activeSection === 'home' ? '' : 'px-8 py-8'}`}>
         {renderContent()}
       </div>
 
