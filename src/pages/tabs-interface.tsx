@@ -399,9 +399,10 @@ interface TabsInterfaceProps {
   activeSection: string
   cardStyle?: 'white' | 'glass'
   onSectionChange?: (section: string) => void
+  appMode?: 'v1' | 'v2' | 'future'
 }
 
-export default function TabsInterface({ activeSection, cardStyle = 'glass', onSectionChange }: TabsInterfaceProps) {
+export default function TabsInterface({ activeSection, cardStyle = 'glass', onSectionChange, appMode = 'future' }: TabsInterfaceProps) {
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
@@ -416,7 +417,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [observeUnderlineStyle, setObserveUnderlineStyle] = useState({ left: 0, width: 0 })
   const [timeRange, setTimeRange] = useState('1D')
   const [wizardStep, setWizardStep] = useState(1)
-  const [protectTab, setProtectTab] = useState<'performance' | 'configuration'>('performance')
+  const [protectTab, setProtectTab] = useState<'performance' | 'configuration'>('configuration')
   const [observeTab, setObserveTab] = useState<'performance' | 'events'>('performance')
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
@@ -642,7 +643,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   }
 
   const renderContent = () => {
-    switch (activeSection) {
+    // In V1/V2 mode, force to protect section
+    const currentSection = appMode === 'v1' || appMode === 'v2' ? 'protect' : activeSection
+    
+    switch (currentSection) {
       case 'home':
         const homeHeaderBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
@@ -853,48 +857,48 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         )
       
       case 'protect':
-        const currentTab = protectTab as 'performance' | 'configuration'
         const headerBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
             {selectedGuardrail === null && (
             <div className={`sticky top-0 z-10 ${headerBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${protectScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
-              <div className="relative flex gap-8 mb-4 border-b border-white/30">
-                <button
-                  ref={performanceRef}
-                  onClick={() => setProtectTab('performance')}
-                  className={`px-2 py-2 transition-colors font-medium ${
-                    currentTab === 'performance'
-                      ? 'text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Performance
-                </button>
-                <button
-                  ref={configurationRef}
-                  onClick={() => setProtectTab('configuration')}
-                  className={`px-2 py-2 transition-colors font-medium ${
-                    // @ts-ignore - TypeScript narrows type inside conditional
-                    currentTab === 'configuration'
-                      ? 'text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Configuration
-                </button>
-                <div 
-                  className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out"
-                  style={{
-                    left: `${underlineStyle.left}px`,
-                    width: `${underlineStyle.width}px`
-                  }}
-                />
-              </div>
+              {(appMode === 'v2' || appMode === 'future') && (
+                <div className="relative flex gap-8 mb-4 border-b border-white/30">
+                  <button
+                    ref={performanceRef}
+                    onClick={() => setProtectTab('performance')}
+                    className={`px-2 py-2 transition-colors font-medium ${
+                      protectTab === 'performance'
+                        ? 'text-blue-600'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Performance
+                  </button>
+                  <button
+                    ref={configurationRef}
+                    onClick={() => setProtectTab('configuration')}
+                    className={`px-2 py-2 transition-colors font-medium ${
+                      protectTab === 'configuration'
+                        ? 'text-blue-600'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Configuration
+                  </button>
+                  <div 
+                    className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out"
+                    style={{
+                      left: `${underlineStyle.left}px`,
+                      width: `${underlineStyle.width}px`
+                    }}
+                  />
+                </div>
+              )}
               <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
-                <HeadingField text={currentTab === 'performance' ? "Guardrail Performance" : "Guardrail Configuration"} size="LARGE" marginBelow="NONE" />
-                {currentTab === 'performance' ? (
+                <HeadingField text={(appMode === 'v1' || protectTab === 'configuration') ? "Guardrail Configuration" : "Guardrail Performance"} size="LARGE" marginBelow="NONE" />
+                {protectTab === 'performance' && (appMode === 'v2' || appMode === 'future') ? (
                   <div className="relative flex p-1 rounded-md">
                     <div 
                       className="absolute bg-blue-900 rounded transition-all duration-300 ease-out"
@@ -917,7 +921,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </button>
                     ))}
                   </div>
-                ) : (
+                ) : (appMode === 'v1' || protectTab === 'configuration') ? (
                   <button 
                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                     onClick={() => setShowModal(true)}
@@ -925,11 +929,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     <Plus size={16} />
                     Add Guardrails
                   </button>
-                )}
+                ) : null}
               </div>
             </div>
             )}
-            {currentTab === 'performance' ? (
+            {protectTab === 'performance' && (appMode === 'v2' || appMode === 'future') ? (
               <div key="performance-content" className="mt-6" style={{ background: 'transparent' }}>
                       
                       <div className="grid grid-cols-[3fr_1fr] gap-4 px-20 min-h-[calc(100vh-200px)]" style={{ background: 'transparent' }}>
@@ -1323,7 +1327,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </div>
                     </div>
             ) : (
-              selectedGuardrail !== null ? (
+              // V1: only configuration, V2/Future: show based on selected tab
+              (appMode === 'v1' || protectTab === 'configuration') ? (
+                selectedGuardrail !== null ? (
                 <GuardrailDetail
                   guardrail={guardrails[selectedGuardrail]}
                   onBack={() => setSelectedGuardrail(null)}
@@ -1407,6 +1413,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </div>
                     </div>
               )
+              ) : null
             )}
           </div>
         )

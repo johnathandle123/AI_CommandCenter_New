@@ -14,6 +14,7 @@ import Observe from './pages/observe'
 function MainApp() {
   const [activeSection, setActiveSection] = useState('home')
   const [cardStyle, setCardStyle] = useState<'white' | 'glass'>('white')
+  const [appMode, setAppMode] = useState<'v1' | 'v2' | 'future'>('future')
   const [showWaffleMenu, setShowWaffleMenu] = useState(false)
 
   const waffleApps = [
@@ -60,6 +61,15 @@ function MainApp() {
             />
           </div>
           <div className="flex items-center gap-3">
+            <select 
+              value={appMode}
+              onChange={(e) => setAppMode(e.target.value as 'v1' | 'v2' | 'future')}
+              className="px-4 py-2 rounded-md bg-white/20 backdrop-blur-md border border-white/30 text-white cursor-pointer"
+            >
+              <option value="v1" className="text-gray-900">V1</option>
+              <option value="v2" className="text-gray-900">V2</option>
+              <option value="future" className="text-gray-900">Future State</option>
+            </select>
             <select 
               value={cardStyle}
               onChange={(e) => setCardStyle(e.target.value as 'white' | 'glass')}
@@ -150,14 +160,21 @@ function MainApp() {
           </>
         )}
         
-        <SideNavigation 
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-          className="relative z-10"
-          cardStyle={cardStyle}
-        />
+        {appMode === 'future' && (
+          <SideNavigation 
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+            className="relative z-10"
+            cardStyle={cardStyle}
+          />
+        )}
         <div className="flex-1 overflow-auto relative z-10">
-          <TabsInterface activeSection={activeSection} cardStyle={cardStyle} onSectionChange={setActiveSection} />
+          <TabsInterface 
+            activeSection={appMode === 'v1' || appMode === 'v2' ? 'protect' : activeSection} 
+            cardStyle={cardStyle} 
+            onSectionChange={setActiveSection}
+            appMode={appMode}
+          />
         </div>
       </div>
     </div>
