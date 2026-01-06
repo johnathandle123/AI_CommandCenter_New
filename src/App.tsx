@@ -13,7 +13,7 @@ import Observe from './pages/observe'
 
 function MainApp() {
   const [activeSection, setActiveSection] = useState('home')
-  const [cardStyle, setCardStyle] = useState<'white' | 'glass'>('white')
+  const [cardStyle, setCardStyle] = useState<'white' | 'glass' | 'greyscale'>('white')
   const [appMode, setAppMode] = useState<'v1' | 'v2' | 'future'>('future')
   const [showWaffleMenu, setShowWaffleMenu] = useState(false)
 
@@ -43,7 +43,7 @@ function MainApp() {
   }, [showWaffleMenu])
 
   return (
-    <div className={`h-screen flex flex-col overflow-hidden ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gray-50'}`}>
+    <div className={`h-screen flex flex-col overflow-hidden ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gray-50'} ${cardStyle === 'greyscale' ? 'grayscale' : ''}`}>
       {/* Gradient Header */}
       <div className="app-header-sail py-4 relative">
         <div className="app-header-overlay"></div>
@@ -72,11 +72,12 @@ function MainApp() {
             </select>
             <select 
               value={cardStyle}
-              onChange={(e) => setCardStyle(e.target.value as 'white' | 'glass')}
+              onChange={(e) => setCardStyle(e.target.value as 'white' | 'glass' | 'greyscale')}
               className="px-4 py-2 pr-8 rounded-md bg-white/20 backdrop-blur-md border border-white/30 text-black cursor-pointer"
             >
               <option value="white" className="text-gray-900">White Cards</option>
               <option value="glass" className="text-gray-900">Glassmorphism</option>
+              <option value="greyscale" className="text-gray-900">Greyscale</option>
             </select>
             <button className="p-2 rounded-md hover:bg-white/20 transition-colors">
               <Search size={20} className="text-black" />
@@ -148,7 +149,7 @@ function MainApp() {
       )}
       
       {/* Main Content Area with Side Navigation */}
-      <div className={`flex-1 flex overflow-hidden ${cardStyle === 'glass' ? 'bg-slate-100' : 'bg-gray-50'} relative`}>
+      <div className={`flex-1 flex overflow-hidden ${cardStyle === 'glass' ? 'bg-slate-100' : 'bg-gray-50'} relative ${cardStyle === 'greyscale' ? 'grayscale' : ''}`}>
         {/* Glassmorphism gradient orbs */}
         {cardStyle === 'glass' && (
           <>

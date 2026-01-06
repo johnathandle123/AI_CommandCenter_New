@@ -10,7 +10,7 @@ interface SideNavigationProps {
   activeSection: string
   onSectionChange: (section: string) => void
   className?: string
-  cardStyle?: 'white' | 'glass'
+  cardStyle?: 'white' | 'glass' | 'greyscale'
 }
 
 const navigationItems: NavItem[] = [
@@ -47,7 +47,7 @@ export default function SideNavigation({ activeSection, onSectionChange, classNa
     : { backgroundColor: 'white' }
   
   return (
-    <div className={`w-64 border-r ${cardStyle === 'glass' ? 'border-white' : 'border-gray-200'} flex flex-col h-full ${className}`} style={bgStyle}>
+    <div className={`w-64 border-r ${cardStyle === 'glass' ? 'border-white' : 'border-gray-200'} flex flex-col h-full ${className} ${cardStyle === 'greyscale' ? 'grayscale' : ''}`} style={bgStyle}>
       <nav className="relative flex flex-col p-4 space-y-2">
         {navigationItems.map((item) => {
           const Icon = item.icon

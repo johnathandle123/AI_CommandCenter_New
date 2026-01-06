@@ -74,7 +74,7 @@ const AnimatedPercentage = ({ value, duration = 800 }: { value: number; duration
   return <span>{displayValue.toFixed(1)}%</span>
 }
 
-const getCardStyles = (cardStyle: 'white' | 'glass') => {
+const getCardStyles = (cardStyle: 'white' | 'glass' | 'greyscale') => {
   const cardBg = cardStyle === 'glass' 
     ? 'background-color: rgba(255, 255, 255, 0.3) !important; backdrop-filter: blur(20px) !important; box-shadow: none !important;'
     : 'background-color: white !important;'
@@ -397,7 +397,7 @@ function PerformanceDashboard() {
 
 interface TabsInterfaceProps {
   activeSection: string
-  cardStyle?: 'white' | 'glass'
+  cardStyle?: 'white' | 'glass' | 'greyscale'
   onSectionChange?: (section: string) => void
   appMode?: 'v1' | 'v2' | 'future'
 }
@@ -1825,7 +1825,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   }
 
   return (
-    <div className={`min-h-screen w-full ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gradient-to-b from-blue-100 from-50% to-white'}`}>
+    <div className={`min-h-screen w-full ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gradient-to-b from-blue-100 from-50% to-white'} ${cardStyle === 'greyscale' ? 'grayscale' : ''}`}>
       <style>{tabStyles}</style>
       <div className={`w-full ${activeSection === 'protect' || activeSection === 'observe' || activeSection === 'home' ? '' : 'px-8 py-8'}`}>
         {renderContent()}
