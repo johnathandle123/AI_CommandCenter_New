@@ -64,7 +64,7 @@ function MainApp() {
             <select 
               value={appMode}
               onChange={(e) => setAppMode(e.target.value as 'v1' | 'v2' | 'future')}
-              className="px-4 py-2 rounded-md bg-white/20 backdrop-blur-md border border-white/30 text-white cursor-pointer"
+              className="px-4 py-2 pr-8 rounded-md bg-white/20 backdrop-blur-md border border-white/30 text-black cursor-pointer"
             >
               <option value="v1" className="text-gray-900">V1</option>
               <option value="v2" className="text-gray-900">V2</option>
@@ -73,7 +73,7 @@ function MainApp() {
             <select 
               value={cardStyle}
               onChange={(e) => setCardStyle(e.target.value as 'white' | 'glass')}
-              className="px-4 py-2 rounded-md bg-white/20 backdrop-blur-md border border-white/30 text-white cursor-pointer"
+              className="px-4 py-2 pr-8 rounded-md bg-white/20 backdrop-blur-md border border-white/30 text-black cursor-pointer"
             >
               <option value="white" className="text-gray-900">White Cards</option>
               <option value="glass" className="text-gray-900">Glassmorphism</option>
