@@ -863,7 +863,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
             <style>{getCardStyles(cardStyle)}</style>
             {selectedGuardrail === null && (
             <div className={`sticky top-0 z-10 ${headerBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${protectScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
-              {(appMode === 'v2' || appMode === 'future') && (
+              {appMode === 'v2' && (
                 <div className="relative flex gap-8 mb-4 border-b border-white/30">
                   <button
                     ref={performanceRef}
@@ -897,8 +897,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 </div>
               )}
               <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
-                <HeadingField text={(appMode === 'v1' || protectTab === 'configuration') ? "Guardrail Configuration" : "Guardrail Performance"} size="LARGE" marginBelow="NONE" />
-                {protectTab === 'performance' && (appMode === 'v2' || appMode === 'future') ? (
+                <HeadingField text={(appMode === 'v1' || appMode === 'future' || protectTab === 'configuration') ? "Guardrail Configuration" : "Guardrail Performance"} size="LARGE" marginBelow="NONE" />
+                {protectTab === 'performance' && appMode === 'v2' ? (
                   <div className="relative flex p-1 rounded-md">
                     <div 
                       className="absolute bg-blue-900 rounded transition-all duration-300 ease-out"
@@ -933,7 +933,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
               </div>
             </div>
             )}
-            {protectTab === 'performance' && (appMode === 'v2' || appMode === 'future') ? (
+            {protectTab === 'performance' && appMode === 'v2' ? (
               <div key="performance-content" className="mt-6" style={{ background: 'transparent' }}>
                       
                       <div className="grid grid-cols-[3fr_1fr] gap-4 px-20 min-h-[calc(100vh-200px)]" style={{ background: 'transparent' }}>
@@ -1327,8 +1327,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </div>
                     </div>
             ) : (
-              // V1: only configuration, V2/Future: show based on selected tab
-              (appMode === 'v1' || protectTab === 'configuration') ? (
+              // V1/Future: only configuration, V2: show based on selected tab
+              (appMode === 'v1' || appMode === 'future' || protectTab === 'configuration') ? (
                 selectedGuardrail !== null ? (
                 <GuardrailDetail
                   guardrail={guardrails[selectedGuardrail]}
