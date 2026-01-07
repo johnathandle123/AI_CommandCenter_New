@@ -419,6 +419,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [wizardStep, setWizardStep] = useState(1)
   const [protectTab, setProtectTab] = useState<'performance' | 'configuration'>('configuration')
   const [observeTab, setObserveTab] = useState<'performance' | 'events'>('performance')
+  const [evaluateCallTab, setEvaluateCallTab] = useState<'general' | 'evals'>('general')
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
   const [observeScrolled, setObserveScrolled] = useState(false)
@@ -1423,132 +1424,313 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            <div className={`sticky top-0 z-10 ${evaluateHeaderBg} border-b py-4 flex flex-col justify-center transition-shadow duration-300`} style={{ borderRadius: 0, minHeight: '140px' }}>
-              <div className="flex justify-between items-center px-8" style={{ minHeight: '48px' }}>
-                <HeadingField text="Galileo Evaluate" size="LARGE" marginBelow="NONE" />
-                <ButtonWidget
-                  label="New Evaluation Run"
-                  style="SOLID"
-                  color="ACCENT"
-                  size="STANDARD"
-                />
+            <div className={`sticky top-0 z-10 ${evaluateHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${observeScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
+              {selectedCall && (
+                <div className="mb-2">
+                  <button 
+                    onClick={() => setSelectedCall(null)}
+                    className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  >
+                    ← Back to AI Calls
+                  </button>
+                </div>
+              )}
+              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
+                <div className="flex items-center gap-3">
+                  <HeadingField text={selectedCall ? selectedCall.callId : "System Events"} size="LARGE" marginBelow="NONE" />
+                  {selectedCall && (
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                      selectedCall.status === 'Success' ? 'bg-green-100 text-green-800' :
+                      selectedCall.status === 'Error' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {selectedCall.status}
+                    </span>
+                  )}
+                </div>
               </div>
+              {selectedCall && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <TagField
+                    tags={[{ text: "Relevance: 8.5/10", backgroundColor: "SECONDARY" }]}
+                    size="SMALL"
+                    marginBelow="NONE"
+                  />
+                  <TagField
+                    tags={[{ text: "Accuracy: 94%", backgroundColor: "SECONDARY" }]}
+                    size="SMALL"
+                    marginBelow="NONE"
+                  />
+                  <TagField
+                    tags={[{ text: "Helpfulness: 9/10", backgroundColor: "SECONDARY" }]}
+                    size="SMALL"
+                    marginBelow="NONE"
+                  />
+                  <TagField
+                    tags={[{ text: "Clarity: 8.8/10", backgroundColor: "SECONDARY" }]}
+                    size="SMALL"
+                    marginBelow="NONE"
+                  />
+                  <TagField
+                    tags={[{ text: "Safety: Pass", backgroundColor: "POSITIVE" }]}
+                    size="SMALL"
+                    marginBelow="NONE"
+                  />
+                </div>
+              )}
+              {selectedCall && (
+                <div className="relative flex gap-8 border-b border-white/30 -mb-4 pb-0">
+                  <button
+                    onClick={() => setEvaluateCallTab('general')}
+                    className={`px-2 py-2 transition-colors font-medium ${
+                      evaluateCallTab === 'general'
+                        ? 'text-blue-600'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    General
+                  </button>
+                  <button
+                    onClick={() => setEvaluateCallTab('evals')}
+                    className={`px-2 py-2 transition-colors font-medium ${
+                      evaluateCallTab === 'evals'
+                        ? 'text-blue-600'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Evals
+                  </button>
+                  <div 
+                    className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out"
+                    style={{
+                      left: evaluateCallTab === 'general' ? '8px' : '88px',
+                      width: evaluateCallTab === 'general' ? '56px' : '40px'
+                    }}
+                  />
+                </div>
+              )}
             </div>
-            
-            <div className="mt-6">
-              {/* Core Features Overview */}
-              <div className="grid grid-cols-3 gap-4 mb-6 px-20">
-                <CardLayout padding="MORE" showShadow={true}>
-                  <div className="flex items-center gap-4">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
-                      <Icon icon="Activity" size="MEDIUM" />
-                    </div>
-                    <div className="flex-1">
-                      <HeadingField text="Tracing & Visualizations" size="MEDIUM" marginBelow="LESS" />
-                      <p className="text-gray-600 text-sm">Track end-to-end execution of queries</p>
-                    </div>
-                  </div>
-                </CardLayout>
-                
-                <CardLayout padding="MORE" showShadow={true}>
-                  <div className="flex items-center gap-4">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
-                      <Icon icon="BarChart" size="MEDIUM" />
-                    </div>
-                    <div className="flex-1">
-                      <HeadingField text="Guardrail Metrics" size="MEDIUM" marginBelow="LESS" />
-                      <p className="text-gray-600 text-sm">Research-backed evaluation metrics</p>
-                    </div>
-                  </div>
-                </CardLayout>
-                
-                <CardLayout padding="MORE" showShadow={true}>
-                  <div className="flex items-center gap-4">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
-                      <Icon icon="Beaker" size="MEDIUM" />
-                    </div>
-                    <div className="flex-1">
-                      <HeadingField text="Experiment Management" size="MEDIUM" marginBelow="LESS" />
-                      <p className="text-gray-600 text-sm">Track experiments in one place</p>
-                    </div>
-                  </div>
-                </CardLayout>
-              </div>
-
-              {/* Recent Evaluation Runs */}
-              <CardLayout padding="MORE" showShadow={true} className="mb-6 mx-20">
-                <div className="flex justify-between items-center mb-4">
-                  <HeadingField text="Recent Evaluation Runs" size="MEDIUM" marginBelow="NONE" />
-                  <ButtonWidget label="View All" style="OUTLINE" color="SECONDARY" size="SMALL" />
-                </div>
-                
-                <div className="space-y-3">
-                  {[
-                    { name: 'RAG Pipeline v2.1', status: 'Completed', score: 0.87, date: '2 hours ago' },
-                    { name: 'Customer Support Bot', status: 'Running', score: null, date: '4 hours ago' },
-                    { name: 'Content Generation', status: 'Completed', score: 0.92, date: '1 day ago' }
-                  ].map((run, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100">
-                          <Icon icon="Play" size="SMALL" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{run.name}</div>
-                          <div className="text-sm text-gray-500">{run.date}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        {run.score && (
-                          <div className="text-right">
-                            <div className="font-medium text-green-600">{(run.score * 100).toFixed(0)}%</div>
-                            <div className="text-xs text-gray-500">Overall Score</div>
+            <div className="px-20 py-6">
+              {selectedCall ? (
+                evaluateCallTab === 'general' ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-[2fr_1fr] gap-6">
+                      {/* Input/Output Panel */}
+                      <div className="space-y-6">
+                        <CardLayout padding="MORE" showShadow={true}>
+                          <HeadingField text="Input" size="MEDIUM" marginBelow="STANDARD" />
+                          <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
+                            {selectedCall.input}
                           </div>
-                        )}
-                        <TagField
-                          tags={[{
-                            text: run.status,
-                            backgroundColor: run.status === 'Completed' ? 'POSITIVE' : 'ACCENT'
-                          }]}
-                          size="SMALL"
-                          marginBelow="NONE"
-                        />
+                        </CardLayout>
+                        
+                        <CardLayout padding="MORE" showShadow={true}>
+                          <HeadingField text="Output" size="MEDIUM" marginBelow="STANDARD" />
+                          <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap">
+                            {selectedCall.output}
+                          </div>
+                        </CardLayout>
+                      </div>
+                      
+                      {/* Call Data Panel */}
+                      <div className="space-y-4">
+                        <CardLayout padding="MORE" showShadow={true}>
+                          <HeadingField text="Call Metrics" size="MEDIUM" marginBelow="STANDARD" />
+                          <div className="space-y-4">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Latency:</span>
+                              <span className="font-medium">{selectedCall.latency}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Cost:</span>
+                              <span className="font-medium">{selectedCall.cost}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Tokens:</span>
+                              <span className="font-medium">{selectedCall.tokens}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Accuracy:</span>
+                              <span className="font-medium">{(selectedCall.accuracy * 100).toFixed(1)}%</span>
+                            </div>
+                          </div>
+                        </CardLayout>
+                        
+                        <CardLayout padding="MORE" showShadow={true}>
+                          <HeadingField text="Content Analysis" size="MEDIUM" marginBelow="STANDARD" />
+                          <div className="space-y-4">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Input Toxicity:</span>
+                              <span className="font-medium">{(selectedCall.inputToxicity * 100).toFixed(1)}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Output Toxicity:</span>
+                              <span className="font-medium">{(selectedCall.outputToxicity * 100).toFixed(1)}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Input PII:</span>
+                              <span className="font-medium">{selectedCall.inputPII}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Output PII:</span>
+                              <span className="font-medium">{selectedCall.outputPII}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Input Tone:</span>
+                              <span className="font-medium">{selectedCall.inputTone}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Output Tone:</span>
+                              <span className="font-medium">{selectedCall.outputTone}</span>
+                            </div>
+                          </div>
+                        </CardLayout>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                      <div className="px-6 py-4 border-b border-gray-100">
+                        <HeadingField text="Evaluation Metrics" size="MEDIUM" marginBelow="NONE" />
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                          <thead className="bg-white">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Metric</th>
+                              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">AI Value</th>
+                              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">AI Explanation</th>
+                              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actual Value</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {[
+                              { metric: 'Relevance', aiValue: '8.5/10', explanation: 'Response directly addresses the user query with comprehensive information', actualValue: '' },
+                              { metric: 'Accuracy', aiValue: '94%', explanation: 'Information provided is factually correct based on training data', actualValue: '' },
+                              { metric: 'Helpfulness', aiValue: '9/10', explanation: 'Response provides actionable guidance and clear examples', actualValue: '' },
+                              { metric: 'Clarity', aiValue: '8.8/10', explanation: 'Language is clear and appropriate for the target audience', actualValue: '' },
+                              { metric: 'Safety', aiValue: 'Pass', explanation: 'No harmful, biased, or inappropriate content detected', actualValue: '' }
+                            ].map((row, index) => (
+                              <tr key={index} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.metric}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.aiValue}</td>
+                                <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">{row.explanation}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  <input 
+                                    type="text" 
+                                    placeholder="Enter actual value"
+                                    className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="space-y-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div className="px-6 py-4 border-b border-gray-100">
+                      <HeadingField text="AI Calls" size="MEDIUM" marginBelow="NONE" />
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full">
+                        <thead className="bg-white">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Timestamp</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Call ID</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Object</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">User</th>
+                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Status</th>
+                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Tokens</th>
+                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Latency</th>
+                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Cost</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Evals</th>                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {[
+                            { 
+                              timestamp: '2024-12-18 13:25:42', 
+                              callId: 'call-001-xyz', 
+                              model: 'CO_Agent_Customer_Onboarding', 
+                              user: 'john.smith', 
+                              status: 'Success', 
+                              tokens: 1247, 
+                              latency: '245ms', 
+                              cost: '$0.024',
+                              input: 'Can you help me write a professional email to schedule a meeting with our client about the quarterly review?',
+                              output: 'I\'d be happy to help you write a professional email for scheduling a client meeting. Here\'s a draft:\n\nSubject: Quarterly Review Meeting - [Client Name]\n\nDear [Client Name],\n\nI hope this email finds you well. As we approach the end of the quarter, I would like to schedule our quarterly review meeting to discuss your account performance, upcoming initiatives, and address any questions you may have.\n\nWould you be available for a meeting during the week of [Date Range]? I\'m flexible with timing and can accommodate your schedule. The meeting should take approximately 60 minutes and can be conducted either in-person at your office or via video conference, whichever you prefer.\n\nPlease let me know your availability, and I\'ll send a calendar invitation with the agenda.\n\nThank you for your continued partnership.\n\nBest regards,\n[Your Name]',
+                              accuracy: 0.94,
+                              inputToxicity: 0.02,
+                              outputToxicity: 0.01,
+                              inputPII: 'None',
+                              outputPII: 'Template placeholders',
+                              inputTone: 'Professional',
+                              outputTone: 'Professional'
+                            },
+                            { 
+                              timestamp: '2024-12-18 13:24:18', 
+                              callId: 'call-002-abc', 
+                              model: 'DR_Agent_Document_Review', 
+                              user: 'jane.doe', 
+                              status: 'Success', 
+                              tokens: 892, 
+                              latency: '189ms', 
+                              cost: '$0.018',
+                              input: 'Explain the concept of machine learning in simple terms for a beginner.',
+                              output: 'Machine learning is like teaching a computer to recognize patterns and make predictions, similar to how humans learn from experience.\n\nImagine you\'re learning to recognize different dog breeds. At first, you might not know the difference between a Golden Retriever and a Labrador. But after seeing many examples of each breed with their names, you start to notice patterns - Golden Retrievers tend to have longer, fluffier coats, while Labs have shorter, denser fur.\n\nMachine learning works similarly:\n\n1. **Training**: We show the computer thousands of examples (like photos of dogs with breed labels)\n2. **Pattern Recognition**: The computer finds patterns in the data that humans might miss\n3. **Prediction**: When shown a new photo, the computer can predict the breed based on learned patterns\n\nThis same principle applies to many applications: email spam detection, recommendation systems, voice recognition, and medical diagnosis. The computer learns from data to make intelligent decisions without being explicitly programmed for every possible scenario.',
+                              accuracy: 0.97,
+                              inputToxicity: 0.01,
+                              outputToxicity: 0.00,
+                              inputPII: 'None',
+                              outputPII: 'None',
+                              inputTone: 'Neutral',
+                              outputTone: 'Educational'
+                            },
+                            { timestamp: '2024-12-18 13:23:55', callId: 'call-003-def', model: 'CO_Agent_Customer_Onboarding', user: 'mike.wilson', status: 'Error', tokens: 0, latency: '1.2s', cost: '$0.000', input: 'Error occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
+                            { timestamp: '2024-12-18 13:22:31', callId: 'call-004-ghi', model: 'TX_Agent_Tax_Calculator', user: 'sarah.jones', status: 'Success', tokens: 1456, latency: '312ms', cost: '$0.029', input: 'Sample input', output: 'Sample output', accuracy: 0.89, inputToxicity: 0.03, outputToxicity: 0.02, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'Informative' },
+                            { timestamp: '2024-12-18 13:21:07', callId: 'call-005-jkl', model: 'DR_Agent_Document_Review', user: 'david.brown', status: 'Success', tokens: 734, latency: '156ms', cost: '$0.015', input: 'Sample input', output: 'Sample output', accuracy: 0.92, inputToxicity: 0.01, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Professional', outputTone: 'Professional' },
+                            { timestamp: '2024-12-18 13:19:43', callId: 'call-006-mno', model: 'CO_Agent_Customer_Onboarding', user: 'lisa.garcia', status: 'Success', tokens: 1089, latency: '278ms', cost: '$0.021', input: 'Sample input', output: 'Sample output', accuracy: 0.95, inputToxicity: 0.02, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Casual', outputTone: 'Friendly' },
+                            { timestamp: '2024-12-18 13:18:29', callId: 'call-007-pqr', model: 'TX_Agent_Tax_Calculator', user: 'tom.anderson', status: 'Timeout', tokens: 0, latency: '30s', cost: '$0.000', input: 'Timeout occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
+                            { timestamp: '2024-12-18 13:17:15', callId: 'call-008-stu', model: 'DR_Agent_Document_Review', user: 'amy.taylor', status: 'Success', tokens: 967, latency: '203ms', cost: '$0.019', input: 'Sample input', output: 'Sample output', accuracy: 0.91, inputToxicity: 0.01, outputToxicity: 0.00, inputPII: 'None', outputPII: 'None', inputTone: 'Technical', outputTone: 'Explanatory' }
+                          ].map((call, index) => (
+                            <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCall(call)}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.timestamp}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">{call.callId}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.model}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.user}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center">
+                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                  call.status === 'Success' ? 'bg-green-100 text-green-800' :
+                                  call.status === 'Error' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {call.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{call.tokens}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{call.latency}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{call.cost}</td>
+                              <td className="px-6 py-4 text-sm">
+                                <div className="flex flex-wrap gap-1">
+                                  <TagField tags={[{ text: "Relevance: 8.5/10", backgroundColor: "SECONDARY" }]} size="SMALL" marginBelow="NONE" />
+                                  <TagField tags={[{ text: "Accuracy: 94%", backgroundColor: "SECONDARY" }]} size="SMALL" marginBelow="NONE" />
+                                  <TagField tags={[{ text: "Helpfulness: 9/10", backgroundColor: "SECONDARY" }]} size="SMALL" marginBelow="NONE" />
+                                  <TagField tags={[{ text: "Clarity: 8.8/10", backgroundColor: "SECONDARY" }]} size="SMALL" marginBelow="NONE" />
+                                  <TagField tags={[{ text: "Safety: Pass", backgroundColor: "POSITIVE" }]} size="SMALL" marginBelow="NONE" />
+                                </div>
+                              </td>                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-              </CardLayout>
-
-              {/* Workflow Steps */}
-              <CardLayout padding="MORE" showShadow={true} className="mx-20">
-                <HeadingField text="Evaluation Workflow" size="MEDIUM" marginBelow="STANDARD" />
-                
-                <div className="grid grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-3">
-                      <span className="text-blue-600 font-bold">1</span>
-                    </div>
-                    <HeadingField text="Log Your Runs" size="SMALL" marginBelow="LESS" />
-                    <p className="text-gray-600 text-sm">Integrate into your system or test through Playground. Register metrics to define success.</p>
-                  </div>
-                  
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-3">
-                      <span className="text-green-600 font-bold">2</span>
-                    </div>
-                    <HeadingField text="Analyze Results" size="SMALL" marginBelow="LESS" />
-                    <p className="text-gray-600 text-sm">Identify poor performance, trace to broken steps, form hypotheses on root causes.</p>
-                  </div>
-                  
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 mb-3">
-                      <span className="text-purple-600 font-bold">3</span>
-                    </div>
-                    <HeadingField text="Debug & Iterate" size="SMALL" marginBelow="LESS" />
-                    <p className="text-gray-600 text-sm">Tweak your system and run evaluations until quality bar is met.</p>
-                  </div>
-                </div>
-              </CardLayout>
+              )}
             </div>
           </div>
         )
@@ -1731,7 +1913,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <tr>
                             <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Timestamp</th>
                             <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Call ID</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Model</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Object</th>
                             <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">User</th>
                             <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Status</th>
                             <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Tokens</th>
@@ -1744,7 +1926,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             { 
                               timestamp: '2024-12-18 13:25:42', 
                               callId: 'call-001-xyz', 
-                              model: 'gpt-4-turbo', 
+                              model: 'CO_Agent_Customer_Onboarding', 
                               user: 'john.smith', 
                               status: 'Success', 
                               tokens: 1247, 
@@ -1763,7 +1945,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             { 
                               timestamp: '2024-12-18 13:24:18', 
                               callId: 'call-002-abc', 
-                              model: 'claude-3-opus', 
+                              model: 'DR_Agent_Document_Review', 
                               user: 'jane.doe', 
                               status: 'Success', 
                               tokens: 892, 
@@ -1779,12 +1961,12 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               inputTone: 'Neutral',
                               outputTone: 'Educational'
                             },
-                            { timestamp: '2024-12-18 13:23:55', callId: 'call-003-def', model: 'gpt-4-turbo', user: 'mike.wilson', status: 'Error', tokens: 0, latency: '1.2s', cost: '$0.000', input: 'Error occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
-                            { timestamp: '2024-12-18 13:22:31', callId: 'call-004-ghi', model: 'gemini-pro', user: 'sarah.jones', status: 'Success', tokens: 1456, latency: '312ms', cost: '$0.029', input: 'Sample input', output: 'Sample output', accuracy: 0.89, inputToxicity: 0.03, outputToxicity: 0.02, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'Informative' },
-                            { timestamp: '2024-12-18 13:21:07', callId: 'call-005-jkl', model: 'claude-3-opus', user: 'david.brown', status: 'Success', tokens: 734, latency: '156ms', cost: '$0.015', input: 'Sample input', output: 'Sample output', accuracy: 0.92, inputToxicity: 0.01, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Professional', outputTone: 'Professional' },
-                            { timestamp: '2024-12-18 13:19:43', callId: 'call-006-mno', model: 'gpt-4-turbo', user: 'lisa.garcia', status: 'Success', tokens: 1089, latency: '278ms', cost: '$0.021', input: 'Sample input', output: 'Sample output', accuracy: 0.95, inputToxicity: 0.02, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Casual', outputTone: 'Friendly' },
-                            { timestamp: '2024-12-18 13:18:29', callId: 'call-007-pqr', model: 'gemini-pro', user: 'tom.anderson', status: 'Timeout', tokens: 0, latency: '30s', cost: '$0.000', input: 'Timeout occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
-                            { timestamp: '2024-12-18 13:17:15', callId: 'call-008-stu', model: 'claude-3-opus', user: 'amy.taylor', status: 'Success', tokens: 967, latency: '203ms', cost: '$0.019', input: 'Sample input', output: 'Sample output', accuracy: 0.91, inputToxicity: 0.01, outputToxicity: 0.00, inputPII: 'None', outputPII: 'None', inputTone: 'Technical', outputTone: 'Explanatory' }
+                            { timestamp: '2024-12-18 13:23:55', callId: 'call-003-def', model: 'CO_Agent_Customer_Onboarding', user: 'mike.wilson', status: 'Error', tokens: 0, latency: '1.2s', cost: '$0.000', input: 'Error occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
+                            { timestamp: '2024-12-18 13:22:31', callId: 'call-004-ghi', model: 'TX_Agent_Tax_Calculator', user: 'sarah.jones', status: 'Success', tokens: 1456, latency: '312ms', cost: '$0.029', input: 'Sample input', output: 'Sample output', accuracy: 0.89, inputToxicity: 0.03, outputToxicity: 0.02, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'Informative' },
+                            { timestamp: '2024-12-18 13:21:07', callId: 'call-005-jkl', model: 'DR_Agent_Document_Review', user: 'david.brown', status: 'Success', tokens: 734, latency: '156ms', cost: '$0.015', input: 'Sample input', output: 'Sample output', accuracy: 0.92, inputToxicity: 0.01, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Professional', outputTone: 'Professional' },
+                            { timestamp: '2024-12-18 13:19:43', callId: 'call-006-mno', model: 'CO_Agent_Customer_Onboarding', user: 'lisa.garcia', status: 'Success', tokens: 1089, latency: '278ms', cost: '$0.021', input: 'Sample input', output: 'Sample output', accuracy: 0.95, inputToxicity: 0.02, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Casual', outputTone: 'Friendly' },
+                            { timestamp: '2024-12-18 13:18:29', callId: 'call-007-pqr', model: 'TX_Agent_Tax_Calculator', user: 'tom.anderson', status: 'Timeout', tokens: 0, latency: '30s', cost: '$0.000', input: 'Timeout occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
+                            { timestamp: '2024-12-18 13:17:15', callId: 'call-008-stu', model: 'DR_Agent_Document_Review', user: 'amy.taylor', status: 'Success', tokens: 967, latency: '203ms', cost: '$0.019', input: 'Sample input', output: 'Sample output', accuracy: 0.91, inputToxicity: 0.01, outputToxicity: 0.00, inputPII: 'None', outputPII: 'None', inputTone: 'Technical', outputTone: 'Explanatory' }
                           ].map((call, index) => (
                             <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCall(call)}>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.timestamp}</td>
@@ -1827,7 +2009,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   return (
     <div className={`min-h-screen w-full ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gradient-to-b from-blue-100 from-50% to-white'} ${cardStyle === 'greyscale' ? 'grayscale' : ''}`}>
       <style>{tabStyles}</style>
-      <div className={`w-full ${activeSection === 'protect' || activeSection === 'observe' || activeSection === 'home' ? '' : 'px-8 py-8'}`}>
+      <div className={`w-full ${activeSection === 'protect' || activeSection === 'observe' || activeSection === 'home' || activeSection === 'monitor' ? '' : 'px-8 py-8'}`}>
         {renderContent()}
       </div>
 
