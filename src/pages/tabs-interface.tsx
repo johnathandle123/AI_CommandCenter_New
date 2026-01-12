@@ -421,6 +421,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [observeTab, setObserveTab] = useState<'performance' | 'events'>('performance')
   const [evaluateCallTab, setEvaluateCallTab] = useState<'general' | 'evals'>('general')
   const [selectedRevisedGuardrail, setSelectedRevisedGuardrail] = useState<string | null>(null)
+  const [selectedRevisedV1Guardrail, setSelectedRevisedV1Guardrail] = useState<string | null>(null)
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
   const [observeScrolled, setObserveScrolled] = useState(false)
@@ -1428,12 +1429,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <CardLayout padding="MORE" showShadow={true}>
                         <button 
                           className="w-full text-left flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 -m-2"
-                          onClick={(e) => {
-                            const content = e.currentTarget.nextElementSibling as HTMLElement
-                            const icon = e.currentTarget.querySelector('.expand-icon') as HTMLElement
-                            content.classList.toggle('hidden')
-                            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'
-                          }}
+                          onClick={() => setSelectedRevisedV1Guardrail('Prompt Injection & Jailbreak Detection')}
                         >
                           <div className="flex items-center gap-4">
                             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100">
@@ -1441,7 +1437,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                             <span className="font-medium text-gray-900">Prompt Injection & Jailbreak Detection</span>
                           </div>
-                          <span className="expand-icon transition-transform duration-200">▶</span>
+                          <span className="text-gray-400">→</span>
                         </button>
                         <div className="hidden pt-4 border-t border-gray-100 mt-4">
                           <div className="space-y-6">
