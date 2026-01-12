@@ -1,6 +1,6 @@
 import { HeadingField, RichTextDisplayField, CardLayout, ButtonWidget, DialogField, TextField, Icon, TagField } from '@pglevy/sailwind'
 import { useState, useEffect, useRef } from 'react'
-import { Plus, TrendingDown, TrendingUp, ArrowRight } from 'lucide-react'
+import { TrendingDown, TrendingUp, ArrowRight } from 'lucide-react'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable'
@@ -399,7 +399,7 @@ interface TabsInterfaceProps {
   activeSection: string
   cardStyle?: 'white' | 'glass' | 'greyscale'
   onSectionChange?: (section: string) => void
-  appMode?: 'v1' | 'v2' | 'future'
+  appMode?: 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2'
 }
 
 export default function TabsInterface({ activeSection, cardStyle = 'glass', onSectionChange, appMode = 'future' }: TabsInterfaceProps) {
@@ -420,6 +420,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [protectTab, setProtectTab] = useState<'performance' | 'configuration'>('configuration')
   const [observeTab, setObserveTab] = useState<'performance' | 'events'>('performance')
   const [evaluateCallTab, setEvaluateCallTab] = useState<'general' | 'evals'>('general')
+  const [selectedRevisedGuardrail, setSelectedRevisedGuardrail] = useState<string | null>(null)
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
   const [observeScrolled, setObserveScrolled] = useState(false)
@@ -923,13 +924,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     ))}
                   </div>
                 ) : (appMode === 'v1' || protectTab === 'configuration') ? (
-                  <button 
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                  <ButtonWidget
+                    label="+ Add Guardrails"
+                    style="SOLID"
+                    color="ACCENT"
+                    size="STANDARD"
                     onClick={() => setShowModal(true)}
-                  >
-                    <Plus size={16} />
-                    Add Guardrails
-                  </button>
+                  />
                 ) : null}
               </div>
             </div>
@@ -1328,8 +1329,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </div>
                     </div>
             ) : (
-              // V1/Future: only configuration, V2: show based on selected tab
-              (appMode === 'v1' || appMode === 'future' || protectTab === 'configuration') ? (
+              // V1/Future: only configuration, V2: show based on selected tab, Revised: show new guardrail config
+              (appMode === 'v1' || appMode === 'future' || protectTab === 'configuration') && appMode !== 'revised' ? (
                 selectedGuardrail !== null ? (
                 <GuardrailDetail
                   guardrail={guardrails[selectedGuardrail]}
@@ -1414,7 +1415,733 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </div>
                     </div>
               )
-              ) : null
+            ) : appMode === 'revised' ? (
+              <div key="revised-config" className="mt-6 px-20" style={{ background: 'transparent' }}>
+                <div className="space-y-8">
+                  {/* Input Guardrail Configurations */}
+                  <div>
+                    <HeadingField text="Input Guardrail Configurations" size="LARGE" marginBelow="STANDARD" />
+                    <p className="text-gray-600 mb-6">These settings control how your application interprets and sanitizes user messages before they reach the model.</p>
+                    
+                    <div className="space-y-4">
+                      {/* Prompt Injection & Jailbreak Detection */}
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <button 
+                          className="w-full text-left flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 -m-2"
+                          onClick={(e) => {
+                            const content = e.currentTarget.nextElementSibling as HTMLElement
+                            const icon = e.currentTarget.querySelector('.expand-icon') as HTMLElement
+                            content.classList.toggle('hidden')
+                            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'
+                          }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100">
+                              <div className="w-6 h-6 rounded-full bg-blue-500"></div>
+                            </div>
+                            <span className="font-medium text-gray-900">Prompt Injection & Jailbreak Detection</span>
+                          </div>
+                          <span className="expand-icon transition-transform duration-200">▶</span>
+                        </button>
+                        <div className="hidden pt-4 border-t border-gray-100 mt-4">
+                          <div className="space-y-6">
+                            <div className="space-y-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Sensitivity Threshold</label>
+                                <div className="flex items-center space-x-4">
+                                  <input type="range" min="0" max="1" step="0.1" defaultValue="0.5" className="flex-1" />
+                                  <span className="text-sm text-gray-600 w-12">0.5</span>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">Higher values prevent more attacks but increase false positives</p>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Detection Mode</label>
+                                <select className="w-48 px-3 py-2 border border-gray-300 rounded-md">
+                                  <option value="heuristic">Heuristic (Fast, pattern-based)</option>
+                                  <option value="llm-classifier">LLM-Classifier (Model-based)</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {/* Advanced Heuristic Patterns */}
+                            <div className="border-t border-gray-200 pt-4">
+                              <h4 className="text-sm font-semibold text-gray-900 mb-4">Advanced Heuristic Patterns</h4>
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Instruction Keywords</label>
+                                  <textarea 
+                                    defaultValue="ignore all previous, developer mode, system prompt, verbatim, disregard guidelines"
+                                    placeholder="Enter high-risk phrases (comma-separated)"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                  />
+                                  <p className="text-xs text-gray-500 mt-1">Phrases that signal override attempts</p>
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-3">Encoding Detection</label>
+                                  <div className="space-y-2">
+                                    <label className="flex items-center">
+                                      <input type="checkbox" defaultChecked className="mr-2" />
+                                      <span className="text-sm">Detect Base64 encoding</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                      <input type="checkbox" defaultChecked className="mr-2" />
+                                      <span className="text-sm">Detect Hex encoding</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                      <input type="checkbox" defaultChecked className="mr-2" />
+                                      <span className="text-sm">Detect Leetspeak (h4ck3d)</span>
+                                    </label>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <label className="flex items-center">
+                                    <input type="checkbox" defaultChecked className="mr-2" />
+                                    <span className="text-sm font-medium text-gray-700">Obfuscation Filters</span>
+                                  </label>
+                                  <p className="text-xs text-gray-500 mt-1">Detect zero-width spaces and hidden Unicode characters</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Outcome */}
+                            <div className="border-t border-gray-200 pt-4">
+                              <h4 className="text-sm font-semibold text-gray-900 mb-4">Outcome</h4>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Action on Match</label>
+                                <select className="w-48 px-3 py-2 border border-gray-300 rounded-md">
+                                  <option value="block">Block (Hard stop)</option>
+                                  <option value="sanitize">Sanitize (Strip malicious tokens)</option>
+                                  <option value="flag">Flag (Log for audit)</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardLayout>
+
+                      {/* PII Scrubbing */}
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <button 
+                          className="w-full text-left flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 -m-2"
+                          onClick={(e) => {
+                            const content = e.currentTarget.nextElementSibling as HTMLElement
+                            const icon = e.currentTarget.querySelector('.expand-icon') as HTMLElement
+                            content.classList.toggle('hidden')
+                            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'
+                          }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100">
+                              <div className="w-6 h-6 rounded-full bg-green-500"></div>
+                            </div>
+                            <span className="font-medium text-gray-900">PII (Personally Identifiable Information) Scrubbing</span>
+                          </div>
+                          <span className="expand-icon transition-transform duration-200">▶</span>
+                        </button>
+                        <div className="hidden pt-4 border-t border-gray-100 mt-4">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Entity Selectors</label>
+                              <div className="grid grid-cols-3 gap-2">
+                                {['SSN', 'EMAIL', 'CREDIT_CARD', 'IP_ADDRESS', 'PHONE_NUMBER', 'ADDRESS'].map(entity => (
+                                  <label key={entity} className="flex items-center">
+                                    <input type="checkbox" className="mr-2" />
+                                    <span className="text-sm">{entity}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Anonymization Method</label>
+                              <select className="w-48 px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="masking">Masking (***-**-1234)</option>
+                                <option value="redaction">Redaction ([USER_EMAIL])</option>
+                                <option value="hashing">Hashing (Deterministic hash)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Confidence Score</label>
+                              <div className="flex items-center space-x-4">
+                                <input type="range" min="0" max="1" step="0.01" defaultValue="0.85" className="flex-1" />
+                                <span className="text-sm text-gray-600 w-12">0.85</span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">Threshold for high-certainty PII removal</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardLayout>
+
+                      {/* Topic Filtering */}
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <button 
+                          className="w-full text-left flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 -m-2"
+                          onClick={(e) => {
+                            const content = e.currentTarget.nextElementSibling as HTMLElement
+                            const icon = e.currentTarget.querySelector('.expand-icon') as HTMLElement
+                            content.classList.toggle('hidden')
+                            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'
+                          }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100">
+                              <div className="w-6 h-6 rounded-full bg-yellow-500"></div>
+                            </div>
+                            <span className="font-medium text-gray-900">Topic Filtering</span>
+                          </div>
+                          <span className="expand-icon transition-transform duration-200">▶</span>
+                        </button>
+                        <div className="hidden pt-4 border-t border-gray-100 mt-4">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Denied Topics</label>
+                              <textarea 
+                                placeholder="Enter denied topics (comma-separated): crypto, medical advice, politics"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Semantic Similarity Threshold</label>
+                              <div className="flex items-center space-x-4">
+                                <input type="range" min="0" max="1" step="0.01" defaultValue="0.75" className="flex-1" />
+                                <span className="text-sm text-gray-600 w-12">0.75</span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">Cosine similarity score for topic matching</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardLayout>
+
+                      {/* Competitor Filtering */}
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <button 
+                          className="w-full text-left flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 -m-2"
+                          onClick={(e) => {
+                            const content = e.currentTarget.nextElementSibling as HTMLElement
+                            const icon = e.currentTarget.querySelector('.expand-icon') as HTMLElement
+                            content.classList.toggle('hidden')
+                            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'
+                          }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100">
+                              <div className="w-6 h-6 rounded-full bg-red-500"></div>
+                            </div>
+                            <span className="font-medium text-gray-900">Competitor Filtering</span>
+                          </div>
+                          <span className="expand-icon transition-transform duration-200">▶</span>
+                        </button>
+                        <div className="hidden pt-4 border-t border-gray-100 mt-4">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Competitor Names</label>
+                              <textarea 
+                                placeholder="Enter competitor names (comma-separated): competitor_x, rival_company"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Semantic Similarity Threshold</label>
+                              <div className="flex items-center space-x-4">
+                                <input type="range" min="0" max="1" step="0.01" defaultValue="0.80" className="flex-1" />
+                                <span className="text-sm text-gray-600 w-12">0.80</span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">Cosine similarity score for competitor matching</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardLayout>
+
+                      {/* Profanity Filtering */}
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <button 
+                          className="w-full text-left flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 -m-2"
+                          onClick={(e) => {
+                            const content = e.currentTarget.nextElementSibling as HTMLElement
+                            const icon = e.currentTarget.querySelector('.expand-icon') as HTMLElement
+                            content.classList.toggle('hidden')
+                            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'
+                          }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100">
+                              <div className="w-6 h-6 rounded-full bg-purple-500"></div>
+                            </div>
+                            <span className="font-medium text-gray-900">Profanity Filtering</span>
+                          </div>
+                          <span className="expand-icon transition-transform duration-200">▶</span>
+                        </button>
+                        <div className="hidden pt-4 border-t border-gray-100 mt-4">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Severity Level</label>
+                              <select className="w-48 px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="low">Low (Basic profanity)</option>
+                                <option value="medium">Medium (Moderate profanity)</option>
+                                <option value="high">High (All profanity)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Action on Match</label>
+                              <select className="w-48 px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="block">Block (Hard stop)</option>
+                                <option value="replace">Replace with asterisks</option>
+                                <option value="flag">Flag (Log for audit)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Custom Word List</label>
+                              <textarea 
+                                placeholder="Enter additional words to filter (comma-separated)"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md h-16"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardLayout>
+                    </div>
+                  </div>
+
+                  {/* Output Guardrail Configurations */}
+                  <div>
+                    <HeadingField text="Output Guardrail Configurations" size="LARGE" marginBelow="STANDARD" />
+                    <p className="text-gray-600 mb-6">These ensure the model's response adheres to your business rules and safety standards.</p>
+                    
+                    <div className="space-y-4">
+                      {/* Hallucination & Grounding Checks */}
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <button 
+                          className="w-full text-left flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 -m-2"
+                          onClick={(e) => {
+                            const content = e.currentTarget.nextElementSibling as HTMLElement
+                            const icon = e.currentTarget.querySelector('.expand-icon') as HTMLElement
+                            content.classList.toggle('hidden')
+                            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'
+                          }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100">
+                              <div className="w-6 h-6 rounded-full bg-orange-500"></div>
+                            </div>
+                            <span className="font-medium text-gray-900">Hallucination & Grounding Checks (RAG)</span>
+                          </div>
+                          <span className="expand-icon transition-transform duration-200">▶</span>
+                        </button>
+                        <div className="hidden pt-4 border-t border-gray-100 mt-4">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Grounding Threshold</label>
+                              <input type="number" min="0" max="1" step="0.1" defaultValue="0.7" className="w-32 px-3 py-2 border border-gray-300 rounded-md" />
+                              <p className="text-xs text-gray-500 mt-1">Score representing answer support by retrieved documents</p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">NLI Logic</label>
+                              <select className="w-48 px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="entails">Entails (Proves)</option>
+                                <option value="neutral">Neutral</option>
+                                <option value="contradicts">Contradicts</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="flex items-center">
+                                <input type="checkbox" className="mr-2" />
+                                <span className="text-sm font-medium text-gray-700">Citations Requirement</span>
+                              </label>
+                              <p className="text-xs text-gray-500 mt-1">Force model to provide source links for every claim</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardLayout>
+
+                      {/* Toxicity & Sentiment Enforcement */}
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <button 
+                          className="w-full text-left flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 -m-2"
+                          onClick={(e) => {
+                            const content = e.currentTarget.nextElementSibling as HTMLElement
+                            const icon = e.currentTarget.querySelector('.expand-icon') as HTMLElement
+                            content.classList.toggle('hidden')
+                            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'
+                          }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-pink-100">
+                              <div className="w-6 h-6 rounded-full bg-pink-500"></div>
+                            </div>
+                            <span className="font-medium text-gray-900">Toxicity & Sentiment Enforcement</span>
+                          </div>
+                          <span className="expand-icon transition-transform duration-200">▶</span>
+                        </button>
+                        <div className="hidden pt-4 border-t border-gray-100 mt-4">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Severity Levels</label>
+                              <div className="grid grid-cols-2 gap-4">
+                                {['Hate', 'Sexual', 'Violence', 'Self-Harm'].map(category => (
+                                  <div key={category}>
+                                    <label className="block text-sm text-gray-600 mb-1">{category}</label>
+                                    <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                      <option value="low">Low</option>
+                                      <option value="medium">Medium</option>
+                                      <option value="high">High</option>
+                                    </select>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Target Tone</label>
+                              <select className="w-48 px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="neutral">Neutral</option>
+                                <option value="positive">Positive</option>
+                                <option value="professional">Professional</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Tolerance Range</label>
+                              <input type="number" min="0" max="1" step="0.1" defaultValue="0.2" className="w-32 px-3 py-2 border border-gray-300 rounded-md" />
+                            </div>
+                          </div>
+                        </div>
+                      </CardLayout>
+
+                      {/* Structural & Format Validation */}
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <button 
+                          className="w-full text-left flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 -m-2"
+                          onClick={(e) => {
+                            const content = e.currentTarget.nextElementSibling as HTMLElement
+                            const icon = e.currentTarget.querySelector('.expand-icon') as HTMLElement
+                            content.classList.toggle('hidden')
+                            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)'
+                          }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100">
+                              <div className="w-6 h-6 rounded-full bg-teal-500"></div>
+                            </div>
+                            <span className="font-medium text-gray-900">Structural & Format Validation</span>
+                          </div>
+                          <span className="expand-icon transition-transform duration-200">▶</span>
+                        </button>
+                        <div className="hidden pt-4 border-t border-gray-100 mt-4">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Schema Enforcement</label>
+                              <textarea 
+                                placeholder="Enter JSON Schema or validation rules"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md h-24 font-mono text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Retry Limit</label>
+                              <input type="number" min="1" max="10" defaultValue="3" className="w-32 px-3 py-2 border border-gray-300 rounded-md" />
+                              <p className="text-xs text-gray-500 mt-1">Number of retry attempts for failed validation</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Min Token Limit</label>
+                                <input type="number" min="1" defaultValue="10" className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Max Token Limit</label>
+                                <input type="number" min="1" defaultValue="2000" className="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardLayout>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : appMode === 'revised-v2' ? (
+              selectedRevisedGuardrail ? (
+                <div key="revised-v2-detail" className="mt-6" style={{ background: 'transparent' }}>
+                  <div className="grid grid-cols-[1fr_1fr] gap-6 px-20 min-h-[calc(100vh-200px)]">
+                    {/* Left Pane - Configuration */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-4 mb-6">
+                        <button 
+                          onClick={() => setSelectedRevisedGuardrail(null)}
+                          className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                        >
+                          ← Back to Guardrails
+                        </button>
+                        <HeadingField text={selectedRevisedGuardrail} size="LARGE" marginBelow="NONE" />
+                      </div>
+                      
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <HeadingField text="Configuration" size="MEDIUM" marginBelow="STANDARD" />
+                        {selectedRevisedGuardrail === 'Prompt Injection & Jailbreak Detection' && (
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Sensitivity Threshold</label>
+                              <div className="flex items-center space-x-4">
+                                <input type="range" min="0" max="1" step="0.1" defaultValue="0.5" className="flex-1" />
+                                <span className="text-sm text-gray-600 w-12">0.5</span>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Detection Mode</label>
+                              <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="heuristic">Heuristic (Fast, pattern-based)</option>
+                                <option value="llm-classifier">LLM-Classifier (Model-based)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Action on Match</label>
+                              <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="block">Block (Hard stop)</option>
+                                <option value="sanitize">Sanitize (Strip malicious tokens)</option>
+                                <option value="flag">Flag (Log for audit)</option>
+                              </select>
+                            </div>
+                          </div>
+                        )}
+                        {selectedRevisedGuardrail === 'PII Scrubbing' && (
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Entity Selectors</label>
+                              <div className="grid grid-cols-2 gap-2">
+                                {['SSN', 'EMAIL', 'CREDIT_CARD', 'IP_ADDRESS', 'PHONE_NUMBER', 'ADDRESS'].map(entity => (
+                                  <label key={entity} className="flex items-center">
+                                    <input type="checkbox" className="mr-2" />
+                                    <span className="text-sm">{entity}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Anonymization Method</label>
+                              <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="masking">Masking (***-**-1234)</option>
+                                <option value="redaction">Redaction ([USER_EMAIL])</option>
+                                <option value="hashing">Hashing (Deterministic hash)</option>
+                              </select>
+                            </div>
+                          </div>
+                        )}
+                        {selectedRevisedGuardrail === 'Topic Filtering' && (
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Denied Topics</label>
+                              <textarea 
+                                placeholder="Enter denied topics (comma-separated): crypto, medical advice, politics"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Semantic Similarity Threshold</label>
+                              <div className="flex items-center space-x-4">
+                                <input type="range" min="0" max="1" step="0.01" defaultValue="0.75" className="flex-1" />
+                                <span className="text-sm text-gray-600 w-12">0.75</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {selectedRevisedGuardrail === 'Competitor Filtering' && (
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Competitor Names</label>
+                              <textarea 
+                                placeholder="Enter competitor names (comma-separated): competitor_x, rival_company"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Semantic Similarity Threshold</label>
+                              <div className="flex items-center space-x-4">
+                                <input type="range" min="0" max="1" step="0.01" defaultValue="0.80" className="flex-1" />
+                                <span className="text-sm text-gray-600 w-12">0.80</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {selectedRevisedGuardrail === 'Profanity Filtering' && (
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Severity Level</label>
+                              <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="low">Low (Basic profanity)</option>
+                                <option value="medium">Medium (Moderate profanity)</option>
+                                <option value="high">High (All profanity)</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Action on Match</label>
+                              <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="block">Block (Hard stop)</option>
+                                <option value="replace">Replace with asterisks</option>
+                                <option value="flag">Flag (Log for audit)</option>
+                              </select>
+                            </div>
+                          </div>
+                        )}
+                        {selectedRevisedGuardrail === 'Hallucination & Grounding Checks' && (
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Grounding Threshold</label>
+                              <div className="flex items-center space-x-4">
+                                <input type="range" min="0" max="1" step="0.1" defaultValue="0.7" className="flex-1" />
+                                <span className="text-sm text-gray-600 w-12">0.7</span>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="flex items-center">
+                                <input type="checkbox" className="mr-2" />
+                                <span className="text-sm font-medium text-gray-700">Citations Requirement</span>
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                        {selectedRevisedGuardrail === 'Toxicity & Sentiment Enforcement' && (
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Severity Levels</label>
+                              <div className="grid grid-cols-2 gap-4">
+                                {['Hate', 'Sexual', 'Violence', 'Self-Harm'].map(category => (
+                                  <div key={category}>
+                                    <label className="block text-sm text-gray-600 mb-1">{category}</label>
+                                    <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                      <option value="low">Low</option>
+                                      <option value="medium">Medium</option>
+                                      <option value="high">High</option>
+                                    </select>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {selectedRevisedGuardrail === 'Structural & Format Validation' && (
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Schema Enforcement</label>
+                              <textarea 
+                                placeholder="Enter JSON Schema or validation rules"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md h-24 font-mono text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Retry Limit</label>
+                              <input type="number" min="1" max="10" defaultValue="3" className="w-32 px-3 py-2 border border-gray-300 rounded-md" />
+                            </div>
+                          </div>
+                        )}
+                        {/* Add other guardrail configurations as needed */}
+                      </CardLayout>
+                    </div>
+                    
+                    {/* Right Pane - Testing */}
+                    <div className="space-y-6">
+                      <HeadingField text="Test Configuration" size="LARGE" marginBelow="STANDARD" />
+                      
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <HeadingField text="Input Test" size="MEDIUM" marginBelow="STANDARD" />
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Test Input</label>
+                            <textarea 
+                              placeholder="Enter test input to validate against this guardrail..."
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md h-32"
+                            />
+                          </div>
+                          <ButtonWidget
+                            label="Test Guardrail"
+                            style="SOLID"
+                            color="ACCENT"
+                            size="STANDARD"
+                          />
+                        </div>
+                      </CardLayout>
+                      
+                      <CardLayout padding="MORE" showShadow={true}>
+                        <HeadingField text="Test Results" size="MEDIUM" marginBelow="STANDARD" />
+                        <div className="bg-gray-50 rounded-lg p-4 min-h-32">
+                          <p className="text-gray-500 text-sm">Test results will appear here...</p>
+                        </div>
+                      </CardLayout>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div key="revised-v2-cards" className="mt-6 px-20" style={{ background: 'transparent' }}>
+                  <div className="space-y-8">
+                    {/* Input Guardrail Configurations */}
+                    <div>
+                      <HeadingField text="Input Guardrail Configurations" size="LARGE" marginBelow="STANDARD" />
+                      <p className="text-gray-600 mb-6">These settings control how your application interprets and sanitizes user messages before they reach the model.</p>
+                      
+                      <div className="space-y-4">
+                        {[
+                          { name: 'Prompt Injection & Jailbreak Detection', description: 'Detect and prevent prompt injection attacks and jailbreak attempts', color: 'blue' },
+                          { name: 'PII Scrubbing', description: 'Identify and anonymize personally identifiable information', color: 'green' },
+                          { name: 'Topic Filtering', description: 'Filter content based on denied topics and themes', color: 'purple' },
+                          { name: 'Competitor Filtering', description: 'Block mentions of competitor names and brands', color: 'orange' },
+                          { name: 'Profanity Filtering', description: 'Detect and handle profane language and inappropriate content', color: 'red' }
+                        ].map((guardrail, index) => (
+                          <CardLayout key={index} padding="MORE" showShadow={true}>
+                            <div 
+                              className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                              onClick={() => setSelectedRevisedGuardrail(guardrail.name)}
+                            >
+                              <div className="flex items-start gap-4">
+                                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-${guardrail.color}-100`}>
+                                  <div className={`w-6 h-6 rounded-full bg-${guardrail.color}-500`}></div>
+                                </div>
+                                <div className="flex-1">
+                                  <HeadingField text={guardrail.name} size="MEDIUM" marginBelow="LESS" />
+                                  <p className="text-gray-600">{guardrail.description}</p>
+                                </div>
+                                <div className="text-gray-400">
+                                  →
+                                </div>
+                              </div>
+                            </div>
+                          </CardLayout>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Output Guardrail Configurations */}
+                    <div>
+                      <HeadingField text="Output Guardrail Configurations" size="LARGE" marginBelow="STANDARD" />
+                      <p className="text-gray-600 mb-6">These ensure the model's response adheres to your business rules and safety standards.</p>
+                      
+                      <div className="space-y-4">
+                        {[
+                          { name: 'Hallucination & Grounding Checks', description: 'Verify model responses against source documents and prevent hallucinations', color: 'indigo' },
+                          { name: 'Toxicity & Sentiment Enforcement', description: 'Monitor and control response tone and toxicity levels', color: 'pink' },
+                          { name: 'Structural & Format Validation', description: 'Ensure responses meet structural and formatting requirements', color: 'teal' }
+                        ].map((guardrail, index) => (
+                          <CardLayout key={index} padding="MORE" showShadow={true}>
+                            <div 
+                              className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                              onClick={() => setSelectedRevisedGuardrail(guardrail.name)}
+                            >
+                              <div className="flex items-start gap-4">
+                                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-${guardrail.color}-100`}>
+                                  <div className={`w-6 h-6 rounded-full bg-${guardrail.color}-500`}></div>
+                                </div>
+                                <div className="flex-1">
+                                  <HeadingField text={guardrail.name} size="MEDIUM" marginBelow="LESS" />
+                                  <p className="text-gray-600">{guardrail.description}</p>
+                                </div>
+                                <div className="text-gray-400">
+                                  →
+                                </div>
+                              </div>
+                            </div>
+                          </CardLayout>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : null
             )}
           </div>
         )
@@ -1448,11 +2175,19 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     </span>
                   )}
                 </div>
+                {!selectedCall && (
+                  <ButtonWidget
+                    label="+ Add Evaluation Metric"
+                    style="SOLID"
+                    color="ACCENT"
+                    size="STANDARD"
+                  />
+                )}
               </div>
               {selectedCall && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   <TagField
-                    tags={[{ text: "Relevance: 8.5/10", backgroundColor: "SECONDARY" }]}
+                    tags={[{ text: "Relevance: 85%", backgroundColor: "SECONDARY" }]}
                     size="SMALL"
                     marginBelow="NONE"
                   />
@@ -1462,12 +2197,12 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     marginBelow="NONE"
                   />
                   <TagField
-                    tags={[{ text: "Helpfulness: 9/10", backgroundColor: "SECONDARY" }]}
+                    tags={[{ text: "Helpfulness: 90%", backgroundColor: "SECONDARY" }]}
                     size="SMALL"
                     marginBelow="NONE"
                   />
                   <TagField
-                    tags={[{ text: "Clarity: 8.8/10", backgroundColor: "SECONDARY" }]}
+                    tags={[{ text: "Clarity: 88%", backgroundColor: "SECONDARY" }]}
                     size="SMALL"
                     marginBelow="NONE"
                   />
@@ -1606,10 +2341,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           </thead>
                           <tbody className="divide-y divide-gray-100">
                             {[
-                              { metric: 'Relevance', aiValue: '8.5/10', explanation: 'Response directly addresses the user query with comprehensive information', actualValue: '' },
+                              { metric: 'Relevance', aiValue: '85%', explanation: 'Response directly addresses the user query with comprehensive information', actualValue: '' },
                               { metric: 'Accuracy', aiValue: '94%', explanation: 'Information provided is factually correct based on training data', actualValue: '' },
-                              { metric: 'Helpfulness', aiValue: '9/10', explanation: 'Response provides actionable guidance and clear examples', actualValue: '' },
-                              { metric: 'Clarity', aiValue: '8.8/10', explanation: 'Language is clear and appropriate for the target audience', actualValue: '' },
+                              { metric: 'Helpfulness', aiValue: '90%', explanation: 'Response provides actionable guidance and clear examples', actualValue: '' },
+                              { metric: 'Clarity', aiValue: '88%', explanation: 'Language is clear and appropriate for the target audience', actualValue: '' },
                               { metric: 'Safety', aiValue: 'Pass', explanation: 'No harmful, biased, or inappropriate content detected', actualValue: '' }
                             ].map((row, index) => (
                               <tr key={index} className="hover:bg-gray-50">
@@ -1617,11 +2352,25 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.aiValue}</td>
                                 <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">{row.explanation}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  <input 
-                                    type="text" 
-                                    placeholder="Enter actual value"
-                                    className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  />
+                                  {row.metric === 'Safety' ? (
+                                    <select className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                      <option value="">Select value</option>
+                                      <option value="pass">Pass</option>
+                                      <option value="fail">Fail</option>
+                                    </select>
+                                  ) : (
+                                    <div className="flex items-center">
+                                      <input 
+                                        type="number" 
+                                        min="0"
+                                        max="100"
+                                        step="0.1"
+                                        placeholder="Enter percentage"
+                                        className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      />
+                                      <span className="ml-1 text-gray-500">%</span>
+                                    </div>
+                                  )}
                                 </td>
                               </tr>
                             ))}
@@ -1633,6 +2382,89 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 )
               ) : (
                 <div className="space-y-6">
+                  {/* Evaluation Metrics Overview */}
+                  <div className="grid grid-cols-5 gap-4">
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
+                          background: 'linear-gradient(to bottom, rgba(34, 197, 94, 0.6) 0%, rgba(34, 197, 94, 0.1) 100%)',
+                          borderColor: '#22c55e'
+                        }}>
+                          <Icon icon="Target" size="MEDIUM" />
+                        </div>
+                        <div className="flex-1">
+                          <HeadingField text="Relevance" size="MEDIUM" marginBelow="LESS" />
+                          <div className="text-2xl font-bold text-gray-900">88%</div>
+                          <p className="text-gray-600 text-sm">AI Accuracy</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
+                          background: 'linear-gradient(to bottom, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0.1) 100%)',
+                          borderColor: '#3b82f6'
+                        }}>
+                          <Icon icon="CheckCircle" size="MEDIUM" />
+                        </div>
+                        <div className="flex-1">
+                          <HeadingField text="Accuracy" size="MEDIUM" marginBelow="LESS" />
+                          <div className="text-2xl font-bold text-gray-900">92%</div>
+                          <p className="text-gray-600 text-sm">AI Accuracy</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
+                          background: 'linear-gradient(to bottom, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                          borderColor: '#8b5cf6'
+                        }}>
+                          <Icon icon="Heart" size="MEDIUM" />
+                        </div>
+                        <div className="flex-1">
+                          <HeadingField text="Helpfulness" size="MEDIUM" marginBelow="LESS" />
+                          <div className="text-2xl font-bold text-gray-900">97%</div>
+                          <p className="text-gray-600 text-sm">AI Accuracy</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
+                          background: 'linear-gradient(to bottom, rgba(249, 115, 22, 0.6) 0%, rgba(249, 115, 22, 0.1) 100%)',
+                          borderColor: '#f97316'
+                        }}>
+                          <Icon icon="Eye" size="MEDIUM" />
+                        </div>
+                        <div className="flex-1">
+                          <HeadingField text="Clarity" size="MEDIUM" marginBelow="LESS" />
+                          <div className="text-2xl font-bold text-gray-900">93%</div>
+                          <p className="text-gray-600 text-sm">AI Accuracy</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
+                          background: 'linear-gradient(to bottom, rgba(239, 68, 68, 0.6) 0%, rgba(239, 68, 68, 0.1) 100%)',
+                          borderColor: '#ef4444'
+                        }}>
+                          <Icon icon="Shield" size="MEDIUM" />
+                        </div>
+                        <div className="flex-1">
+                          <HeadingField text="Safety" size="MEDIUM" marginBelow="LESS" />
+                          <div className="text-2xl font-bold text-gray-900">98%</div>
+                          <p className="text-gray-600 text-sm">AI Accuracy</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                     <div className="px-6 py-4 border-b border-gray-100">
                       <HeadingField text="AI Calls" size="MEDIUM" marginBelow="NONE" />
@@ -1717,11 +2549,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{call.cost}</td>
                               <td className="px-6 py-4 text-sm">
                                 <div className="flex flex-wrap gap-1">
-                                  <TagField tags={[{ text: "Relevance: 8.5/10", backgroundColor: "SECONDARY" }]} size="SMALL" marginBelow="NONE" />
-                                  <TagField tags={[{ text: "Accuracy: 94%", backgroundColor: "SECONDARY" }]} size="SMALL" marginBelow="NONE" />
-                                  <TagField tags={[{ text: "Helpfulness: 9/10", backgroundColor: "SECONDARY" }]} size="SMALL" marginBelow="NONE" />
-                                  <TagField tags={[{ text: "Clarity: 8.8/10", backgroundColor: "SECONDARY" }]} size="SMALL" marginBelow="NONE" />
-                                  <TagField tags={[{ text: "Safety: Pass", backgroundColor: "POSITIVE" }]} size="SMALL" marginBelow="NONE" />
+                                  <TagField tags={[{ text: "Relevance: 85%", backgroundColor: "POSITIVE" }]} size="SMALL" marginBelow="NONE" />
+                                  <TagField tags={[{ text: "Accuracy: 94%", backgroundColor: "ACCENT" }]} size="SMALL" marginBelow="NONE" />
+                                  <TagField tags={[{ text: "Helpfulness: 90%", backgroundColor: "ACCENT" }]} size="SMALL" marginBelow="NONE" />
+                                  <TagField tags={[{ text: "Clarity: 88%", backgroundColor: "STANDARD" }]} size="SMALL" marginBelow="NONE" />
+                                  <TagField tags={[{ text: "Safety: Pass", backgroundColor: "NEGATIVE" }]} size="SMALL" marginBelow="NONE" />
                                 </div>
                               </td>                            </tr>
                           ))}

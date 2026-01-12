@@ -14,7 +14,7 @@ import Observe from './pages/observe'
 function MainApp() {
   const [activeSection, setActiveSection] = useState('home')
   const [cardStyle, setCardStyle] = useState<'white' | 'glass' | 'greyscale'>('white')
-  const [appMode, setAppMode] = useState<'v1' | 'v2' | 'future'>('future')
+  const [appMode, setAppMode] = useState<'v1' | 'v2' | 'future' | 'revised' | 'revised-v2'>('future')
   const [showWaffleMenu, setShowWaffleMenu] = useState(false)
 
   const waffleApps = [
@@ -63,12 +63,14 @@ function MainApp() {
           <div className="flex items-center gap-3">
             <select 
               value={appMode}
-              onChange={(e) => setAppMode(e.target.value as 'v1' | 'v2' | 'future')}
+              onChange={(e) => setAppMode(e.target.value as 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2')}
               className="px-4 py-2 pr-8 rounded-md bg-white/20 backdrop-blur-md border border-white/30 text-black cursor-pointer"
             >
               <option value="v1" className="text-gray-900">V1</option>
               <option value="v2" className="text-gray-900">V2</option>
               <option value="future" className="text-gray-900">Future State</option>
+              <option value="revised" className="text-gray-900">Revised</option>
+              <option value="revised-v2" className="text-gray-900">Revised V2</option>
             </select>
             <select 
               value={cardStyle}
