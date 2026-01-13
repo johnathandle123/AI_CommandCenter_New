@@ -63,6 +63,16 @@ export default function Home() {
             <p className="text-gray-700">Monitor AI system behavior in real-time, track metrics, and gain insights into usage patterns and anomalies.</p>
           </CardLayout>
         </div>
+
+        <div 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => setLocation('/topic-filtering')}
+        >
+          <CardLayout padding="MORE" showShadow={true}>
+            <HeadingField text="Topic Filtering Configuration" size="MEDIUM" marginBelow="LESS" />
+            <p className="text-gray-700">Configure topic filtering to ensure your AI stays within professional boundaries using keyword-based, semantic, or domain constraint approaches.</p>
+          </CardLayout>
+        </div>
       </div>
     </div>
   )

@@ -10,11 +10,12 @@ import Home from './pages/home'
 import Protect from './pages/protect'
 import Evaluate from './pages/evaluate'
 import Observe from './pages/observe'
+import TopicFiltering from './pages/topic-filtering'
 
 function MainApp() {
   const [activeSection, setActiveSection] = useState('home')
   const [cardStyle, setCardStyle] = useState<'white' | 'glass' | 'greyscale'>('white')
-  const [appMode, setAppMode] = useState<'v1' | 'v2' | 'future' | 'revised' | 'revised-v2'>('future')
+  const [appMode, setAppMode] = useState<'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3'>('future')
   const [showWaffleMenu, setShowWaffleMenu] = useState(false)
 
   const waffleApps = [
@@ -63,7 +64,7 @@ function MainApp() {
           <div className="flex items-center gap-3">
             <select 
               value={appMode}
-              onChange={(e) => setAppMode(e.target.value as 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2')}
+              onChange={(e) => setAppMode(e.target.value as 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3')}
               className="px-4 py-2 pr-8 rounded-md bg-white/20 backdrop-blur-md border border-white/30 text-black cursor-pointer"
             >
               <option value="v1" className="text-gray-900">V1</option>
@@ -71,6 +72,7 @@ function MainApp() {
               <option value="future" className="text-gray-900">Future State</option>
               <option value="revised" className="text-gray-900">Revised</option>
               <option value="revised-v2" className="text-gray-900">Revised V2</option>
+              <option value="revised-v3" className="text-gray-900">Revised V3</option>
             </select>
             <select 
               value={cardStyle}
@@ -192,6 +194,7 @@ function App() {
       <Route path="/protect" component={Protect} />
       <Route path="/evaluate" component={Evaluate} />
       <Route path="/observe" component={Observe} />
+      <Route path="/topic-filtering" component={TopicFiltering} />
       <Route path="/dashboard" component={MainApp} />
       <Route path="/" component={Home} />
     </Switch>

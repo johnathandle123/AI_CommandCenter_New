@@ -399,7 +399,7 @@ interface TabsInterfaceProps {
   activeSection: string
   cardStyle?: 'white' | 'glass' | 'greyscale'
   onSectionChange?: (section: string) => void
-  appMode?: 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2'
+  appMode?: 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3'
 }
 
 export default function TabsInterface({ activeSection, cardStyle = 'glass', onSectionChange, appMode = 'future' }: TabsInterfaceProps) {
@@ -421,6 +421,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [observeTab, setObserveTab] = useState<'performance' | 'events'>('performance')
   const [evaluateCallTab, setEvaluateCallTab] = useState<'general' | 'evals'>('general')
   const [selectedRevisedGuardrail, setSelectedRevisedGuardrail] = useState<string | null>(null)
+  // V3 state variables
+  const [selectedV3GuardrailType, setSelectedV3GuardrailType] = useState<string | null>(null)
+  const [selectedV3IndividualGuardrail, setSelectedV3IndividualGuardrail] = useState<string | null>(null)
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
   const [observeScrolled, setObserveScrolled] = useState(false)
@@ -2182,6 +2185,55 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         <p className="text-sm text-gray-600 mt-1 mb-3">
                           Configure the specific settings and parameters for this guardrail.
                         </p>
+                        {selectedRevisedGuardrail === 'SSN & Credit Card Protection' && (
+                          <div className="space-y-4">
+                            {/* Entity Selection */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <label className="block text-sm font-medium text-gray-700 mb-3">Entity Selection</label>
+                              <div className="space-y-3">
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" defaultChecked className="rounded" />
+                                  <span className="text-sm">Social Security Numbers</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" defaultChecked className="rounded" />
+                                  <span className="text-sm">Credit Card Numbers</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* Anonymization Method */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <label className="block text-sm font-medium text-gray-700 mb-3">Anonymization Method</label>
+                              <div className="space-y-3">
+                                <label className="flex items-start space-x-2">
+                                  <input type="radio" name="anonymization" value="masking" defaultChecked className="mt-1" />
+                                  <div>
+                                    <span className="text-sm font-medium">Masking</span>
+                                    <div className="text-sm text-gray-600">Replace with asterisks (e.g., ***-**-1234)</div>
+                                  </div>
+                                </label>
+                                <label className="flex items-start space-x-2">
+                                  <input type="radio" name="anonymization" value="redaction" className="mt-1" />
+                                  <div>
+                                    <span className="text-sm font-medium">Redaction</span>
+                                    <div className="text-sm text-gray-600">Remove completely (e.g., [REDACTED])</div>
+                                  </div>
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* Confidence Score */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Confidence Score Threshold</label>
+                              <div className="flex items-center space-x-4">
+                                <input type="range" min="0.5" max="1.0" step="0.05" defaultValue="0.85" className="flex-1" />
+                                <span className="text-sm text-gray-600 w-12">0.85</span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">Minimum confidence required to detect PII</p>
+                            </div>
+                          </div>
+                        )}
                         {selectedRevisedGuardrail === 'Prompt Injection & Jailbreak Detection' && (
                           <div className="space-y-4">
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
@@ -2936,6 +2988,571 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="flex-1">
                                 <HeadingField text="Structural & Format Validation" size="MEDIUM" marginBelow="LESS" />
                                 <p className="text-gray-600">Make sure responses follow the correct format and structure</p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardLayout>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : appMode === 'revised-v3' ? (
+              selectedV3IndividualGuardrail ? (
+                <div className="flex flex-col h-screen">
+                  {/* Header - Sticky */}
+                  <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex-shrink-0">
+                    <button 
+                      onClick={() => setSelectedV3IndividualGuardrail(null)}
+                      className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-2 cursor-pointer"
+                    >
+                      <ChevronLeft size={20} />
+                      <span className="font-medium">Back to {selectedV3GuardrailType} List</span>
+                    </button>
+                    <div className="flex items-center justify-between">
+                      <h1 className="text-2xl font-bold">{selectedV3IndividualGuardrail}</h1>
+                      <ButtonWidget 
+                        label="Save Changes" 
+                        style="SOLID" 
+                        color="ACCENT"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Split View - Fill remaining height */}
+                  <div className="flex flex-1 overflow-hidden">
+                    {/* Left Pane - Configure */}
+                    <div className="w-1/2 border-r border-gray-200 p-8 overflow-y-auto bg-gray-50">
+                      <div className="mb-8">
+                        <HeadingField text="Configuration" size="MEDIUM" marginBelow="NONE" />
+                        <p className="text-sm text-gray-600 mt-1 mb-3">
+                          Configure the specific settings and parameters for this guardrail.
+                        </p>
+                        
+                        {/* Jailbreak Detection Configurations */}
+                        {(selectedV3IndividualGuardrail === 'Basic Prompt Injection Detection' || 
+                          selectedV3IndividualGuardrail === 'Advanced Jailbreak Prevention' ||
+                          selectedV3IndividualGuardrail === 'Context Manipulation Guard' ||
+                          selectedV3IndividualGuardrail === 'Role-play Attack Detection' ||
+                          selectedV3IndividualGuardrail === 'Instruction Override Protection' ||
+                          selectedV3IndividualGuardrail === 'Multi-turn Jailbreak Detection' ||
+                          selectedV3IndividualGuardrail === 'Encoding-based Attack Prevention') && (
+                          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Sensitivity Threshold</label>
+                            <div className="mb-2">
+                              <input type="range" min="0" max="1" step="0.1" defaultValue="0.5" className="w-full" />
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <div className="text-center">
+                                <div className="font-medium text-gray-700">Permissive</div>
+                                <div className="text-gray-500">Block only obvious attacks</div>
+                                <div className="text-gray-400 italic mt-1">"Ignore all instructions"</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="font-medium text-gray-700">Balanced</div>
+                                <div className="text-gray-500">Block most jailbreak attempts</div>
+                                <div className="text-gray-400 italic mt-1">"Forget your rules"</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="font-medium text-gray-700">Strict</div>
+                                <div className="text-gray-500">Block all suspicious prompts</div>
+                                <div className="text-gray-400 italic mt-1">"Let's roleplay as..."</div>
+                              </div>
+                            </div>
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Detection Mode</label>
+                              <div className="relative">
+                                <div 
+                                  className="w-full px-3 py-2 mb-4 cursor-pointer flex items-center justify-between"
+                                  style={{ 
+                                    border: '2px solid #6b7280', 
+                                    borderRadius: '6px', 
+                                    backgroundColor: '#ffffff',
+                                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                                  }}
+                                  onClick={(e) => {
+                                    const dropdown = e.currentTarget.nextElementSibling as HTMLElement;
+                                    dropdown.classList.toggle('hidden');
+                                  }}
+                                >
+                                  <div>
+                                    <div className="font-medium">Pattern matching</div>
+                                    <div className="text-sm text-gray-600">Fast detection using specific phrases and patterns</div>
+                                  </div>
+                                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </div>
+                                <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                                  <div 
+                                    className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
+                                    onClick={(e) => {
+                                      const parent = e.currentTarget.parentElement?.parentElement;
+                                      const trigger = parent?.querySelector('div') as HTMLElement;
+                                      const heuristicConfig = parent?.parentElement?.querySelector('.heuristic-config');
+                                      const llmConfig = parent?.parentElement?.querySelector('.llm-config');
+                                      
+                                      if (trigger && heuristicConfig && llmConfig) {
+                                        trigger.innerHTML = `
+                                          <div>
+                                            <div class="font-medium">Pattern matching</div>
+                                            <div class="text-sm text-gray-600">Fast detection using specific phrases and patterns</div>
+                                          </div>
+                                          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                          </svg>
+                                        `;
+                                        heuristicConfig.classList.remove('hidden');
+                                        llmConfig.classList.add('hidden');
+                                      }
+                                      e.currentTarget.parentElement?.classList.add('hidden');
+                                    }}
+                                  >
+                                    <div className="font-medium">Pattern matching</div>
+                                    <div className="text-sm text-gray-600">Fast detection using specific phrases and patterns</div>
+                                  </div>
+                                  <div 
+                                    className="px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                                    onClick={(e) => {
+                                      const parent = e.currentTarget.parentElement?.parentElement;
+                                      const trigger = parent?.querySelector('div') as HTMLElement;
+                                      const heuristicConfig = parent?.parentElement?.querySelector('.heuristic-config');
+                                      const llmConfig = parent?.parentElement?.querySelector('.llm-config');
+                                      
+                                      if (trigger && heuristicConfig && llmConfig) {
+                                        trigger.innerHTML = `
+                                          <div>
+                                            <div class="font-medium">AI analysis</div>
+                                            <div class="text-sm text-gray-600">Smart detection using machine learning models</div>
+                                          </div>
+                                          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                          </svg>
+                                        `;
+                                        heuristicConfig.classList.add('hidden');
+                                        llmConfig.classList.remove('hidden');
+                                      }
+                                      e.currentTarget.parentElement?.classList.add('hidden');
+                                    }}
+                                  >
+                                    <div className="font-medium">AI analysis</div>
+                                    <div className="text-sm text-gray-600">Smart detection using machine learning models</div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Heuristic Configuration */}
+                              <div className="heuristic-config space-y-4">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <label className="block text-sm font-medium text-gray-700">Blocked Phrases</label>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      <input type="text" defaultValue="ignore all previous instructions" className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <input type="text" defaultValue="DAN mode" className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <input type="text" defaultValue="system prompt" className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* LLM-Classifier Configuration */}
+                              <div className="llm-config hidden space-y-4">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Attack Types to Detect</label>
+                                  <div className="space-y-3">
+                                    <label className="flex items-start">
+                                      <input type="checkbox" className="mr-3 mt-1" defaultChecked />
+                                      <div>
+                                        <span className="text-sm font-medium">Privilege escalation</span>
+                                        <div className="text-sm text-gray-600">Trying to gain admin access</div>
+                                      </div>
+                                    </label>
+                                    <label className="flex items-start">
+                                      <input type="checkbox" className="mr-3 mt-1" defaultChecked />
+                                      <div>
+                                        <span className="text-sm font-medium">Goal hijacking</span>
+                                        <div className="text-sm text-gray-600">Changing the AI's purpose</div>
+                                      </div>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* PII Scrubbing Configurations */}
+                        {(selectedV3IndividualGuardrail === 'Email & Phone Detection' ||
+                          selectedV3IndividualGuardrail === 'SSN & Credit Card Protection' ||
+                          selectedV3IndividualGuardrail === 'Address & Location Scrubbing' ||
+                          selectedV3IndividualGuardrail === 'Name & Identity Protection' ||
+                          selectedV3IndividualGuardrail === 'Custom PII Pattern Detection' ||
+                          selectedV3IndividualGuardrail === 'Financial Information Guard' ||
+                          selectedV3IndividualGuardrail === 'Medical Record Protection') && (
+                          <div className="space-y-4">
+                            {/* Entity Selection */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <label className="block text-sm font-medium text-gray-700 mb-3">Entity Selection</label>
+                              <div className="space-y-3">
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" defaultChecked className="rounded" />
+                                  <span className="text-sm">Email Addresses</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" defaultChecked className="rounded" />
+                                  <span className="text-sm">Phone Numbers</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" defaultChecked className="rounded" />
+                                  <span className="text-sm">Social Security Numbers</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" defaultChecked className="rounded" />
+                                  <span className="text-sm">Credit Card Numbers</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" className="rounded" />
+                                  <span className="text-sm">Physical Addresses</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" className="rounded" />
+                                  <span className="text-sm">Personal Names</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                  <input type="checkbox" className="rounded" />
+                                  <span className="text-sm">IP Addresses</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* Anonymization Method */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <label className="block text-sm font-medium text-gray-700 mb-3">Anonymization Method</label>
+                              <div className="space-y-3">
+                                <label className="flex items-start space-x-2">
+                                  <input type="radio" name="v3-anonymization" value="masking" defaultChecked className="mt-1" />
+                                  <div>
+                                    <span className="text-sm font-medium">Masking</span>
+                                    <div className="text-sm text-gray-600">Replace with asterisks (e.g., john@*****.com)</div>
+                                  </div>
+                                </label>
+                                <label className="flex items-start space-x-2">
+                                  <input type="radio" name="v3-anonymization" value="redaction" className="mt-1" />
+                                  <div>
+                                    <span className="text-sm font-medium">Redaction</span>
+                                    <div className="text-sm text-gray-600">Remove completely (e.g., [REDACTED])</div>
+                                  </div>
+                                </label>
+                                <label className="flex items-start space-x-2">
+                                  <input type="radio" name="v3-anonymization" value="hashing" className="mt-1" />
+                                  <div>
+                                    <span className="text-sm font-medium">Hashing</span>
+                                    <div className="text-sm text-gray-600">Replace with hash (e.g., #a1b2c3d4)</div>
+                                  </div>
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* Confidence Score */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Confidence Score Threshold</label>
+                              <div className="flex items-center space-x-4">
+                                <input type="range" min="0.5" max="1.0" step="0.05" defaultValue="0.85" className="flex-1" />
+                                <span className="text-sm text-gray-600 w-12">0.85</span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">Minimum confidence required to detect PII (higher = fewer false positives)</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Pane - Test */}
+                    <div className="w-1/2 p-8 overflow-y-auto">
+                      <div className="mb-8">
+                        <HeadingField text="Test Guardrail" size="MEDIUM" marginBelow="NONE" />
+                        <p className="text-sm text-gray-600 mt-1 mb-3">
+                          Test your guardrail configuration with sample inputs.
+                        </p>
+                        
+                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm h-96 flex flex-col">
+                          <div className="p-4 border-b border-gray-200">
+                            <h3 className="font-medium">Test Input</h3>
+                          </div>
+                          <div className="flex-1 p-4">
+                            <textarea 
+                              placeholder="Enter test input here..."
+                              className="w-full h-full resize-none border-none outline-none"
+                            />
+                          </div>
+                          <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0">
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                placeholder="Type a message to test..."
+                                className="flex-1 px-4 py-2 border border-gray-300 rounded-md cursor-text"
+                              />
+                              <ButtonWidget
+                                label="Test"
+                                style="SOLID"
+                                color="ACCENT"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : selectedV3GuardrailType ? (
+                <div key="v3-individual-list" className="mt-6 px-48" style={{ background: 'transparent' }}>
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4 mb-6">
+                      <button 
+                        onClick={() => setSelectedV3GuardrailType(null)}
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 cursor-pointer"
+                      >
+                        <ChevronLeft size={20} />
+                        <span className="font-medium">Back to All Guardrails</span>
+                      </button>
+                      <HeadingField text={`${selectedV3GuardrailType} Guardrails`} size="LARGE" marginBelow="NONE" />
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {selectedV3GuardrailType === 'Prompt Injection & Jailbreak Detection' && (
+                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                          <table className="w-full">
+                            <thead className="bg-gray-50 border-b border-gray-200">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {[
+                                { name: 'Basic Prompt Injection Detection', description: 'Standard protection against common injection attacks', status: 'Active', apps: 12 },
+                                { name: 'Advanced Jailbreak Prevention', description: 'Enhanced detection for sophisticated bypass attempts', status: 'Active', apps: 8 },
+                                { name: 'Context Manipulation Guard', description: 'Prevents attempts to alter system context', status: 'Inactive', apps: 5 },
+                                { name: 'Role-play Attack Detection', description: 'Blocks attempts to make AI assume different roles', status: 'Active', apps: 15 },
+                                { name: 'Instruction Override Protection', description: 'Prevents users from overriding system instructions', status: 'Active', apps: 22 },
+                                { name: 'Multi-turn Jailbreak Detection', description: 'Detects jailbreak attempts across conversation turns', status: 'Active', apps: 7 },
+                                { name: 'Encoding-based Attack Prevention', description: 'Blocks attempts using Base64, hex, or other encodings', status: 'Inactive', apps: 3 }
+                              ].map((guardrail, index) => (
+                                <tr 
+                                  key={index} 
+                                  className="hover:bg-gray-50 cursor-pointer"
+                                  onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}
+                                >
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm font-medium text-gray-900">{guardrail.name}</div>
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <div className="text-sm text-gray-600">{guardrail.description}</div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                      guardrail.status === 'Active' 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-gray-100 text-gray-800'
+                                    }`}>
+                                      {guardrail.status}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div 
+                                      className="relative inline-block"
+                                      onMouseEnter={(e) => {
+                                        const tooltip = e.currentTarget.querySelector('.tooltip') as HTMLElement;
+                                        if (tooltip) tooltip.classList.remove('hidden');
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        const tooltip = e.currentTarget.querySelector('.tooltip') as HTMLElement;
+                                        if (tooltip) tooltip.classList.add('hidden');
+                                      }}
+                                    >
+                                      <span className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+                                        {guardrail.apps} apps
+                                      </span>
+                                      <div className="tooltip hidden absolute z-50 w-64 p-3 bg-white border border-gray-200 rounded-lg shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+                                        <div className="text-sm font-medium mb-2">Applications using this guardrail:</div>
+                                        <div className="space-y-1 text-xs text-gray-600">
+                                          <div>• Customer Support Bot</div>
+                                          <div>• Content Moderation AI</div>
+                                          <div>• Document Assistant</div>
+                                          <div>• Code Review Helper</div>
+                                          <div>• Email Classifier</div>
+                                          <div>• Chat Assistant</div>
+                                          <div>• Knowledge Base AI</div>
+                                          <div>• Translation Service</div>
+                                          <div>• Sentiment Analyzer</div>
+                                          <div>• Content Generator</div>
+                                          {guardrail.apps > 10 && (
+                                            <button 
+                                              className="text-blue-600 hover:text-blue-800 mt-2"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Trigger modal here
+                                              }}
+                                            >
+                                              View all {guardrail.apps} applications →
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div className="text-gray-400">→</div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                      
+                      {selectedV3GuardrailType === 'PII Scrubbing' && (
+                        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                          <table className="w-full">
+                            <thead className="bg-gray-50 border-b border-gray-200">
+                              <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {[
+                                { name: 'Email & Phone Detection', description: 'Detect and mask email addresses and phone numbers', status: 'Active', apps: 18 },
+                                { name: 'SSN & Credit Card Protection', description: 'Find and protect social security numbers and credit cards', status: 'Active', apps: 14 },
+                                { name: 'Address & Location Scrubbing', description: 'Remove physical addresses and location data', status: 'Inactive', apps: 9 },
+                                { name: 'Name & Identity Protection', description: 'Detect and anonymize personal names and identities', status: 'Active', apps: 25 },
+                                { name: 'Custom PII Pattern Detection', description: 'User-defined patterns for organization-specific PII', status: 'Inactive', apps: 6 },
+                                { name: 'Financial Information Guard', description: 'Protects bank account numbers and routing information', status: 'Active', apps: 11 },
+                                { name: 'Medical Record Protection', description: 'Detects and scrubs medical record numbers and health data', status: 'Active', apps: 4 }
+                              ].map((guardrail, index) => (
+                                <tr 
+                                  key={index} 
+                                  className="hover:bg-gray-50 cursor-pointer"
+                                  onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}
+                                >
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm font-medium text-gray-900">{guardrail.name}</div>
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <div className="text-sm text-gray-600">{guardrail.description}</div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                      guardrail.status === 'Active' 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-gray-100 text-gray-800'
+                                    }`}>
+                                      {guardrail.status}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div 
+                                      className="relative inline-block"
+                                      onMouseEnter={(e) => {
+                                        const tooltip = e.currentTarget.querySelector('.tooltip') as HTMLElement;
+                                        if (tooltip) tooltip.classList.remove('hidden');
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        const tooltip = e.currentTarget.querySelector('.tooltip') as HTMLElement;
+                                        if (tooltip) tooltip.classList.add('hidden');
+                                      }}
+                                    >
+                                      <span className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+                                        {guardrail.apps} apps
+                                      </span>
+                                      <div className="tooltip hidden absolute z-50 w-64 p-3 bg-white border border-gray-200 rounded-lg shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+                                        <div className="text-sm font-medium mb-2">Applications using this guardrail:</div>
+                                        <div className="space-y-1 text-xs text-gray-600">
+                                          <div>• HR Management System</div>
+                                          <div>• Customer Onboarding</div>
+                                          <div>• Financial Services Bot</div>
+                                          <div>• Healthcare Assistant</div>
+                                          <div>• Legal Document AI</div>
+                                          <div>• Insurance Claims Bot</div>
+                                          <div>• Banking Chatbot</div>
+                                          <div>• Recruitment Platform</div>
+                                          <div>• Tax Preparation AI</div>
+                                          <div>• Identity Verification</div>
+                                          {guardrail.apps > 10 && (
+                                            <button 
+                                              className="text-blue-600 hover:text-blue-800 mt-2"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Trigger modal here
+                                              }}
+                                            >
+                                              View all {guardrail.apps} applications →
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div className="text-gray-400">→</div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div key="v3-type-cards" className="mt-6 px-48" style={{ background: 'transparent' }}>
+                  <div className="space-y-8">
+                    <div>
+                      <HeadingField text="Input Protection" size="LARGE" marginBelow="STANDARD" />
+                      <p className="text-gray-600 mb-6">These settings protect your AI by checking user messages before they're processed.</p>
+                      
+                      <div className="space-y-4">
+                        <CardLayout padding="MORE" showShadow={true}>
+                          <div 
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            onClick={() => setSelectedV3GuardrailType('Prompt Injection & Jailbreak Detection')}
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
+                                <Icon icon="Shield" size="MEDIUM" color="blue" />
+                              </div>
+                              <div className="flex-1">
+                                <HeadingField text="Prompt Injection & Jailbreak Detection" size="MEDIUM" marginBelow="LESS" />
+                                <p className="text-gray-600">Block attempts to manipulate or trick the AI system</p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardLayout>
+                        <CardLayout padding="MORE" showShadow={true}>
+                          <div 
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            onClick={() => setSelectedV3GuardrailType('PII Scrubbing')}
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
+                                <Icon icon="Eye" size="MEDIUM" color="green" />
+                              </div>
+                              <div className="flex-1">
+                                <HeadingField text="PII Scrubbing" size="MEDIUM" marginBelow="LESS" />
+                                <p className="text-gray-600">Find and protect personal information like emails and phone numbers</p>
                               </div>
                             </div>
                           </div>
