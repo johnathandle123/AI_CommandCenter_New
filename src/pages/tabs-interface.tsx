@@ -399,7 +399,7 @@ interface TabsInterfaceProps {
   activeSection: string
   cardStyle?: 'white' | 'glass' | 'greyscale'
   onSectionChange?: (section: string) => void
-  appMode?: 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3'
+  appMode?: 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3' | 'revised-v4'
 }
 
 export default function TabsInterface({ activeSection, cardStyle = 'glass', onSectionChange, appMode = 'future' }: TabsInterfaceProps) {
@@ -429,6 +429,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [observeScrolled, setObserveScrolled] = useState(false)
   const [selectedCall, setSelectedCall] = useState<any>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  
+  // V4 filter states
+  const [v4NameFilter, setV4NameFilter] = useState('')
+  const [v4TypeFilter, setV4TypeFilter] = useState('')
+  const [v4StatusFilter, setV4StatusFilter] = useState('')
+  const [v4AppsFilter, setV4AppsFilter] = useState('')
+  const [v4ObjectsFilter, setV4ObjectsFilter] = useState('')
   
   useEffect(() => {
     const activeRef = protectTab === 'performance' ? performanceRef : configurationRef
@@ -866,7 +873,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            {(selectedGuardrail === null && (appMode !== 'revised-v2' || !selectedRevisedGuardrail) && (appMode !== 'revised-v3' || !selectedV3IndividualGuardrail)) && (
+            {(selectedGuardrail === null && (appMode !== 'revised-v2' || !selectedRevisedGuardrail) && (appMode !== 'revised-v3' || !selectedV3IndividualGuardrail) && (appMode !== 'revised-v4' || !selectedV3IndividualGuardrail)) && (
             <div className={`sticky top-0 z-10 ${headerBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${protectScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
               {appMode === 'v2' && (
                 <div className="relative flex gap-8 mb-4 border-b border-white/30">
@@ -4872,6 +4879,202 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   </div>
                 </div>
               )
+            ) : appMode === 'revised-v4' ? (
+              <div key="v4-flat-table" className="mt-6 px-48" style={{ background: 'transparent' }}>
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <div className="flex flex-col gap-2">
+                            <span>Guardrail Name</span>
+                            <input
+                              type="text"
+                              placeholder="Filter by name..."
+                              value={v4NameFilter}
+                              onChange={(e) => setV4NameFilter(e.target.value)}
+                              className="px-2 py-1 text-xs border border-gray-300 rounded"
+                            />
+                          </div>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <div className="flex flex-col gap-2">
+                            <span>Type</span>
+                            <input
+                              type="text"
+                              placeholder="Filter by type..."
+                              value={v4TypeFilter}
+                              onChange={(e) => setV4TypeFilter(e.target.value)}
+                              className="px-2 py-1 text-xs border border-gray-300 rounded"
+                            />
+                          </div>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <div className="flex flex-col gap-2">
+                            <span>Status</span>
+                            <input
+                              type="text"
+                              placeholder="Filter by status..."
+                              value={v4StatusFilter}
+                              onChange={(e) => setV4StatusFilter(e.target.value)}
+                              className="px-2 py-1 text-xs border border-gray-300 rounded"
+                            />
+                          </div>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <div className="flex flex-col gap-2">
+                            <span>Applications</span>
+                            <input
+                              type="text"
+                              placeholder="Filter by apps..."
+                              value={v4AppsFilter}
+                              onChange={(e) => setV4AppsFilter(e.target.value)}
+                              className="px-2 py-1 text-xs border border-gray-300 rounded"
+                            />
+                          </div>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <div className="flex flex-col gap-2">
+                            <span>Appian Objects</span>
+                            <input
+                              type="text"
+                              placeholder="Filter by objects..."
+                              value={v4ObjectsFilter}
+                              onChange={(e) => setV4ObjectsFilter(e.target.value)}
+                              className="px-2 py-1 text-xs border border-gray-300 rounded"
+                            />
+                          </div>
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {[
+                        // Prompt Injection (7 items)
+                        { name: 'Basic Prompt Injection Detection', type: 'Prompt Injection', description: 'Standard protection against common injection attacks', status: 'Active', apps: 12, objects: 45 },
+                        { name: 'Advanced Jailbreak Prevention', type: 'Prompt Injection', description: 'Enhanced detection for sophisticated bypass attempts', status: 'Active', apps: 8, objects: 28 },
+                        { name: 'Context Manipulation Guard', type: 'Prompt Injection', description: 'Prevents attempts to alter system context', status: 'Inactive', apps: 5, objects: 15 },
+                        { name: 'Role-play Attack Detection', type: 'Prompt Injection', description: 'Blocks attempts to make AI assume different roles', status: 'Active', apps: 15, objects: 52 },
+                        { name: 'Instruction Override Protection', type: 'Prompt Injection', description: 'Prevents users from overriding system instructions', status: 'Active', apps: 22, objects: 78 },
+                        { name: 'Multi-turn Jailbreak Detection', type: 'Prompt Injection', description: 'Detects jailbreak attempts across conversation turns', status: 'Active', apps: 7, objects: 21 },
+                        { name: 'Encoding-based Attack Prevention', type: 'Prompt Injection', description: 'Blocks attempts using Base64, hex, or other encodings', status: 'Inactive', apps: 3, objects: 9 },
+                        
+                        // PII Scrubbing (7 items)
+                        { name: 'Email & Phone Detection', type: 'PII Scrubbing', description: 'Detect and mask email addresses and phone numbers', status: 'Active', apps: 18, objects: 62 },
+                        { name: 'SSN & Credit Card Protection', type: 'PII Scrubbing', description: 'Find and protect social security numbers and credit cards', status: 'Active', apps: 14, objects: 43 },
+                        { name: 'Address & Location Scrubbing', type: 'PII Scrubbing', description: 'Remove physical addresses and location data', status: 'Inactive', apps: 9, objects: 28 },
+                        { name: 'Name & Identity Protection', type: 'PII Scrubbing', description: 'Detect and anonymize personal names and identities', status: 'Active', apps: 25, objects: 71 },
+                        { name: 'Custom PII Pattern Detection', type: 'PII Scrubbing', description: 'User-defined patterns for organization-specific PII', status: 'Inactive', apps: 6, objects: 19 },
+                        { name: 'Financial Information Guard', type: 'PII Scrubbing', description: 'Protects bank account numbers and routing information', status: 'Active', apps: 11, objects: 35 },
+                        { name: 'Medical Record Protection', type: 'PII Scrubbing', description: 'Detects and scrubs medical record numbers and health data', status: 'Active', apps: 4, objects: 16 },
+                        
+                        // Toxic Content (6 items)
+                        { name: 'Profanity Filter', type: 'Toxic Content', description: 'Block explicit language and curse words', status: 'Active', apps: 32, objects: 78 },
+                        { name: 'Hate Speech Detection', type: 'Toxic Content', description: 'Identify and block discriminatory language', status: 'Active', apps: 28, objects: 65 },
+                        { name: 'Harassment Prevention', type: 'Toxic Content', description: 'Detect bullying and threatening language', status: 'Active', apps: 19, objects: 47 },
+                        { name: 'Sexual Content Filter', type: 'Toxic Content', description: 'Block sexually explicit or suggestive content', status: 'Active', apps: 24, objects: 58 },
+                        { name: 'Violence & Gore Detection', type: 'Toxic Content', description: 'Filter graphic violent content', status: 'Inactive', apps: 11, objects: 29 },
+                        { name: 'Self-Harm Prevention', type: 'Toxic Content', description: 'Detect and block self-harm related content', status: 'Active', apps: 16, objects: 41 },
+                        
+                        // Topic Filtering (6 items)
+                        { name: 'Competitor Mention Blocker', type: 'Topic Filtering', description: 'Prevent discussion of competing products', status: 'Active', apps: 21, objects: 54 },
+                        { name: 'Off-Topic Detection', type: 'Topic Filtering', description: 'Keep conversations within allowed domains', status: 'Active', apps: 17, objects: 39 },
+                        { name: 'Political Content Filter', type: 'Topic Filtering', description: 'Block political discussions', status: 'Inactive', apps: 9, objects: 23 },
+                        { name: 'Religious Content Filter', type: 'Topic Filtering', description: 'Prevent religious topic discussions', status: 'Inactive', apps: 7, objects: 18 },
+                        { name: 'Financial Advice Blocker', type: 'Topic Filtering', description: 'Block unauthorized financial recommendations', status: 'Active', apps: 14, objects: 36 },
+                        { name: 'Medical Advice Prevention', type: 'Topic Filtering', description: 'Prevent unauthorized medical guidance', status: 'Active', apps: 18, objects: 45 },
+                        
+                        // Malicious Code (5 items)
+                        { name: 'SQL Injection Detection', type: 'Malicious Code', description: 'Identify SQL injection attempts in inputs', status: 'Active', apps: 26, objects: 67 },
+                        { name: 'XSS Attack Prevention', type: 'Malicious Code', description: 'Block cross-site scripting attempts', status: 'Active', apps: 23, objects: 59 },
+                        { name: 'Command Injection Guard', type: 'Malicious Code', description: 'Prevent shell command injection', status: 'Active', apps: 19, objects: 48 },
+                        { name: 'Malware Signature Detection', type: 'Malicious Code', description: 'Scan for known malware patterns', status: 'Inactive', apps: 8, objects: 22 },
+                        { name: 'Obfuscated Code Detector', type: 'Malicious Code', description: 'Identify deliberately obscured code', status: 'Active', apps: 12, objects: 31 },
+                        
+                        // Hallucination Checks (5 items)
+                        { name: 'RAG Citation Verification', type: 'Hallucination Checks', description: 'Ensure responses cite source documents', status: 'Active', apps: 29, objects: 73 },
+                        { name: 'Factual Consistency Check', type: 'Hallucination Checks', description: 'Verify claims match retrieved context', status: 'Active', apps: 24, objects: 61 },
+                        { name: 'Source Attribution Enforcer', type: 'Hallucination Checks', description: 'Require attribution for all facts', status: 'Inactive', apps: 15, objects: 38 },
+                        { name: 'Confidence Score Threshold', type: 'Hallucination Checks', description: 'Block low-confidence responses', status: 'Active', apps: 31, objects: 76 },
+                        { name: 'Entailment Verification', type: 'Hallucination Checks', description: 'Use NLI to verify logical consistency', status: 'Active', apps: 18, objects: 44 },
+                        
+                        // Output PII (5 items)
+                        { name: 'Response Email Scrubbing', type: 'Output PII', description: 'Remove email addresses from AI outputs', status: 'Active', apps: 22, objects: 56 },
+                        { name: 'Response Phone Redaction', type: 'Output PII', description: 'Mask phone numbers in responses', status: 'Active', apps: 19, objects: 47 },
+                        { name: 'Output SSN Protection', type: 'Output PII', description: 'Prevent SSN leakage in responses', status: 'Active', apps: 27, objects: 68 },
+                        { name: 'Generated Content PII Scan', type: 'Output PII', description: 'Scan AI-generated text for PII', status: 'Active', apps: 33, objects: 80 },
+                        { name: 'Context Window PII Filter', type: 'Output PII', description: 'Remove PII from conversation history', status: 'Inactive', apps: 11, objects: 27 },
+                        
+                        // Harmful Content (5 items)
+                        { name: 'Output Toxicity Filter', type: 'Harmful Content', description: 'Block toxic language in AI responses', status: 'Active', apps: 35, objects: 79 },
+                        { name: 'Bias Detection & Mitigation', type: 'Harmful Content', description: 'Identify and reduce biased outputs', status: 'Active', apps: 28, objects: 64 },
+                        { name: 'Stereotype Prevention', type: 'Harmful Content', description: 'Avoid reinforcing harmful stereotypes', status: 'Active', apps: 21, objects: 52 },
+                        { name: 'Discriminatory Language Block', type: 'Harmful Content', description: 'Prevent discriminatory responses', status: 'Active', apps: 30, objects: 72 },
+                        { name: 'Inappropriate Humor Filter', type: 'Harmful Content', description: 'Block offensive jokes and humor', status: 'Inactive', apps: 14, objects: 33 },
+                        
+                        // Factual Accuracy (5 items)
+                        { name: 'Knowledge Base Cross-Check', type: 'Factual Accuracy', description: 'Verify facts against internal KB', status: 'Active', apps: 26, objects: 63 },
+                        { name: 'External Source Validation', type: 'Factual Accuracy', description: 'Check claims against trusted sources', status: 'Inactive', apps: 12, objects: 31 },
+                        { name: 'Temporal Accuracy Check', type: 'Factual Accuracy', description: 'Verify dates and time-sensitive info', status: 'Active', apps: 17, objects: 42 },
+                        { name: 'Numerical Fact Verification', type: 'Factual Accuracy', description: 'Validate statistics and numbers', status: 'Active', apps: 20, objects: 49 },
+                        { name: 'Entity Relationship Validation', type: 'Factual Accuracy', description: 'Verify relationships between entities', status: 'Active', apps: 15, objects: 37 },
+                        
+                        // Compliance (5 items)
+                        { name: 'HIPAA Compliance Checker', type: 'Compliance', description: 'Ensure healthcare data compliance', status: 'Active', apps: 13, objects: 34 },
+                        { name: 'GDPR Privacy Validator', type: 'Compliance', description: 'Verify GDPR data handling rules', status: 'Active', apps: 25, objects: 61 },
+                        { name: 'SOC 2 Control Enforcement', type: 'Compliance', description: 'Enforce SOC 2 security controls', status: 'Active', apps: 19, objects: 46 },
+                        { name: 'PCI-DSS Payment Guard', type: 'Compliance', description: 'Protect payment card information', status: 'Active', apps: 16, objects: 39 },
+                        { name: 'Industry-Specific Compliance', type: 'Compliance', description: 'Custom regulatory requirements', status: 'Inactive', apps: 8, objects: 21 },
+                        
+                        // Sensitive Data (5 items)
+                        { name: 'Trade Secret Protection', type: 'Sensitive Data', description: 'Prevent disclosure of proprietary info', status: 'Active', apps: 22, objects: 55 },
+                        { name: 'Internal Document Guard', type: 'Sensitive Data', description: 'Block leakage of internal documents', status: 'Active', apps: 28, objects: 69 },
+                        { name: 'API Key & Credential Filter', type: 'Sensitive Data', description: 'Detect and block exposed credentials', status: 'Active', apps: 31, objects: 74 },
+                        { name: 'Customer Data Isolation', type: 'Sensitive Data', description: 'Prevent cross-customer data leaks', status: 'Active', apps: 24, objects: 58 },
+                        { name: 'Confidential Project Blocker', type: 'Sensitive Data', description: 'Protect unreleased project details', status: 'Inactive', apps: 10, objects: 26 }
+                      ].filter(guardrail => {
+                        const nameMatch = guardrail.name.toLowerCase().includes(v4NameFilter.toLowerCase())
+                        const typeMatch = guardrail.type.toLowerCase().includes(v4TypeFilter.toLowerCase())
+                        const statusMatch = guardrail.status.toLowerCase().includes(v4StatusFilter.toLowerCase())
+                        const appsMatch = v4AppsFilter === '' || guardrail.apps.toString().includes(v4AppsFilter)
+                        const objectsMatch = v4ObjectsFilter === '' || guardrail.objects.toString().includes(v4ObjectsFilter)
+                        return nameMatch && typeMatch && statusMatch && appsMatch && objectsMatch
+                      }).map((guardrail, index) => (
+                        <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{guardrail.name}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600">{guardrail.type}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-600">{guardrail.description}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              guardrail.status === 'Active' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {guardrail.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-blue-600">{guardrail.apps} apps</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-900">{guardrail.objects}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="text-gray-400">→</div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             ) : null
             )}
           </div>
