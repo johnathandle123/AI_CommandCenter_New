@@ -83,6 +83,34 @@ const getCardStyles = (cardStyle: 'white' | 'glass' | 'greyscale') => {
   
   return `
     ${bodyBg}
+    /* Toggle switch styles */
+    .toggle-switch {
+      appearance: none;
+      width: 2.75rem;
+      height: 1.5rem;
+      background-color: #e5e7eb;
+      border-radius: 9999px;
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .toggle-switch:checked {
+      background-color: #2563eb;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 0.125rem;
+      left: 0.125rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+    }
+    .toggle-switch:checked::after {
+      transform: translateX(1.25rem);
+    }
     .grid div[class*="shadow-"],
     .space-y-4 div[class*="shadow-"],
     .grid div.bg-white,
@@ -436,6 +464,133 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [v4StatusFilter, setV4StatusFilter] = useState('')
   const [v4AppsFilter, setV4AppsFilter] = useState('')
   const [v4ObjectsFilter, setV4ObjectsFilter] = useState('')
+  
+  // V3 guardrail toggle states
+  const [v3TypeToggles, setV3TypeToggles] = useState<Record<string, boolean>>({
+    'Prompt Injection & Jailbreak Detection': true,
+    'PII Scrubbing': true,
+    'Toxic Content Detection': true,
+    'Topic & Competitor Filtering': true,
+    'Malicious Code Detection': true,
+    'Hallucination & Grounding Checks': true,
+    'Output PII Redaction': true,
+    'Harmful Content Prevention': true,
+    'Factual Accuracy Validation': true,
+    'Compliance & Regulatory Checks': true,
+    'Sensitive Data Leakage Prevention': true
+  })
+  const [v3IndividualToggles, setV3IndividualToggles] = useState<Record<string, boolean>>({})
+  
+  // Helper functions for individual guardrail toggles
+  const getGuardrailsForType = (type: string) => {
+    const guardrailsByType: Record<string, string[]> = {
+      'Prompt Injection & Jailbreak Detection': [
+        'Basic Prompt Injection Detection',
+        'Advanced Jailbreak Prevention',
+        'Context Manipulation Guard',
+        'Role-play Attack Detection',
+        'Instruction Override Protection',
+        'Multi-turn Jailbreak Detection',
+        'Encoding-based Attack Prevention'
+      ],
+      'PII Scrubbing': [
+        'Email & Phone Detection',
+        'SSN & Credit Card Protection',
+        'Address & Location Scrubbing',
+        'Name & Identity Protection',
+        'Custom PII Pattern Detection',
+        'Financial Information Guard',
+        'Medical Record Protection'
+      ],
+      'Toxic Content Detection': [
+        'Profanity Filter',
+        'Hate Speech Detection',
+        'Harassment Prevention',
+        'Discriminatory Language Filter',
+        'Violence & Threat Detection',
+        'Sexual Content Blocker',
+        'Self-Harm Prevention'
+      ],
+      'Topic & Competitor Filtering': [
+        'Competitor Mention Blocker',
+        'Off-Topic Detection',
+        'Political Content Filter',
+        'Religious Content Filter',
+        'Financial Advice Blocker',
+        'Medical Advice Prevention'
+      ],
+      'Malicious Code Detection': [
+        'SQL Injection Prevention',
+        'XSS Attack Detection',
+        'Command Injection Guard',
+        'Script Execution Blocker',
+        'Malware Pattern Recognition',
+        'Suspicious URL Detection'
+      ],
+      'Hallucination & Grounding Checks': [
+        'Source Citation Verification',
+        'Fact Consistency Check',
+        'Knowledge Base Grounding',
+        'Confidence Score Validation',
+        'Contradictory Statement Detection',
+        'Unsupported Claim Filter'
+      ],
+      'Output PII Redaction': [
+        'Email Redaction',
+        'Phone Number Masking',
+        'SSN Anonymization',
+        'Address Removal',
+        'Name Pseudonymization',
+        'Credit Card Masking'
+      ],
+      'Harmful Content Prevention': [
+        'Bias Detection & Mitigation',
+        'Stereotyping Prevention',
+        'Misinformation Blocking',
+        'Conspiracy Theory Filter',
+        'Extremist Content Detection',
+        'Radicalization Prevention'
+      ],
+      'Factual Accuracy Validation': [
+        'Wikipedia Cross-Reference',
+        'Academic Source Verification',
+        'News Source Validation',
+        'Expert Knowledge Check',
+        'Statistical Accuracy Review',
+        'Historical Fact Verification'
+      ],
+      'Compliance & Regulatory Checks': [
+        'HIPAA Compliance Check',
+        'GDPR Privacy Validation',
+        'SOX Financial Compliance',
+        'PCI DSS Security Standards',
+        'FERPA Education Privacy',
+        'Industry-Specific Regulations'
+      ],
+      'Sensitive Data Leakage Prevention': [
+        'Trade Secret Protection',
+        'Internal Document Guard',
+        'API Key & Credential Filter',
+        'Customer Data Isolation',
+        'Confidential Project Blocker'
+      ]
+    }
+    return guardrailsByType[type] || []
+  }
+
+  const handleAllToggle = (type: string, checked: boolean) => {
+    const guardrails = getGuardrailsForType(type)
+    const updates: Record<string, boolean> = {}
+    guardrails.forEach(guardrail => {
+      updates[guardrail] = checked
+    })
+    setV3IndividualToggles(prev => ({ ...prev, ...updates }))
+  }
+
+  const isAllChecked = (type: string) => {
+    const guardrails = getGuardrailsForType(type)
+    return guardrails.every(guardrail => v3IndividualToggles[guardrail] !== false)
+  }
   
   useEffect(() => {
     const activeRef = protectTab === 'performance' ? performanceRef : configurationRef
@@ -4232,6 +4387,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4241,6 +4397,41 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              {/* All row */}
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Prompt Injection & Jailbreak Detection')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Prompt Injection & Jailbreak Detection', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Prompt Injection & Jailbreak Detection guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    Master Control
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'Basic Prompt Injection Detection', description: 'Standard protection against common injection attacks', status: 'Active', apps: 12, objects: 45 },
                                 { name: 'Advanced Jailbreak Prevention', description: 'Enhanced detection for sophisticated bypass attempts', status: 'Active', apps: 8, objects: 28 },
@@ -4255,6 +4446,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                   className="hover:bg-gray-50 cursor-pointer"
                                   onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}
                                 >
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm font-medium text-gray-900">{guardrail.name}</div>
                                   </td>
@@ -4291,6 +4497,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4300,6 +4507,41 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              {/* All row */}
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('PII Scrubbing')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('PII Scrubbing', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all PII Scrubbing guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    Master Control
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'Email & Phone Detection', description: 'Detect and mask email addresses and phone numbers', status: 'Active', apps: 18, objects: 62 },
                                 { name: 'SSN & Credit Card Protection', description: 'Find and protect social security numbers and credit cards', status: 'Active', apps: 14, objects: 43 },
@@ -4314,6 +4556,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                   className="hover:bg-gray-50 cursor-pointer"
                                   onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}
                                 >
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm font-medium text-gray-900">{guardrail.name}</div>
                                   </td>
@@ -4350,6 +4607,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4359,6 +4617,38 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Toxic Content Detection')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Toxic Content Detection', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Toxic Content Detection guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Master Control</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'Profanity Filter', description: 'Block explicit language and curse words', status: 'Active', apps: 32, objects: 78 },
                                 { name: 'Hate Speech Detection', description: 'Identify and block discriminatory language', status: 'Active', apps: 28, objects: 65 },
@@ -4368,6 +4658,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Self-Harm Prevention', description: 'Detect and block self-harm related content', status: 'Active', apps: 16, objects: 41 }
                               ].map((guardrail, index) => (
                                 <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{guardrail.name}</div></td>
                                   <td className="px-6 py-4"><div className="text-sm text-gray-600">{guardrail.description}</div></td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -4388,6 +4693,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4397,6 +4703,38 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Topic & Competitor Filtering')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Topic & Competitor Filtering', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Topic & Competitor Filtering guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Master Control</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'Competitor Mention Blocker', description: 'Prevent discussion of competing products', status: 'Active', apps: 21, objects: 54 },
                                 { name: 'Off-Topic Detection', description: 'Keep conversations within allowed domains', status: 'Active', apps: 17, objects: 39 },
@@ -4406,6 +4744,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Medical Advice Prevention', description: 'Prevent unauthorized medical guidance', status: 'Active', apps: 18, objects: 45 }
                               ].map((guardrail, index) => (
                                 <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{guardrail.name}</div></td>
                                   <td className="px-6 py-4"><div className="text-sm text-gray-600">{guardrail.description}</div></td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -4426,6 +4779,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4435,6 +4789,38 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Malicious Code Detection')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Malicious Code Detection', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Malicious Code Detection guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Master Control</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'SQL Injection Detection', description: 'Identify SQL injection attempts in inputs', status: 'Active', apps: 26, objects: 67 },
                                 { name: 'XSS Attack Prevention', description: 'Block cross-site scripting attempts', status: 'Active', apps: 23, objects: 59 },
@@ -4443,6 +4829,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Obfuscated Code Detector', description: 'Identify deliberately obscured code', status: 'Active', apps: 12, objects: 31 }
                               ].map((guardrail, index) => (
                                 <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{guardrail.name}</div></td>
                                   <td className="px-6 py-4"><div className="text-sm text-gray-600">{guardrail.description}</div></td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -4463,6 +4864,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4472,6 +4874,38 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Hallucination & Grounding Checks')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Hallucination & Grounding Checks', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Hallucination & Grounding Checks guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Master Control</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'RAG Citation Verification', description: 'Ensure responses cite source documents', status: 'Active', apps: 29, objects: 73 },
                                 { name: 'Factual Consistency Check', description: 'Verify claims match retrieved context', status: 'Active', apps: 24, objects: 61 },
@@ -4480,6 +4914,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Entailment Verification', description: 'Use NLI to verify logical consistency', status: 'Active', apps: 18, objects: 44 }
                               ].map((guardrail, index) => (
                                 <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{guardrail.name}</div></td>
                                   <td className="px-6 py-4"><div className="text-sm text-gray-600">{guardrail.description}</div></td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -4500,6 +4949,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4509,6 +4959,38 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Output PII Redaction')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Output PII Redaction', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Output PII Redaction guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Master Control</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'Response Email Scrubbing', description: 'Remove email addresses from AI outputs', status: 'Active', apps: 22, objects: 56 },
                                 { name: 'Response Phone Redaction', description: 'Mask phone numbers in responses', status: 'Active', apps: 19, objects: 47 },
@@ -4517,6 +4999,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Context Window PII Filter', description: 'Remove PII from conversation history', status: 'Inactive', apps: 11, objects: 27 }
                               ].map((guardrail, index) => (
                                 <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{guardrail.name}</div></td>
                                   <td className="px-6 py-4"><div className="text-sm text-gray-600">{guardrail.description}</div></td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -4537,6 +5034,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4546,6 +5044,38 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Harmful Content Prevention')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Harmful Content Prevention', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Harmful Content Prevention guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Master Control</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'Output Toxicity Filter', description: 'Block toxic language in AI responses', status: 'Active', apps: 35, objects: 79 },
                                 { name: 'Bias Detection & Mitigation', description: 'Identify and reduce biased outputs', status: 'Active', apps: 28, objects: 64 },
@@ -4554,6 +5084,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Inappropriate Humor Filter', description: 'Block offensive jokes and humor', status: 'Inactive', apps: 14, objects: 33 }
                               ].map((guardrail, index) => (
                                 <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{guardrail.name}</div></td>
                                   <td className="px-6 py-4"><div className="text-sm text-gray-600">{guardrail.description}</div></td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -4574,6 +5119,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4583,6 +5129,38 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Factual Accuracy Validation')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Factual Accuracy Validation', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Factual Accuracy Validation guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Master Control</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'Knowledge Base Cross-Check', description: 'Verify facts against internal KB', status: 'Active', apps: 26, objects: 63 },
                                 { name: 'External Source Validation', description: 'Check claims against trusted sources', status: 'Inactive', apps: 12, objects: 31 },
@@ -4591,6 +5169,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Entity Relationship Validation', description: 'Verify relationships between entities', status: 'Active', apps: 15, objects: 37 }
                               ].map((guardrail, index) => (
                                 <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{guardrail.name}</div></td>
                                   <td className="px-6 py-4"><div className="text-sm text-gray-600">{guardrail.description}</div></td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -4611,6 +5204,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4620,6 +5214,38 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Compliance & Regulatory Checks')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Compliance & Regulatory Checks', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Compliance & Regulatory Checks guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Master Control</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'HIPAA Compliance Checker', description: 'Ensure healthcare data compliance', status: 'Active', apps: 13, objects: 34 },
                                 { name: 'GDPR Privacy Validator', description: 'Verify GDPR data handling rules', status: 'Active', apps: 25, objects: 61 },
@@ -4628,6 +5254,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Industry-Specific Compliance', description: 'Custom regulatory requirements', status: 'Inactive', apps: 8, objects: 21 }
                               ].map((guardrail, index) => (
                                 <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{guardrail.name}</div></td>
                                   <td className="px-6 py-4"><div className="text-sm text-gray-600">{guardrail.description}</div></td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -4648,6 +5289,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -4657,6 +5299,38 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="bg-gray-50 font-medium">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <input
+                                    type="checkbox"
+                                    className="toggle-switch"
+                                    checked={isAllChecked('Sensitive Data Leakage Prevention')}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      handleAllToggle('Sensitive Data Leakage Prevention', e.target.checked)
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">All</div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="text-sm text-gray-600">Enable/disable all Sensitive Data Leakage Prevention guardrails</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Master Control</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-blue-600">All apps</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="text-sm text-gray-900">All objects</span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <div className="text-gray-400"></div>
+                                </td>
+                              </tr>
                               {[
                                 { name: 'Trade Secret Protection', description: 'Prevent disclosure of proprietary info', status: 'Active', apps: 22, objects: 55 },
                                 { name: 'Internal Document Guard', description: 'Block leakage of internal documents', status: 'Active', apps: 28, objects: 69 },
@@ -4665,6 +5339,21 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Confidential Project Blocker', description: 'Protect unreleased project details', status: 'Inactive', apps: 10, objects: 26 }
                               ].map((guardrail, index) => (
                                 <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <input
+                                      type="checkbox"
+                                      className="toggle-switch"
+                                      checked={v3IndividualToggles[guardrail.name] !== false}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        setV3IndividualToggles(prev => ({
+                                          ...prev,
+                                          [guardrail.name]: e.target.checked
+                                        }))
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </td>
                                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{guardrail.name}</div></td>
                                   <td className="px-6 py-4"><div className="text-sm text-gray-600">{guardrail.description}</div></td>
                                   <td className="px-6 py-4 whitespace-nowrap">
@@ -4692,9 +5381,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <div className="space-y-4">
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Prompt Injection & Jailbreak Detection'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Prompt Injection & Jailbreak Detection')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Prompt Injection & Jailbreak Detection']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Prompt Injection & Jailbreak Detection': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
                                 <Icon icon="Shield" size="MEDIUM" color="blue" />
@@ -4708,9 +5412,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['PII Scrubbing'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('PII Scrubbing')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['PII Scrubbing']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'PII Scrubbing': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
                                 <Icon icon="Eye" size="MEDIUM" color="green" />
@@ -4724,9 +5443,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Toxic Content Detection'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Toxic Content Detection')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Toxic Content Detection']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Toxic Content Detection': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
                                 <Icon icon="AlertTriangle" size="MEDIUM" color="red" />
@@ -4740,9 +5474,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Topic & Competitor Filtering'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Topic & Competitor Filtering')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Topic & Competitor Filtering']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Topic & Competitor Filtering': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
                                 <Icon icon="Filter" size="MEDIUM" color="purple" />
@@ -4756,9 +5505,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Malicious Code Detection'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Malicious Code Detection']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Malicious Code Detection': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
                                 <Icon icon="Code" size="MEDIUM" color="orange" />
@@ -4780,9 +5544,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <div className="space-y-4">
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Hallucination & Grounding Checks'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Hallucination & Grounding Checks')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Hallucination & Grounding Checks']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Hallucination & Grounding Checks': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cyan-100 border-2 border-gray-300">
                                 <Icon icon="CheckCircle" size="MEDIUM" color="cyan" />
@@ -4796,9 +5575,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Output PII Redaction'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Output PII Redaction']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Output PII Redaction': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
                                 <Icon icon="EyeOff" size="MEDIUM" color="teal" />
@@ -4812,9 +5606,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Harmful Content Prevention'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Harmful Content Prevention')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Harmful Content Prevention']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Harmful Content Prevention': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 border-2 border-gray-300">
                                 <Icon icon="ShieldAlert" size="MEDIUM" color="rose" />
@@ -4828,9 +5637,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Factual Accuracy Validation'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Factual Accuracy Validation']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Factual Accuracy Validation': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
                                 <Icon icon="FileCheck" size="MEDIUM" color="indigo" />
@@ -4844,9 +5668,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Compliance & Regulatory Checks'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Compliance & Regulatory Checks')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Compliance & Regulatory Checks']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Compliance & Regulatory Checks': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
                                 <Icon icon="Scale" size="MEDIUM" color="amber" />
@@ -4860,9 +5699,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Sensitive Data Leakage Prevention'] ? 'grayscale' : ''}`}
                             onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}
                           >
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                className="toggle-switch"
+                                checked={v3TypeToggles['Sensitive Data Leakage Prevention']}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  setV3TypeToggles(prev => ({
+                                    ...prev,
+                                    'Sensitive Data Leakage Prevention': e.target.checked
+                                  }))
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-pink-100 border-2 border-gray-300">
                                 <Icon icon="Lock" size="MEDIUM" color="pink" />
