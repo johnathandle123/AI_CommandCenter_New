@@ -149,54 +149,14 @@ export default function GuardrailDetail({ guardrail, onBack, onSave }: Guardrail
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Entity Selectors</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {name.includes('Email') && (
-                          <>
-                            <label className="flex items-center">
-                              <input type="checkbox" className="mr-2" defaultChecked />
-                              <span className="text-sm">EMAIL</span>
-                            </label>
-                            <label className="flex items-center">
-                              <input type="checkbox" className="mr-2" defaultChecked />
-                              <span className="text-sm">PHONE_NUMBER</span>
-                            </label>
-                            <label className="flex items-center">
-                              <input type="checkbox" className="mr-2" />
-                              <span className="text-sm">IP_ADDRESS</span>
-                            </label>
-                          </>
-                        )}
-                        {name.includes('SSN') && (
-                          <>
-                            <label className="flex items-center">
-                              <input type="checkbox" className="mr-2" defaultChecked />
-                              <span className="text-sm">SSN</span>
-                            </label>
-                            <label className="flex items-center">
-                              <input type="checkbox" className="mr-2" defaultChecked />
-                              <span className="text-sm">CREDIT_CARD</span>
-                            </label>
-                          </>
-                        )}
-                        {name.includes('Address') && (
-                          <>
-                            <label className="flex items-center">
-                              <input type="checkbox" className="mr-2" defaultChecked />
-                              <span className="text-sm">ADDRESS</span>
-                            </label>
-                            <label className="flex items-center">
-                              <input type="checkbox" className="mr-2" />
-                              <span className="text-sm">IP_ADDRESS</span>
-                            </label>
-                          </>
-                        )}
-                        {!name.includes('Email') && !name.includes('SSN') && !name.includes('Address') && ['SSN', 'EMAIL', 'CREDIT_CARD', 'IP_ADDRESS', 'PHONE_NUMBER', 'ADDRESS'].map(entity => (
-                          <label key={entity} className="flex items-center">
-                            <input type="checkbox" className="mr-2" defaultChecked={name.includes(entity.replace('_', ' '))} />
-                            <span className="text-sm">{entity}</span>
-                          </label>
-                        ))}
-                      </div>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="SSN">SSN</option>
+                        <option value="EMAIL">EMAIL</option>
+                        <option value="CREDIT_CARD">CREDIT_CARD</option>
+                        <option value="IP_ADDRESS">IP_ADDRESS</option>
+                        <option value="PHONE_NUMBER">PHONE_NUMBER</option>
+                        <option value="ADDRESS">ADDRESS</option>
+                      </select>
                     </div>
                     
                     <div>

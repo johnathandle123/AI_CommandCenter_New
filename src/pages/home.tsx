@@ -73,6 +73,16 @@ export default function Home() {
             <p className="text-gray-700">Configure topic filtering to ensure your AI stays within professional boundaries using keyword-based, semantic, or domain constraint approaches.</p>
           </CardLayout>
         </div>
+
+        <div 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => setLocation('/appian-designer')}
+        >
+          <CardLayout padding="MORE" showShadow={true}>
+            <HeadingField text="Appian Designer" size="MEDIUM" marginBelow="LESS" />
+            <p className="text-gray-700">Access the Appian Designer Applications view to create, import, and manage applications in your environment.</p>
+          </CardLayout>
+        </div>
       </div>
     </div>
   )

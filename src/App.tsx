@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Route, Switch } from 'wouter'
+import { Route, Switch, Link } from 'wouter'
 import { HeadingField } from '@pglevy/sailwind'
 import { Brain, Grid3X3, Paintbrush, Settings, Monitor, Database, Flag, FileText, Info, HelpCircle, Search } from 'lucide-react'
 import SideNavigation from './components/SideNavigation'
@@ -11,6 +11,8 @@ import Protect from './pages/protect'
 import Evaluate from './pages/evaluate'
 import Observe from './pages/observe'
 import TopicFiltering from './pages/topic-filtering'
+import AppianDesigner from './pages/appian-designer'
+import BuildView from './pages/build-view'
 
 function MainApp() {
   const [activeSection, setActiveSection] = useState('home')
@@ -19,13 +21,13 @@ function MainApp() {
   const [showWaffleMenu, setShowWaffleMenu] = useState(false)
 
   const waffleApps = [
-    { name: 'Appian Designer', icon: Paintbrush, color: 'bg-blue-500' },
-    { name: 'Admin Console', icon: Settings, color: 'bg-green-500' },
-    { name: 'AI Command Center', icon: Brain, color: 'bg-purple-500', active: true },
-    { name: 'Operations Console', icon: Monitor, color: 'bg-orange-500' },
-    { name: 'Cloud Database', icon: Database, color: 'bg-teal-500' },
-    { name: 'Feature Flags', icon: Flag, color: 'bg-indigo-500' },
-    { name: 'System Logs', icon: FileText, color: 'bg-red-500' }
+    { name: 'Appian Designer', icon: Paintbrush, color: 'bg-blue-500', path: '/appian-designer' },
+    { name: 'Admin Console', icon: Settings, color: 'bg-green-500', path: '/dashboard' },
+    { name: 'AI Command Center', icon: Brain, color: 'bg-purple-500', active: true, path: '/dashboard' },
+    { name: 'Operations Console', icon: Monitor, color: 'bg-orange-500', path: '/dashboard' },
+    { name: 'Cloud Database', icon: Database, color: 'bg-teal-500', path: '/dashboard' },
+    { name: 'Feature Flags', icon: Flag, color: 'bg-indigo-500', path: '/dashboard' },
+    { name: 'System Logs', icon: FileText, color: 'bg-red-500', path: '/dashboard' }
   ]
 
   const helpApps = [
@@ -113,18 +115,22 @@ function MainApp() {
             {waffleApps.map((app, index) => {
               const Icon = app.icon
               return (
-                <button
+                <Link
                   key={index}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-md transition-colors text-left ${
-                    app.active ? 'bg-blue-100 text-blue-500' : 'text-gray-700 hover:text-blue-500'
-                  }`}
-                  onClick={() => setShowWaffleMenu(false)}
+                  href={app.path || '/dashboard'}
                 >
-                  <div className={`${app.color} rounded-lg p-2 flex items-center justify-center`}>
-                    <Icon size={16} className="text-white" />
-                  </div>
-                  <span className="font-medium text-xs text-center">{app.name}</span>
-                </button>
+                  <button
+                    className={`flex flex-col items-center gap-2 p-3 rounded-md transition-colors text-left w-full ${
+                      app.active ? 'bg-blue-100 text-blue-500' : 'text-gray-700 hover:text-blue-500'
+                    }`}
+                    onClick={() => setShowWaffleMenu(false)}
+                  >
+                    <div className={`${app.color} rounded-lg p-2 flex items-center justify-center`}>
+                      <Icon size={16} className="text-white" />
+                    </div>
+                    <span className="font-medium text-xs text-center">{app.name}</span>
+                  </button>
+                </Link>
               )
             })}
           </div>
@@ -196,6 +202,8 @@ function App() {
       <Route path="/evaluate" component={Evaluate} />
       <Route path="/observe" component={Observe} />
       <Route path="/topic-filtering" component={TopicFiltering} />
+      <Route path="/appian-designer" component={AppianDesigner} />
+      <Route path="/build-view" component={BuildView} />
       <Route path="/dashboard" component={MainApp} />
       <Route path="/" component={Home} />
     </Switch>
