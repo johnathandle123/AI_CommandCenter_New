@@ -452,6 +452,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   // V3 state variables
   const [selectedV3GuardrailType, setSelectedV3GuardrailType] = useState<string | null>(null)
   const [selectedV3IndividualGuardrail, setSelectedV3IndividualGuardrail] = useState<string | null>(null)
+  const [v3GroupingMode, setV3GroupingMode] = useState<'input-output' | 'stakeholder' | 'risk-domain'>('input-output')
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
   const [observeScrolled, setObserveScrolled] = useState(false)
@@ -5521,7 +5522,22 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 </div>
               ) : appMode === 'revised-v3' ? (
                 <div key="v3-type-cards" className="mt-6 px-48" style={{ background: 'transparent' }}>
+                  {/* Grouping Dropdown */}
+                  <div className="mb-6 flex justify-end">
+                    <select 
+                      value={v3GroupingMode}
+                      onChange={(e) => setV3GroupingMode(e.target.value as 'input-output' | 'stakeholder' | 'risk-domain')}
+                      className="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm"
+                    >
+                      <option value="input-output">Input/Output Grouping</option>
+                      <option value="stakeholder">Stakeholder Grouping</option>
+                      <option value="risk-domain">Risk Domain Grouping</option>
+                    </select>
+                  </div>
+                  
                   <div className="space-y-8">
+                    {v3GroupingMode === 'input-output' ? (
+                      <>
                     <div>
                       <HeadingField text="Input Protection" size="LARGE" marginBelow="STANDARD" />
                       <p className="text-gray-600 mb-6">These settings protect your AI by checking user messages before they're processed.</p>
@@ -5878,6 +5894,396 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                       </div>
                     </div>
+                      </>
+                    ) : v3GroupingMode === 'stakeholder' ? (
+                      <>
+                        {/* A. Security & Cyber-Defense */}
+                        <div>
+                          <HeadingField text="Security & Cyber-Defense" size="LARGE" marginBelow="STANDARD" />
+                          <p className="text-gray-600 mb-6">Focus: Protecting the infrastructure from attacks.</p>
+                          <div className="space-y-4">
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Prompt Injection/Jailbreak Detection'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Prompt Injection/Jailbreak Detection']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Prompt Injection/Jailbreak Detection': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
+                                    <Icon icon="Shield" size="MEDIUM" color="red" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Prompt Injection/Jailbreak Detection" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Detect and block attempts to manipulate AI behavior</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Malicious Code Detection'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Malicious Code Detection']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Malicious Code Detection': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
+                                    <Icon icon="Code" size="MEDIUM" color="red" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Malicious Code Detection" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Scan for dangerous code patterns</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Sensitive Data Leakage Prevention'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Sensitive Data Leakage Prevention']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Sensitive Data Leakage Prevention': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
+                                    <Icon icon="Lock" size="MEDIUM" color="red" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Sensitive Data Leakage Prevention" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Prevent exposure of confidential information</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                          </div>
+                        </div>
+
+                        {/* B. Privacy & Compliance */}
+                        <div>
+                          <HeadingField text="Privacy & Compliance" size="LARGE" marginBelow="STANDARD" />
+                          <p className="text-gray-600 mb-6">Focus: Legal liability and data regulations (GDPR/HIPAA).</p>
+                          <div className="space-y-4">
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['PII Scrubbing (Input)'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('PII Scrubbing (Input)')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['PII Scrubbing (Input)']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'PII Scrubbing (Input)': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
+                                    <Icon icon="Eye" size="MEDIUM" color="blue" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="PII Scrubbing (Input)" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Find and protect personal information in user inputs</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Output PII Redaction'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Output PII Redaction']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Output PII Redaction': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
+                                    <Icon icon="EyeOff" size="MEDIUM" color="blue" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Output PII Redaction" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Remove personal information from AI responses</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Compliance and Regulatory Checks'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Compliance and Regulatory Checks')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Compliance and Regulatory Checks']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Compliance and Regulatory Checks': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
+                                    <Icon icon="Scale" size="MEDIUM" color="blue" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Compliance and Regulatory Checks" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Ensure responses meet industry regulations</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                          </div>
+                        </div>
+
+                        {/* C. Brand & Safety */}
+                        <div>
+                          <HeadingField text="Brand & Safety" size="LARGE" marginBelow="STANDARD" />
+                          <p className="text-gray-600 mb-6">Focus: Reputation, tone, and user experience.</p>
+                          <div className="space-y-4">
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Toxic Content Detection / Harmful Content Prevention'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Toxic Content Detection / Harmful Content Prevention')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Toxic Content Detection / Harmful Content Prevention']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Toxic Content Detection / Harmful Content Prevention': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
+                                    <Icon icon="AlertTriangle" size="MEDIUM" color="orange" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Toxic Content Detection / Harmful Content Prevention" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Filter harmful and inappropriate content</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Topic and Competitor Filtering'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Topic and Competitor Filtering')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Topic and Competitor Filtering']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Topic and Competitor Filtering': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
+                                    <Icon icon="Filter" size="MEDIUM" color="orange" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Topic and Competitor Filtering" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Block specific topics and competitor mentions</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                          </div>
+                        </div>
+
+                        {/* D. Knowledge Integrity */}
+                        <div>
+                          <HeadingField text="Knowledge Integrity" size="LARGE" marginBelow="STANDARD" />
+                          <p className="text-gray-600 mb-6">Focus: Accuracy and reliability of the AI's brain.</p>
+                          <div className="space-y-4">
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Hallucination/Grounding Checks'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Hallucination/Grounding Checks')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Hallucination/Grounding Checks']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Hallucination/Grounding Checks': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
+                                    <Icon icon="CheckCircle" size="MEDIUM" color="green" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Hallucination/Grounding Checks" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Verify AI responses against trusted sources</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Factual Accuracy Validation'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Factual Accuracy Validation']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Factual Accuracy Validation': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
+                                    <Icon icon="FileCheck" size="MEDIUM" color="green" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Factual Accuracy Validation" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Cross-check facts against trusted knowledge bases</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* A. Adversarial Risks */}
+                        <div>
+                          <HeadingField text="Adversarial Risks" size="LARGE" marginBelow="STANDARD" />
+                          <p className="text-gray-600 mb-6">Protects against users trying to break the system.</p>
+                          <div className="space-y-4">
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Prompt Injection/Jailbreak Detection'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Prompt Injection/Jailbreak Detection']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Prompt Injection/Jailbreak Detection': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
+                                    <Icon icon="Shield" size="MEDIUM" color="purple" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Prompt Injection/Jailbreak Detection" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Detect and block attempts to manipulate AI behavior</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Malicious Code Detection'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Malicious Code Detection']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Malicious Code Detection': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
+                                    <Icon icon="Code" size="MEDIUM" color="purple" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Malicious Code Detection" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Scan for dangerous code patterns</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                          </div>
+                        </div>
+
+                        {/* B. Data Privacy Risks */}
+                        <div>
+                          <HeadingField text="Data Privacy Risks" size="LARGE" marginBelow="STANDARD" />
+                          <p className="text-gray-600 mb-6">Protects against leaking personal information in either direction.</p>
+                          <div className="space-y-4">
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['PII Scrubbing (Input)'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('PII Scrubbing (Input)')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['PII Scrubbing (Input)']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'PII Scrubbing (Input)': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
+                                    <Icon icon="Eye" size="MEDIUM" color="teal" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="PII Scrubbing (Input)" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Find and protect personal information in user inputs</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Output PII Redaction'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Output PII Redaction']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Output PII Redaction': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
+                                    <Icon icon="EyeOff" size="MEDIUM" color="teal" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Output PII Redaction" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Remove personal information from AI responses</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Sensitive Data Leakage Prevention'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Sensitive Data Leakage Prevention']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Sensitive Data Leakage Prevention': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
+                                    <Icon icon="Lock" size="MEDIUM" color="teal" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Sensitive Data Leakage Prevention" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Prevent exposure of confidential information</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                          </div>
+                        </div>
+
+                        {/* C. Semantic & Content Risks */}
+                        <div>
+                          <HeadingField text="Semantic & Content Risks" size="LARGE" marginBelow="STANDARD" />
+                          <p className="text-gray-600 mb-6">Content quality, appropriateness, and regulatory compliance.</p>
+                          <div className="space-y-4">
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Toxic Content Detection / Harmful Content Prevention'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Toxic Content Detection / Harmful Content Prevention')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Toxic Content Detection / Harmful Content Prevention']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Toxic Content Detection / Harmful Content Prevention': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
+                                    <Icon icon="AlertTriangle" size="MEDIUM" color="amber" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Toxic Content Detection / Harmful Content Prevention" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Filter harmful and inappropriate content</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Topic and Competitor Filtering'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Topic and Competitor Filtering')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Topic and Competitor Filtering']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Topic and Competitor Filtering': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
+                                    <Icon icon="Filter" size="MEDIUM" color="amber" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Topic and Competitor Filtering" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Block specific topics and competitor mentions</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Compliance and Regulatory Checks'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Compliance and Regulatory Checks')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Compliance and Regulatory Checks']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Compliance and Regulatory Checks': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
+                                    <Icon icon="Scale" size="MEDIUM" color="amber" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Compliance and Regulatory Checks" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Ensure responses meet industry regulations</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                          </div>
+                        </div>
+
+                        {/* D. Knowledge & Accuracy Risks */}
+                        <div>
+                          <HeadingField text="Knowledge & Accuracy Risks" size="LARGE" marginBelow="STANDARD" />
+                          <p className="text-gray-600 mb-6">Protects against misinformation and unreliable AI responses.</p>
+                          <div className="space-y-4">
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Hallucination/Grounding Checks'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Hallucination/Grounding Checks')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Hallucination/Grounding Checks']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Hallucination/Grounding Checks': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
+                                    <Icon icon="CheckCircle" size="MEDIUM" color="indigo" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Hallucination/Grounding Checks" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Verify AI responses against trusted sources</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                            <CardLayout padding="MORE" showShadow={true}>
+                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Factual Accuracy Validation'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
+                                <div className="absolute top-2 right-2">
+                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Factual Accuracy Validation']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Factual Accuracy Validation': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
+                                </div>
+                                <div className="flex items-start gap-4">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
+                                    <Icon icon="FileCheck" size="MEDIUM" color="indigo" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <HeadingField text="Factual Accuracy Validation" size="MEDIUM" marginBelow="LESS" />
+                                    <p className="text-gray-600">Cross-check facts against trusted knowledge bases</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardLayout>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               ) : appMode === 'revised-v4' ? (
