@@ -466,20 +466,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [v4AppsFilter, setV4AppsFilter] = useState('')
   const [v4ObjectsFilter, setV4ObjectsFilter] = useState('')
   
-  // V3 guardrail toggle states
-  const [v3TypeToggles, setV3TypeToggles] = useState<Record<string, boolean>>({
-    'Prompt Injection & Jailbreak Detection': true,
-    'PII Scrubbing': true,
-    'Toxic Content Detection': true,
-    'Topic & Competitor Filtering': true,
-    'Malicious Code Detection': true,
-    'Hallucination & Grounding Checks': true,
-    'Output PII Redaction': true,
-    'Harmful Content Prevention': true,
-    'Factual Accuracy Validation': true,
-    'Compliance & Regulatory Checks': true,
-    'Sensitive Data Leakage Prevention': true
-  })
+  // V3 individual guardrail toggle states
   const [v3IndividualToggles, setV3IndividualToggles] = useState<Record<string, boolean>>({})
   
   // Helper functions for individual guardrail toggles
@@ -5545,24 +5532,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <div className="space-y-4">
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Prompt Injection & Jailbreak Detection'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Prompt Injection & Jailbreak Detection')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Prompt Injection & Jailbreak Detection']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Prompt Injection & Jailbreak Detection': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
                                 <Icon icon="Shield" size="MEDIUM" color="blue" />
@@ -5576,24 +5548,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['PII Scrubbing'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('PII Scrubbing')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['PII Scrubbing']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'PII Scrubbing': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
                                 <Icon icon="Eye" size="MEDIUM" color="green" />
@@ -5607,24 +5565,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Toxic Content Detection'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Toxic Content Detection')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Toxic Content Detection']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Toxic Content Detection': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
                                 <Icon icon="AlertTriangle" size="MEDIUM" color="red" />
@@ -5638,24 +5582,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Topic & Competitor Filtering'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Topic & Competitor Filtering')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Topic & Competitor Filtering']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Topic & Competitor Filtering': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
                                 <Icon icon="Filter" size="MEDIUM" color="purple" />
@@ -5669,24 +5599,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Malicious Code Detection'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Malicious Code Detection']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Malicious Code Detection': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
                                 <Icon icon="Code" size="MEDIUM" color="orange" />
@@ -5708,24 +5624,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <div className="space-y-4">
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Hallucination & Grounding Checks'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Hallucination & Grounding Checks')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Hallucination & Grounding Checks']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Hallucination & Grounding Checks': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cyan-100 border-2 border-gray-300">
                                 <Icon icon="CheckCircle" size="MEDIUM" color="cyan" />
@@ -5739,24 +5641,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Output PII Redaction'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Output PII Redaction']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Output PII Redaction': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
                                 <Icon icon="EyeOff" size="MEDIUM" color="teal" />
@@ -5770,24 +5658,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Harmful Content Prevention'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Harmful Content Prevention')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Harmful Content Prevention']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Harmful Content Prevention': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 border-2 border-gray-300">
                                 <Icon icon="ShieldAlert" size="MEDIUM" color="rose" />
@@ -5801,24 +5675,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Factual Accuracy Validation'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Factual Accuracy Validation']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Factual Accuracy Validation': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
                                 <Icon icon="FileCheck" size="MEDIUM" color="indigo" />
@@ -5832,24 +5692,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Compliance & Regulatory Checks'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Compliance & Regulatory Checks')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Compliance & Regulatory Checks']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Compliance & Regulatory Checks': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
                                 <Icon icon="Scale" size="MEDIUM" color="amber" />
@@ -5863,24 +5709,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </CardLayout>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
-                            className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Sensitive Data Leakage Prevention'] ? 'grayscale' : ''}`}
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
                             onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}
                           >
-                            <div className="absolute top-2 right-2">
-                              <input
-                                type="checkbox"
-                                className="toggle-switch"
-                                checked={v3TypeToggles['Sensitive Data Leakage Prevention']}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setV3TypeToggles(prev => ({
-                                    ...prev,
-                                    'Sensitive Data Leakage Prevention': e.target.checked
-                                  }))
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            {/* Toggle removed */}
                             <div className="flex items-start gap-4">
                               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-pink-100 border-2 border-gray-300">
                                 <Icon icon="Lock" size="MEDIUM" color="pink" />
@@ -5903,10 +5735,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <p className="text-gray-600 mb-6">Focus: Protecting the infrastructure from attacks.</p>
                           <div className="space-y-4">
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Prompt Injection/Jailbreak Detection'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Prompt Injection/Jailbreak Detection']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Prompt Injection/Jailbreak Detection': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
                                     <Icon icon="Shield" size="MEDIUM" color="red" />
@@ -5919,10 +5749,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Malicious Code Detection'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Malicious Code Detection']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Malicious Code Detection': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
                                     <Icon icon="Code" size="MEDIUM" color="red" />
@@ -5935,10 +5763,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Sensitive Data Leakage Prevention'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Sensitive Data Leakage Prevention']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Sensitive Data Leakage Prevention': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
                                     <Icon icon="Lock" size="MEDIUM" color="red" />
@@ -5959,10 +5785,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <p className="text-gray-600 mb-6">Focus: Legal liability and data regulations (GDPR/HIPAA).</p>
                           <div className="space-y-4">
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['PII Scrubbing (Input)'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('PII Scrubbing (Input)')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['PII Scrubbing (Input)']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'PII Scrubbing (Input)': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('PII Scrubbing (Input)')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
                                     <Icon icon="Eye" size="MEDIUM" color="blue" />
@@ -5975,10 +5799,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Output PII Redaction'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Output PII Redaction']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Output PII Redaction': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
                                     <Icon icon="EyeOff" size="MEDIUM" color="blue" />
@@ -5991,10 +5813,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Compliance and Regulatory Checks'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Compliance and Regulatory Checks')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Compliance and Regulatory Checks']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Compliance and Regulatory Checks': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Compliance and Regulatory Checks')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
                                     <Icon icon="Scale" size="MEDIUM" color="blue" />
@@ -6015,10 +5835,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <p className="text-gray-600 mb-6">Focus: Reputation, tone, and user experience.</p>
                           <div className="space-y-4">
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Toxic Content Detection / Harmful Content Prevention'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Toxic Content Detection / Harmful Content Prevention')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Toxic Content Detection / Harmful Content Prevention']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Toxic Content Detection / Harmful Content Prevention': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Toxic Content Detection / Harmful Content Prevention')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
                                     <Icon icon="AlertTriangle" size="MEDIUM" color="orange" />
@@ -6031,10 +5849,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Topic and Competitor Filtering'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Topic and Competitor Filtering')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Topic and Competitor Filtering']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Topic and Competitor Filtering': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Topic and Competitor Filtering')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
                                     <Icon icon="Filter" size="MEDIUM" color="orange" />
@@ -6055,10 +5871,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <p className="text-gray-600 mb-6">Focus: Accuracy and reliability of the AI's brain.</p>
                           <div className="space-y-4">
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Hallucination/Grounding Checks'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Hallucination/Grounding Checks')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Hallucination/Grounding Checks']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Hallucination/Grounding Checks': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Hallucination/Grounding Checks')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
                                     <Icon icon="CheckCircle" size="MEDIUM" color="green" />
@@ -6071,10 +5885,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Factual Accuracy Validation'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Factual Accuracy Validation']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Factual Accuracy Validation': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
                                     <Icon icon="FileCheck" size="MEDIUM" color="green" />
@@ -6097,10 +5909,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <p className="text-gray-600 mb-6">Protects against users trying to break the system.</p>
                           <div className="space-y-4">
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Prompt Injection/Jailbreak Detection'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Prompt Injection/Jailbreak Detection']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Prompt Injection/Jailbreak Detection': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
                                     <Icon icon="Shield" size="MEDIUM" color="purple" />
@@ -6113,10 +5923,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Malicious Code Detection'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Malicious Code Detection']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Malicious Code Detection': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
                                     <Icon icon="Code" size="MEDIUM" color="purple" />
@@ -6137,10 +5945,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <p className="text-gray-600 mb-6">Protects against leaking personal information in either direction.</p>
                           <div className="space-y-4">
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['PII Scrubbing (Input)'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('PII Scrubbing (Input)')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['PII Scrubbing (Input)']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'PII Scrubbing (Input)': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('PII Scrubbing (Input)')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
                                     <Icon icon="Eye" size="MEDIUM" color="teal" />
@@ -6153,10 +5959,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Output PII Redaction'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Output PII Redaction']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Output PII Redaction': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
                                     <Icon icon="EyeOff" size="MEDIUM" color="teal" />
@@ -6169,10 +5973,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Sensitive Data Leakage Prevention'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Sensitive Data Leakage Prevention']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Sensitive Data Leakage Prevention': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
                                     <Icon icon="Lock" size="MEDIUM" color="teal" />
@@ -6193,10 +5995,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <p className="text-gray-600 mb-6">Content quality, appropriateness, and regulatory compliance.</p>
                           <div className="space-y-4">
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Toxic Content Detection / Harmful Content Prevention'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Toxic Content Detection / Harmful Content Prevention')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Toxic Content Detection / Harmful Content Prevention']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Toxic Content Detection / Harmful Content Prevention': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Toxic Content Detection / Harmful Content Prevention')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
                                     <Icon icon="AlertTriangle" size="MEDIUM" color="amber" />
@@ -6209,10 +6009,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Topic and Competitor Filtering'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Topic and Competitor Filtering')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Topic and Competitor Filtering']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Topic and Competitor Filtering': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Topic and Competitor Filtering')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
                                     <Icon icon="Filter" size="MEDIUM" color="amber" />
@@ -6225,10 +6023,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Compliance and Regulatory Checks'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Compliance and Regulatory Checks')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Compliance and Regulatory Checks']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Compliance and Regulatory Checks': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Compliance and Regulatory Checks')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
                                     <Icon icon="Scale" size="MEDIUM" color="amber" />
@@ -6249,10 +6045,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <p className="text-gray-600 mb-6">Protects against misinformation and unreliable AI responses.</p>
                           <div className="space-y-4">
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Hallucination/Grounding Checks'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Hallucination/Grounding Checks')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Hallucination/Grounding Checks']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Hallucination/Grounding Checks': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Hallucination/Grounding Checks')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
                                     <Icon icon="CheckCircle" size="MEDIUM" color="indigo" />
@@ -6265,10 +6059,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </div>
                             </CardLayout>
                             <CardLayout padding="MORE" showShadow={true}>
-                              <div className={`cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative ${!v3TypeToggles['Factual Accuracy Validation'] ? 'grayscale' : ''}`} onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
-                                <div className="absolute top-2 right-2">
-                                  <input type="checkbox" className="toggle-switch" checked={v3TypeToggles['Factual Accuracy Validation']} onChange={(e) => { e.stopPropagation(); setV3TypeToggles(prev => ({ ...prev, 'Factual Accuracy Validation': e.target.checked })) }} onClick={(e) => e.stopPropagation()} />
-                                </div>
+                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
+                                {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
                                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
                                     <Icon icon="FileCheck" size="MEDIUM" color="indigo" />
