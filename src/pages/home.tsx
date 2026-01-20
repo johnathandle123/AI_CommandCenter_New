@@ -83,6 +83,16 @@ export default function Home() {
             <p className="text-gray-700">Access the Appian Designer Applications view to create, import, and manage applications in your environment.</p>
           </CardLayout>
         </div>
+
+        <div 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => setLocation('/customer-portal-site')}
+        >
+          <CardLayout padding="MORE" showShadow={true}>
+            <HeadingField text="Customer Portal Site" size="MEDIUM" marginBelow="LESS" />
+            <p className="text-gray-700">Configure and manage your customer portal site with live chat integration and AI-powered customer service capabilities.</p>
+          </CardLayout>
+        </div>
       </div>
     </div>
   )

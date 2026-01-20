@@ -13,6 +13,8 @@ import Observe from './pages/observe'
 import TopicFiltering from './pages/topic-filtering'
 import AppianDesigner from './pages/appian-designer'
 import BuildView from './pages/build-view'
+import AISkillView from './pages/ai-skill-view'
+import CustomerPortalSite from './pages/customer-portal-site'
 
 function MainApp() {
   const [activeSection, setActiveSection] = useState('home')
@@ -204,6 +206,8 @@ function App() {
       <Route path="/topic-filtering" component={TopicFiltering} />
       <Route path="/appian-designer" component={AppianDesigner} />
       <Route path="/build-view" component={BuildView} />
+      <Route path="/ai-skill-view" component={AISkillView} />
+      <Route path="/customer-portal-site" component={CustomerPortalSite} />
       <Route path="/dashboard" component={MainApp} />
       <Route path="/" component={Home} />
     </Switch>

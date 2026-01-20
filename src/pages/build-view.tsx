@@ -1,4 +1,4 @@
-import { HeadingField, CardLayout } from '@pglevy/sailwind'
+import { HeadingField } from '@pglevy/sailwind'
 import { Search, Grid3X3, Paintbrush, Settings, Brain, Monitor, Database, Flag, FileText, Info, HelpCircle, Package, Rocket, Activity, ChevronLeft, Plus, Upload, Download, Shield, GitBranch, RefreshCw } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'wouter'
@@ -26,7 +26,9 @@ export default function BuildView() {
   ]
 
   const objects = [
+    { name: 'Customer Portal Site', type: 'Site', icon: '🌐', description: 'Customer support portal with live chat', lastModified: '1/20/2026 11:45 AM', modifiedBy: 'JD' },
     { name: 'Customer Dashboard', type: 'Interface', icon: '📱', description: 'Main customer portal interface', lastModified: '1/15/2026 9:30 AM', modifiedBy: 'JD' },
+    { name: 'Customer Support AI Skill', type: 'AI Skill', icon: '🤖', description: 'AI-powered customer support assistant', lastModified: '1/15/2026 9:00 AM', modifiedBy: 'JD' },
     { name: 'Customer Record Type', type: 'Record Type', icon: '📋', description: 'Customer data model', lastModified: '1/15/2026 8:15 AM', modifiedBy: 'SM' },
     { name: 'Submit Request Process', type: 'Process Model', icon: '⚙️', description: 'Customer request workflow', lastModified: '1/14/2026 4:20 PM', modifiedBy: 'AK' },
     { name: 'Customer Data Store', type: 'Data Store', icon: '🗄️', description: 'Customer database entity', lastModified: '1/14/2026 2:10 PM', modifiedBy: 'JD' },
@@ -187,60 +189,76 @@ export default function BuildView() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-auto bg-slate-100 relative">
-          {/* Glassmorphism gradient orbs */}
-          <div className="absolute top-5 left-5 w-[600px] h-[600px] bg-gradient-to-br from-blue-400/25 to-purple-400/25 rounded-full blur-[100px] z-0"></div>
-          <div className="absolute top-10 right-5 w-[500px] h-[500px] bg-gradient-to-br from-pink-400/20 to-orange-400/20 rounded-full blur-[100px] z-0"></div>
+        <div className="flex-1 overflow-auto bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 relative">
+          {/* Enhanced glassmorphism gradient orbs */}
+          <div className="absolute top-10 left-10 w-[800px] h-[800px] bg-gradient-to-br from-blue-400/20 via-cyan-400/15 to-purple-400/20 rounded-full blur-[120px] z-0 animate-pulse"></div>
+          <div className="absolute top-20 right-10 w-[600px] h-[600px] bg-gradient-to-br from-pink-400/15 via-orange-400/10 to-yellow-400/15 rounded-full blur-[100px] z-0 animate-pulse" style={{animationDelay: '2s'}}></div>
+          <div className="absolute bottom-10 left-1/3 w-[500px] h-[500px] bg-gradient-to-br from-green-400/10 to-teal-400/15 rounded-full blur-[80px] z-0 animate-pulse" style={{animationDelay: '4s'}}></div>
           
           <div className="container mx-auto px-6 py-6 max-w-7xl relative z-10">
-            {/* Deployment Actions Bar */}
-            <div className="mb-6 flex items-center gap-3">
-              <select className="px-4 py-2 border border-gray-300 rounded-md bg-white">
-                <option>All Application Objects</option>
-                <option>Package 1</option>
-                <option>Package 2</option>
-              </select>
-              <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium flex items-center gap-2">
-                <Plus size={16} />
-                CREATE PACKAGE
-              </button>
-              <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium flex items-center gap-2">
-                <Download size={16} />
-                EXPORT
-              </button>
-              <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium flex items-center gap-2">
-                <Upload size={16} />
-                IMPORT
-              </button>
-              <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium flex items-center gap-2">
-                <GitBranch size={16} />
-                COMPARE AND DEPLOY
-              </button>
+            {/* Enhanced Deployment Actions Bar */}
+            <div className="mb-8 p-6 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Application Management</h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-gray-600">7 objects</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <select className="px-4 py-2 border border-gray-200 rounded-lg bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all">
+                  <option>All Application Objects</option>
+                  <option>Package 1</option>
+                  <option>Package 2</option>
+                </select>
+                <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 text-sm font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-all">
+                  <Plus size={16} />
+                  CREATE PACKAGE
+                </button>
+                <button className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg hover:bg-white hover:shadow-md text-sm font-medium flex items-center gap-2 transition-all">
+                  <Download size={16} />
+                  EXPORT
+                </button>
+                <button className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg hover:bg-white hover:shadow-md text-sm font-medium flex items-center gap-2 transition-all">
+                  <Upload size={16} />
+                  IMPORT
+                </button>
+                <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 text-sm font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-all">
+                  <GitBranch size={16} />
+                  COMPARE AND DEPLOY
+                </button>
+              </div>
             </div>
 
-            {/* Tabs */}
-            <div className="mb-4 border-b border-gray-300">
-              <div className="flex gap-6">
+            {/* Enhanced Tabs */}
+            <div className="mb-6 bg-white/60 backdrop-blur-sm rounded-xl p-1 shadow-lg border border-white/20">
+              <div className="flex gap-1">
                 <button
                   onClick={() => setActiveObjectsTab('all')}
-                  className={`pb-3 px-2 font-medium transition-colors ${
-                    activeObjectsTab === 'all' ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-600 hover:text-blue-700'
+                  className={`px-6 py-3 font-medium transition-all rounded-lg ${
+                    activeObjectsTab === 'all' 
+                      ? 'bg-white text-blue-700 shadow-md' 
+                      : 'text-gray-600 hover:text-blue-700 hover:bg-white/50'
                   }`}
                 >
                   ALL OBJECTS
                 </button>
                 <button
                   onClick={() => setActiveObjectsTab('plugins')}
-                  className={`pb-3 px-2 font-medium transition-colors ${
-                    activeObjectsTab === 'plugins' ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-600 hover:text-blue-700'
+                  className={`px-6 py-3 font-medium transition-all rounded-lg ${
+                    activeObjectsTab === 'plugins' 
+                      ? 'bg-white text-blue-700 shadow-md' 
+                      : 'text-gray-600 hover:text-blue-700 hover:bg-white/50'
                   }`}
                 >
                   PLUG-INS
                 </button>
                 <button
                   onClick={() => setActiveObjectsTab('unreferenced')}
-                  className={`pb-3 px-2 font-medium transition-colors ${
-                    activeObjectsTab === 'unreferenced' ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-600 hover:text-blue-700'
+                  className={`px-6 py-3 font-medium transition-all rounded-lg ${
+                    activeObjectsTab === 'unreferenced' 
+                      ? 'bg-white text-blue-700 shadow-md' 
+                      : 'text-gray-600 hover:text-blue-700 hover:bg-white/50'
                   }`}
                 >
                   UNREFERENCED OBJECTS
@@ -248,67 +266,77 @@ export default function BuildView() {
               </div>
             </div>
 
-            {/* Objects Grid */}
-            <CardLayout padding="NONE" showShadow={true}>
-              {/* Toolbar */}
-              <div className="border-b border-gray-200 p-4 bg-gray-50 flex items-center justify-between">
+            {/* Enhanced Objects Grid */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+              {/* Enhanced Toolbar */}
+              <div className="border-b border-gray-200/50 p-6 bg-gradient-to-r from-gray-50/80 to-blue-50/40 backdrop-blur-sm flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium flex items-center gap-2">
+                  <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 text-sm font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-all">
                     <Plus size={16} />
                     NEW
                   </button>
-                  <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm font-medium">
+                  <button className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg hover:bg-white hover:shadow-md text-sm font-medium transition-all">
                     ADD EXISTING
                   </button>
-                  <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm font-medium">
+                  <button className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg hover:bg-white hover:shadow-md text-sm font-medium transition-all">
                     MOVE
                   </button>
-                  <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm font-medium">
+                  <button className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg hover:bg-white hover:shadow-md text-sm font-medium transition-all">
                     DELETE
                   </button>
-                  <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 text-sm font-medium flex items-center gap-2">
+                  <button className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 text-sm font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-all">
                     <Shield size={16} />
                     SECURITY
                   </button>
                 </div>
-                <button className="p-2 border border-gray-300 rounded-md hover:bg-gray-100">
+                <button className="p-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg hover:bg-white hover:shadow-md transition-all">
                   <RefreshCw size={16} className="text-gray-600" />
                 </button>
               </div>
 
-              {/* Table */}
+              {/* Enhanced Table */}
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-gradient-to-r from-gray-50/90 to-blue-50/50 backdrop-blur-sm border-b border-gray-200/50">
                     <tr>
-                      <th className="px-4 py-3 text-left">
-                        <input type="checkbox" className="rounded border-gray-300" />
+                      <th className="px-6 py-4 text-left">
+                        <input type="checkbox" className="rounded border-gray-300 shadow-sm" />
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Description</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-white/50 rounded-md transition-all">
                         Last Modified ↓
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white/50 backdrop-blur-sm divide-y divide-gray-200/50">
                     {objects.map((obj, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <input type="checkbox" className="rounded border-gray-300" />
+                      <tr key={idx} className="hover:bg-white/80 hover:shadow-sm transition-all">
+                        <td className="px-6 py-4">
+                          <input type="checkbox" className="rounded border-gray-300 shadow-sm" />
                         </td>
-                        <td className="px-4 py-3 text-xl">{obj.icon}</td>
-                        <td className="px-4 py-3">
-                          <span className="text-blue-700 hover:underline cursor-pointer font-medium">{obj.name}</span>
+                        <td className="px-6 py-4">
+                          <div className="text-2xl drop-shadow-sm">{obj.icon}</div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{obj.description}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-medium">
+                        <td className="px-6 py-4">
+                          <span 
+                            onClick={() => {
+                              if (obj.type === 'AI Skill') setLocation('/ai-skill-view')
+                              else if (obj.type === 'Site') setLocation('/customer-portal-site')
+                            }}
+                            className={`font-semibold text-blue-700 hover:text-blue-800 hover:underline cursor-pointer transition-all ${(obj.type === 'AI Skill' || obj.type === 'Site') ? 'drop-shadow-sm' : ''}`}
+                          >
+                            {obj.name}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{obj.description}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-md">
                               {obj.modifiedBy}
                             </div>
-                            <span>{obj.lastModified}</span>
+                            <span className="font-medium">{obj.lastModified}</span>
                           </div>
                         </td>
                       </tr>
@@ -316,7 +344,7 @@ export default function BuildView() {
                   </tbody>
                 </table>
               </div>
-            </CardLayout>
+            </div>
           </div>
         </div>
       </div>
