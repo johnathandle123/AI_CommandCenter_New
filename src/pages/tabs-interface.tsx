@@ -5508,28 +5508,43 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   </div>
                 </div>
               ) : appMode === 'revised-v3' ? (
-                <div key="v3-type-cards" className="mt-6 px-48" style={{ background: 'transparent' }}>
+                <div key="v3-type-cards" className="mt-6 px-12" style={{ background: 'transparent' }}>
+                  {/* Enhanced Header */}
+                  <div className="mb-8 text-center">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Guardrail Configuration</h1>
+                    <p className="text-lg text-gray-600">Configure AI safety measures to protect your applications</p>
+                  </div>
+
                   {/* Grouping Dropdown */}
-                  <div className="mb-6 flex justify-end">
-                    <select 
-                      value={v3GroupingMode}
-                      onChange={(e) => setV3GroupingMode(e.target.value as 'input-output' | 'stakeholder' | 'risk-domain')}
-                      className="px-4 py-2 border border-gray-300 rounded-md bg-white text-sm"
-                    >
-                      <option value="input-output">Input/Output Grouping</option>
-                      <option value="stakeholder">Stakeholder Grouping</option>
-                      <option value="risk-domain">Risk Domain Grouping</option>
-                    </select>
+                  <div className="mb-8 flex justify-center">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
+                      <select 
+                        value={v3GroupingMode}
+                        onChange={(e) => setV3GroupingMode(e.target.value as 'input-output' | 'stakeholder' | 'risk-domain')}
+                        className="px-6 py-3 bg-transparent border-none outline-none text-sm font-medium text-gray-700 cursor-pointer"
+                      >
+                        <option value="input-output">Input/Output Grouping</option>
+                        <option value="stakeholder">Stakeholder Grouping</option>
+                        <option value="risk-domain">Risk Domain Grouping</option>
+                      </select>
+                    </div>
                   </div>
                   
-                  <div className="space-y-8">
+                  <div className="max-w-6xl mx-auto space-y-12">
                     {v3GroupingMode === 'input-output' ? (
                       <>
-                    <div>
-                      <HeadingField text="Input Protection" size="LARGE" marginBelow="STANDARD" />
-                      <p className="text-gray-600 mb-6">These settings protect your AI by checking user messages before they're processed.</p>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                      <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                          <Icon icon="Shield" size="MEDIUM" color="blue" />
+                        </div>
+                        <div>
+                          <HeadingField text="Input Protection" size="LARGE" marginBelow="NONE" />
+                          <p className="text-gray-600 mt-1">Protect your AI by checking user messages before processing</p>
+                        </div>
+                      </div>
                       
-                      <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
                             className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
@@ -5546,23 +5561,18 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </CardLayout>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('PII Scrubbing')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
-                                <Icon icon="Eye" size="MEDIUM" color="green" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="PII Scrubbing" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Find and protect personal information like emails and phone numbers</p>
-                              </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('PII Scrubbing')}>
+                          {/* Toggle removed */}
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-green-100 group-hover:bg-green-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="Eye" size="MEDIUM" color="green" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">PII Scrubbing</h3>
+                              <p className="text-gray-600 text-sm">Find and protect personal information like emails and phone numbers</p>
                             </div>
                           </div>
-                        </CardLayout>
+                        </div>
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
                             className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
@@ -5617,11 +5627,18 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </div>
                     </div>
 
-                    <div>
-                      <HeadingField text="Output Protection" size="LARGE" marginBelow="STANDARD" />
-                      <p className="text-gray-600 mb-6">These settings check AI responses before they're sent to users.</p>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                      <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
+                          <Icon icon="CheckCircle" size="MEDIUM" color="cyan" />
+                        </div>
+                        <div>
+                          <HeadingField text="Output Protection" size="LARGE" marginBelow="NONE" />
+                          <p className="text-gray-600 mt-1">Check AI responses before they're sent to users</p>
+                        </div>
+                      </div>
                       
-                      <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
                             className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
