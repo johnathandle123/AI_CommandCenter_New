@@ -2602,20 +2602,22 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                               <label className="block text-sm font-medium text-gray-700 mb-3">Anonymization Method</label>
                               <div className="space-y-3">
-                                <label className="flex items-start space-x-2">
-                                  <input type="radio" name="anonymization" value="masking" defaultChecked className="mt-1" />
-                                  <div>
-                                    <span className="text-sm font-medium">Masking</span>
-                                    <div className="text-sm text-gray-600">Replace with asterisks (e.g., ***-**-1234)</div>
+                                {[
+                                  { value: 'masking', label: 'Masking', desc: 'Replace with asterisks (e.g., ***-**-1234)' },
+                                  { value: 'redaction', label: 'Redaction', desc: 'Remove completely (e.g., [REDACTED])' }
+                                ].map((method) => (
+                                  <div key={method.value}>
+                                    <div
+                                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                        v3AnonymizationMethod === method.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                                      }`}
+                                      onClick={() => setV3AnonymizationMethod(method.value)}
+                                    >
+                                      <div className="font-semibold">{method.label}</div>
+                                      <div className="text-sm text-gray-600">{method.desc}</div>
+                                    </div>
                                   </div>
-                                </label>
-                                <label className="flex items-start space-x-2">
-                                  <input type="radio" name="anonymization" value="redaction" className="mt-1" />
-                                  <div>
-                                    <span className="text-sm font-medium">Redaction</span>
-                                    <div className="text-sm text-gray-600">Remove completely (e.g., [REDACTED])</div>
-                                  </div>
-                                </label>
+                                ))}
                               </div>
                             </div>
 
@@ -4000,27 +4002,23 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                               <label className="block text-sm font-medium text-gray-700 mb-3">Anonymization Method</label>
                               <div className="space-y-3">
-                                <label className="flex items-start space-x-2">
-                                  <input type="radio" name="v3-anonymization" value="masking" defaultChecked className="mt-1" />
-                                  <div>
-                                    <span className="text-sm font-medium">Masking</span>
-                                    <div className="text-sm text-gray-600">Replace with asterisks (e.g., john@*****.com)</div>
+                                {[
+                                  { value: 'masking', label: 'Masking', desc: 'Replace with asterisks (e.g., john@*****.com)' },
+                                  { value: 'redaction', label: 'Redaction', desc: 'Remove completely (e.g., [REDACTED])' },
+                                  { value: 'hashing', label: 'Hashing', desc: 'Replace with hash (e.g., #a1b2c3d4)' }
+                                ].map((method) => (
+                                  <div key={method.value}>
+                                    <div
+                                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                        v3AnonymizationMethod === method.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                                      }`}
+                                      onClick={() => setV3AnonymizationMethod(method.value)}
+                                    >
+                                      <div className="font-semibold">{method.label}</div>
+                                      <div className="text-sm text-gray-600">{method.desc}</div>
+                                    </div>
                                   </div>
-                                </label>
-                                <label className="flex items-start space-x-2">
-                                  <input type="radio" name="v3-anonymization" value="redaction" className="mt-1" />
-                                  <div>
-                                    <span className="text-sm font-medium">Redaction</span>
-                                    <div className="text-sm text-gray-600">Remove completely (e.g., [REDACTED])</div>
-                                  </div>
-                                </label>
-                                <label className="flex items-start space-x-2">
-                                  <input type="radio" name="v3-anonymization" value="hashing" className="mt-1" />
-                                  <div>
-                                    <span className="text-sm font-medium">Hashing</span>
-                                    <div className="text-sm text-gray-600">Replace with hash (e.g., #a1b2c3d4)</div>
-                                  </div>
-                                </label>
+                                ))}
                               </div>
                             </div>
                           </div>
