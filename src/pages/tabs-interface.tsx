@@ -484,13 +484,22 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         'Encoding-based Attack Prevention'
       ],
       'PII Scrubbing': [
-        'Email & Phone Detection',
-        'SSN & Credit Card Protection',
-        'Address & Location Scrubbing',
-        'Name & Identity Protection',
-        'Custom PII Pattern Detection',
-        'Financial Information Guard',
-        'Medical Record Protection'
+        'Email Detection',
+        'Phone Number Detection', 
+        'SSN Protection',
+        'Credit Card Protection',
+        'Address Scrubbing',
+        'Name Protection',
+        'IP Address Detection',
+        'Date of Birth Protection',
+        'Driver License Detection',
+        'Passport Number Protection',
+        'Bank Account Detection',
+        'Tax ID Protection',
+        'Medical Record Number Detection',
+        'Insurance Policy Detection',
+        'Employee ID Protection',
+        'Custom PII Pattern Detection'
       ],
       'Toxic Content Detection': [
         'Profanity Filter',
@@ -4006,13 +4015,22 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         )}
 
                         {/* PII Scrubbing Configurations */}
-                        {(selectedV3IndividualGuardrail === 'Email & Phone Detection' ||
-                          selectedV3IndividualGuardrail === 'SSN & Credit Card Protection' ||
-                          selectedV3IndividualGuardrail === 'Address & Location Scrubbing' ||
-                          selectedV3IndividualGuardrail === 'Name & Identity Protection' ||
-                          selectedV3IndividualGuardrail === 'Custom PII Pattern Detection' ||
-                          selectedV3IndividualGuardrail === 'Financial Information Guard' ||
-                          selectedV3IndividualGuardrail === 'Medical Record Protection') && (
+                        {(selectedV3IndividualGuardrail === 'Email Detection' ||
+                          selectedV3IndividualGuardrail === 'Phone Number Detection' ||
+                          selectedV3IndividualGuardrail === 'SSN Protection' ||
+                          selectedV3IndividualGuardrail === 'Credit Card Protection' ||
+                          selectedV3IndividualGuardrail === 'Address Scrubbing' ||
+                          selectedV3IndividualGuardrail === 'Name Protection' ||
+                          selectedV3IndividualGuardrail === 'IP Address Detection' ||
+                          selectedV3IndividualGuardrail === 'Date of Birth Protection' ||
+                          selectedV3IndividualGuardrail === 'Driver License Detection' ||
+                          selectedV3IndividualGuardrail === 'Passport Number Protection' ||
+                          selectedV3IndividualGuardrail === 'Bank Account Detection' ||
+                          selectedV3IndividualGuardrail === 'Tax ID Protection' ||
+                          selectedV3IndividualGuardrail === 'Medical Record Number Detection' ||
+                          selectedV3IndividualGuardrail === 'Insurance Policy Detection' ||
+                          selectedV3IndividualGuardrail === 'Employee ID Protection' ||
+                          selectedV3IndividualGuardrail === 'Custom PII Pattern Detection') && (
                           <div className="space-y-4">
                             {/* Sensitivity Threshold - FIRST */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
@@ -4835,13 +4853,22 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 </td>
                               </tr>
                               {[
-                                { name: 'Email & Phone Detection', description: 'Detect and mask email addresses and phone numbers', status: 'Active', apps: 18, objects: 62 },
-                                { name: 'SSN & Credit Card Protection', description: 'Find and protect social security numbers and credit cards', status: 'Active', apps: 14, objects: 43 },
-                                { name: 'Address & Location Scrubbing', description: 'Remove physical addresses and location data', status: 'Inactive', apps: 9, objects: 28 },
-                                { name: 'Name & Identity Protection', description: 'Detect and anonymize personal names and identities', status: 'Active', apps: 25, objects: 71 },
-                                { name: 'Custom PII Pattern Detection', description: 'User-defined patterns for organization-specific PII', status: 'Inactive', apps: 6, objects: 19 },
-                                { name: 'Financial Information Guard', description: 'Protects bank account numbers and routing information', status: 'Active', apps: 11, objects: 35 },
-                                { name: 'Medical Record Protection', description: 'Detects and scrubs medical record numbers and health data', status: 'Active', apps: 4, objects: 16 }
+                                { name: 'Email Detection', description: 'Detect and mask email addresses', status: 'Active', apps: 22, objects: 68 },
+                                { name: 'Phone Number Detection', description: 'Detect and mask phone numbers', status: 'Active', apps: 19, objects: 54 },
+                                { name: 'SSN Protection', description: 'Find and protect social security numbers', status: 'Active', apps: 16, objects: 47 },
+                                { name: 'Credit Card Protection', description: 'Detect and mask credit card numbers', status: 'Active', apps: 14, objects: 39 },
+                                { name: 'Address Scrubbing', description: 'Remove physical addresses', status: 'Active', apps: 12, objects: 33 },
+                                { name: 'Name Protection', description: 'Detect and anonymize personal names', status: 'Active', apps: 25, objects: 71 },
+                                { name: 'IP Address Detection', description: 'Detect and mask IP addresses', status: 'Active', apps: 8, objects: 24 },
+                                { name: 'Date of Birth Protection', description: 'Detect and protect birth dates', status: 'Active', apps: 11, objects: 31 },
+                                { name: 'Driver License Detection', description: 'Detect and mask driver license numbers', status: 'Inactive', apps: 7, objects: 19 },
+                                { name: 'Passport Number Protection', description: 'Detect and protect passport numbers', status: 'Inactive', apps: 5, objects: 14 },
+                                { name: 'Bank Account Detection', description: 'Detect and mask bank account numbers', status: 'Active', apps: 9, objects: 26 },
+                                { name: 'Tax ID Protection', description: 'Detect and protect tax identification numbers', status: 'Active', apps: 6, objects: 18 },
+                                { name: 'Medical Record Number Detection', description: 'Detect and scrub medical record numbers', status: 'Active', apps: 4, objects: 12 },
+                                { name: 'Insurance Policy Detection', description: 'Detect and mask insurance policy numbers', status: 'Inactive', apps: 3, objects: 9 },
+                                { name: 'Employee ID Protection', description: 'Detect and protect employee identification numbers', status: 'Active', apps: 8, objects: 22 },
+                                { name: 'Custom PII Pattern Detection', description: 'User-defined patterns for organization-specific PII', status: 'Inactive', apps: 6, objects: 19 }
                               ].map((guardrail, index) => (
                                 <tr 
                                   key={index} 
@@ -6335,14 +6362,23 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         { name: 'Multi-turn Jailbreak Detection', type: 'Prompt Injection', description: 'Detects jailbreak attempts across conversation turns', status: 'Active', apps: 7, objects: 21 },
                         { name: 'Encoding-based Attack Prevention', type: 'Prompt Injection', description: 'Blocks attempts using Base64, hex, or other encodings', status: 'Inactive', apps: 3, objects: 9 },
                         
-                        // PII Scrubbing (7 items)
-                        { name: 'Email & Phone Detection', type: 'PII Scrubbing', description: 'Detect and mask email addresses and phone numbers', status: 'Active', apps: 18, objects: 62 },
-                        { name: 'SSN & Credit Card Protection', type: 'PII Scrubbing', description: 'Find and protect social security numbers and credit cards', status: 'Active', apps: 14, objects: 43 },
-                        { name: 'Address & Location Scrubbing', type: 'PII Scrubbing', description: 'Remove physical addresses and location data', status: 'Inactive', apps: 9, objects: 28 },
-                        { name: 'Name & Identity Protection', type: 'PII Scrubbing', description: 'Detect and anonymize personal names and identities', status: 'Active', apps: 25, objects: 71 },
+                        // PII Scrubbing (16 items)
+                        { name: 'Email Detection', type: 'PII Scrubbing', description: 'Detect and mask email addresses', status: 'Active', apps: 22, objects: 68 },
+                        { name: 'Phone Number Detection', type: 'PII Scrubbing', description: 'Detect and mask phone numbers', status: 'Active', apps: 19, objects: 54 },
+                        { name: 'SSN Protection', type: 'PII Scrubbing', description: 'Find and protect social security numbers', status: 'Active', apps: 16, objects: 47 },
+                        { name: 'Credit Card Protection', type: 'PII Scrubbing', description: 'Detect and mask credit card numbers', status: 'Active', apps: 14, objects: 39 },
+                        { name: 'Address Scrubbing', type: 'PII Scrubbing', description: 'Remove physical addresses', status: 'Active', apps: 12, objects: 33 },
+                        { name: 'Name Protection', type: 'PII Scrubbing', description: 'Detect and anonymize personal names', status: 'Active', apps: 25, objects: 71 },
+                        { name: 'IP Address Detection', type: 'PII Scrubbing', description: 'Detect and mask IP addresses', status: 'Active', apps: 8, objects: 24 },
+                        { name: 'Date of Birth Protection', type: 'PII Scrubbing', description: 'Detect and protect birth dates', status: 'Active', apps: 11, objects: 31 },
+                        { name: 'Driver License Detection', type: 'PII Scrubbing', description: 'Detect and mask driver license numbers', status: 'Inactive', apps: 7, objects: 19 },
+                        { name: 'Passport Number Protection', type: 'PII Scrubbing', description: 'Detect and protect passport numbers', status: 'Inactive', apps: 5, objects: 14 },
+                        { name: 'Bank Account Detection', type: 'PII Scrubbing', description: 'Detect and mask bank account numbers', status: 'Active', apps: 9, objects: 26 },
+                        { name: 'Tax ID Protection', type: 'PII Scrubbing', description: 'Detect and protect tax identification numbers', status: 'Active', apps: 6, objects: 18 },
+                        { name: 'Medical Record Number Detection', type: 'PII Scrubbing', description: 'Detect and scrub medical record numbers', status: 'Active', apps: 4, objects: 12 },
+                        { name: 'Insurance Policy Detection', type: 'PII Scrubbing', description: 'Detect and mask insurance policy numbers', status: 'Inactive', apps: 3, objects: 9 },
+                        { name: 'Employee ID Protection', type: 'PII Scrubbing', description: 'Detect and protect employee identification numbers', status: 'Active', apps: 8, objects: 22 },
                         { name: 'Custom PII Pattern Detection', type: 'PII Scrubbing', description: 'User-defined patterns for organization-specific PII', status: 'Inactive', apps: 6, objects: 19 },
-                        { name: 'Financial Information Guard', type: 'PII Scrubbing', description: 'Protects bank account numbers and routing information', status: 'Active', apps: 11, objects: 35 },
-                        { name: 'Medical Record Protection', type: 'PII Scrubbing', description: 'Detects and scrubs medical record numbers and health data', status: 'Active', apps: 4, objects: 16 },
                         
                         // Toxic Content (6 items)
                         { name: 'Profanity Filter', type: 'Toxic Content', description: 'Block explicit language and curse words', status: 'Active', apps: 32, objects: 78 },
