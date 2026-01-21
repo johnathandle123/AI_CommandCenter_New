@@ -1629,11 +1629,25 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 </div>
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Anonymization Method</label>
-                                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                                    <option value="masking">Masking (***-**-1234)</option>
-                                    <option value="redaction">Redaction ([USER_EMAIL])</option>
-                                    <option value="hashing">Hashing (Deterministic hash)</option>
-                                  </select>
+                                  <div className="space-y-3">
+                                    {[
+                                      { value: 'masking', label: 'Masking', desc: '***-**-1234' },
+                                      { value: 'redaction', label: 'Redaction', desc: '[USER_EMAIL]' },
+                                      { value: 'hashing', label: 'Hashing', desc: 'Deterministic hash' }
+                                    ].map((method) => (
+                                      <div key={method.value}>
+                                        <div
+                                          className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                            v3AnonymizationMethod === method.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                                          }`}
+                                          onClick={() => setV3AnonymizationMethod(method.value)}
+                                        >
+                                          <div className="font-semibold">{method.label}</div>
+                                          <div className="text-sm text-gray-600">{method.desc}</div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
                             )}
@@ -2220,11 +2234,25 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">Anonymization Method</label>
-                              <select className="w-48 px-3 py-2 border border-gray-300 rounded-md">
-                                <option value="masking">Masking (***-**-1234)</option>
-                                <option value="redaction">Redaction ([USER_EMAIL])</option>
-                                <option value="hashing">Hashing (Deterministic hash)</option>
-                              </select>
+                              <div className="space-y-3">
+                                {[
+                                  { value: 'masking', label: 'Masking', desc: '***-**-1234' },
+                                  { value: 'redaction', label: 'Redaction', desc: '[USER_EMAIL]' },
+                                  { value: 'hashing', label: 'Hashing', desc: 'Deterministic hash' }
+                                ].map((method) => (
+                                  <div key={method.value}>
+                                    <div
+                                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                        v3AnonymizationMethod === method.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                                      }`}
+                                      onClick={() => setV3AnonymizationMethod(method.value)}
+                                    >
+                                      <div className="font-semibold">{method.label}</div>
+                                      <div className="text-sm text-gray-600">{method.desc}</div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">Confidence Score</label>
@@ -5581,18 +5609,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   <div className="max-w-6xl mx-auto space-y-12">
                     {v3GroupingMode === 'input-output' ? (
                       <>
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                      <div className="flex items-center gap-4 mb-8">
-                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                          <Icon icon="Shield" size="MEDIUM" color="blue" />
-                        </div>
-                        <div>
-                          <HeadingField text="Input Protection" size="LARGE" marginBelow="NONE" />
-                          <p className="text-gray-600 mt-1">Protect your AI by checking user messages before processing</p>
-                        </div>
-                      </div>
+                    <div>
+                      <HeadingField text="Input Protection" size="LARGE" marginBelow="STANDARD" />
+                      <p className="text-gray-600 mb-6">Protect your AI by checking user messages before processing</p>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="space-y-4">
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
                             className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
@@ -5692,18 +5713,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                      <div className="flex items-center gap-4 mb-8">
-                        <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
-                          <Icon icon="CheckCircle" size="MEDIUM" color="cyan" />
-                        </div>
-                        <div>
-                          <HeadingField text="Output Protection" size="LARGE" marginBelow="NONE" />
-                          <p className="text-gray-600 mt-1">Check AI responses before they're sent to users</p>
-                        </div>
-                      </div>
+                    <div>
+                      <HeadingField text="Output Protection" size="LARGE" marginBelow="STANDARD" />
+                      <p className="text-gray-600 mb-6">Check AI responses before they're sent to users</p>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="space-y-4">
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
                             className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
