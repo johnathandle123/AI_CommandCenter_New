@@ -453,6 +453,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [selectedV3GuardrailType, setSelectedV3GuardrailType] = useState<string | null>(null)
   const [selectedV3IndividualGuardrail, setSelectedV3IndividualGuardrail] = useState<string | null>(null)
   const [v3GroupingMode, setV3GroupingMode] = useState<'input-output' | 'stakeholder' | 'risk-domain'>('input-output')
+  const [v3AnonymizationMethod, setV3AnonymizationMethod] = useState('masking')
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
   const [observeScrolled, setObserveScrolled] = useState(false)
@@ -499,13 +500,17 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         'Sexual Content Blocker',
         'Self-Harm Prevention'
       ],
-      'Topic & Competitor Filtering': [
-        'Competitor Mention Blocker',
+      'Custom Content Detection': [
         'Off-Topic Detection',
         'Political Content Filter',
         'Religious Content Filter',
         'Financial Advice Blocker',
         'Medical Advice Prevention'
+      ],
+      'Competitor Detection': [
+        'Competitor Mention Blocker',
+        'Brand Comparison Blocker',
+        'Pricing Comparison Filter'
       ],
       'Malicious Code Detection': [
         'SQL Injection Prevention',
@@ -1632,7 +1637,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 </div>
                               </div>
                             )}
-                            {selectedRevisedGuardrail === 'Topic & Competitor Filtering' && (
+                            {selectedRevisedGuardrail === 'Custom Content Detection' && (
                               <div className="space-y-6">
                                 {/* Similarity Threshold - First Configuration */}
                                 <div>
@@ -1666,7 +1671,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                       </div>
                                       <div className="flex-1">
                                         <p className="text-sm text-gray-700"><strong>Strict matching.</strong> Only blocks very close semantic matches to denied topics.</p>
-                                        <p className="text-xs text-gray-600 mt-1"><em>Example:</em> Denied topic "competitor_x" only blocks direct mentions, allows "similar products"</p>
+                                        <p className="text-xs text-gray-600 mt-1"><em>Example:</em> Denied topic "inappropriate content" only blocks direct mentions, allows "content guidelines"</p>
                                       </div>
                                     </div>
                                   </div>
@@ -1675,14 +1680,56 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Denied Topics</label>
                                   <textarea 
-                                    placeholder="Enter denied topics (comma-separated): crypto, medical advice, competitor_x"
+                                    placeholder="Enter denied topics (comma-separated): crypto, medical advice, inappropriate content"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
                                   />
                                 </div>
+                              </div>
+                            )}
+                            {selectedRevisedGuardrail === 'Competitor Detection' && (
+                              <div className="space-y-6">
+                                {/* Similarity Threshold for Competitors */}
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-2">Allowed Topics (Optional)</label>
+                                  <label className="block text-sm font-medium text-gray-700 mb-3">Competitor Detection Sensitivity</label>
+                                  <div className="flex items-center space-x-4 mb-3">
+                                    <input type="range" min="0" max="1" step="0.01" defaultValue="0.80" className="flex-1" />
+                                    <span className="text-sm font-semibold text-gray-900 w-12">0.80</span>
+                                  </div>
+                                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 space-y-3">
+                                    <div className="flex items-start gap-3">
+                                      <div className="w-16 flex-shrink-0">
+                                        <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">Low (0.60)</span>
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="text-sm text-gray-700"><strong>Loose detection.</strong> Catches broad competitor mentions but may miss subtle references.</p>
+                                        <p className="text-xs text-gray-600 mt-1"><em>Example:</em> "CompetitorX" blocks direct mentions but allows "similar solutions"</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                      <div className="w-16 flex-shrink-0">
+                                        <span className="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">Medium (0.80)</span>
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="text-sm text-gray-700"><strong>Balanced detection.</strong> Good at catching competitor references with context.</p>
+                                        <p className="text-xs text-gray-600 mt-1"><em>Example:</em> Blocks "CompetitorX pricing" and "how much does CompetitorX cost?"</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                      <div className="w-16 flex-shrink-0">
+                                        <span className="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">High (0.90)</span>
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="text-sm text-gray-700"><strong>Strict detection.</strong> Catches even subtle competitor references and comparisons.</p>
+                                        <p className="text-xs text-gray-600 mt-1"><em>Example:</em> Blocks "that other platform" when referring to competitors</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Competitor Names & Brands</label>
                                   <textarea 
-                                    placeholder="Enter allowed topics (comma-separated): general support, product info"
+                                    placeholder="Enter competitor names (comma-separated): CompetitorX, Rival Corp, Alternative Solution"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
                                   />
                                 </div>
@@ -1892,7 +1939,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             {[
                               { name: 'Prompt Injection & Jailbreak Detection', description: 'Configure sensitivity threshold, detection mode, and action on match for prompt injection attacks', color: 'blue' },
                               { name: 'PII Scrubbing', description: 'Set entity selectors, anonymization method, and confidence score for personally identifiable information', color: 'green' },
-                              { name: 'Topic & Competitor Filtering', description: 'Define allowed/denied topics and semantic similarity thresholds for content filtering', color: 'purple' }
+                              { name: 'Custom Content Detection', description: 'Define allowed/denied topics and semantic similarity thresholds for content filtering', color: 'purple' },
+                              { name: 'Competitor Detection', description: 'Block mentions of competitor brands, products, and services', color: 'orange' }
                             ].map((guardrail, index) => (
                               <CardLayout key={index} padding="MORE" showShadow={true}>
                                 <div 
@@ -5593,7 +5641,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         <CardLayout padding="MORE" showShadow={true}>
                           <div 
                             className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Topic & Competitor Filtering')}
+                            onClick={() => setSelectedV3GuardrailType('Custom Content Detection')}
                           >
                             {/* Toggle removed */}
                             <div className="flex items-start gap-4">
@@ -5601,8 +5649,25 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 <Icon icon="Filter" size="MEDIUM" color="purple" />
                               </div>
                               <div className="flex-1">
-                                <HeadingField text="Topic & Competitor Filtering" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Block specific topics and competitor mentions</p>
+                                <HeadingField text="Custom Content Detection" size="MEDIUM" marginBelow="LESS" />
+                                <p className="text-gray-600">Block specific topics and inappropriate content</p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardLayout>
+                        <CardLayout padding="MORE" showShadow={true}>
+                          <div 
+                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
+                            onClick={() => setSelectedV3GuardrailType('Competitor Detection')}
+                          >
+                            {/* Toggle removed */}
+                            <div className="flex items-start gap-4">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
+                                <Icon icon="Eye" size="MEDIUM" color="orange" />
+                              </div>
+                              <div className="flex-1">
+                                <HeadingField text="Competitor Detection" size="MEDIUM" marginBelow="LESS" />
+                                <p className="text-gray-600">Block competitor mentions and brand comparisons</p>
                               </div>
                             </div>
                           </div>
