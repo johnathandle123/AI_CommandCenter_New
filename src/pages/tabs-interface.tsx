@@ -454,6 +454,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [selectedV3IndividualGuardrail, setSelectedV3IndividualGuardrail] = useState<string | null>(null)
   const [v3GroupingMode, setV3GroupingMode] = useState<'input-output' | 'stakeholder' | 'risk-domain'>('input-output')
   const [v3AnonymizationMethod, setV3AnonymizationMethod] = useState('masking')
+  const [v3EntitySelector, setV3EntitySelector] = useState('SSN')
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
   const [observeScrolled, setObserveScrolled] = useState(false)
@@ -1618,15 +1619,42 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Entity Selectors</label>
-                                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                  <select 
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    value={v3EntitySelector}
+                                    onChange={(e) => setV3EntitySelector(e.target.value)}
+                                  >
                                     <option value="SSN">SSN</option>
                                     <option value="EMAIL">EMAIL</option>
                                     <option value="CREDIT_CARD">CREDIT_CARD</option>
                                     <option value="IP_ADDRESS">IP_ADDRESS</option>
                                     <option value="PHONE_NUMBER">PHONE_NUMBER</option>
                                     <option value="ADDRESS">ADDRESS</option>
+                                    <option value="CUSTOM">Custom</option>
                                   </select>
                                 </div>
+                                {v3EntitySelector === 'CUSTOM' && (
+                                  <>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">Topic Definition</label>
+                                      <textarea 
+                                        placeholder="Define the custom PII entity type you want to detect..."
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">Examples</label>
+                                      <div className="space-y-2">
+                                        <input 
+                                          type="text" 
+                                          placeholder="Add example of custom PII to detect..."
+                                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                        />
+                                        <button className="text-blue-600 hover:text-blue-700 text-sm">+ Add another example</button>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Anonymization Method</label>
                                   <div className="space-y-3">
@@ -2223,15 +2251,42 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <div className="space-y-4">
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">Entity Selectors</label>
-                              <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                              <select 
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                value={v3EntitySelector}
+                                onChange={(e) => setV3EntitySelector(e.target.value)}
+                              >
                                 <option value="SSN">SSN</option>
                                 <option value="EMAIL">EMAIL</option>
                                 <option value="CREDIT_CARD">CREDIT_CARD</option>
                                 <option value="IP_ADDRESS">IP_ADDRESS</option>
                                 <option value="PHONE_NUMBER">PHONE_NUMBER</option>
                                 <option value="ADDRESS">ADDRESS</option>
+                                <option value="CUSTOM">Custom</option>
                               </select>
                             </div>
+                            {v3EntitySelector === 'CUSTOM' && (
+                              <>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Topic Definition</label>
+                                  <textarea 
+                                    placeholder="Define the custom PII entity type you want to detect..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Examples</label>
+                                  <div className="space-y-2">
+                                    <input 
+                                      type="text" 
+                                      placeholder="Add example of custom PII to detect..."
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    />
+                                    <button className="text-blue-600 hover:text-blue-700 text-sm">+ Add another example</button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">Anonymization Method</label>
                               <div className="space-y-3">
@@ -3987,7 +4042,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             {/* Entity Selection */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                               <label className="block text-sm font-medium text-gray-700 mb-3">Entity Selection</label>
-                              <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                              <select 
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                value={v3EntitySelector}
+                                onChange={(e) => setV3EntitySelector(e.target.value)}
+                              >
                                 <option value="EMAIL">Email Addresses</option>
                                 <option value="PHONE">Phone Numbers</option>
                                 <option value="SSN">Social Security Numbers</option>
@@ -3995,8 +4054,31 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 <option value="ADDRESS">Physical Addresses</option>
                                 <option value="NAMES">Personal Names</option>
                                 <option value="IP_ADDRESS">IP Addresses</option>
+                                <option value="CUSTOM">Custom</option>
                               </select>
                             </div>
+                            {v3EntitySelector === 'CUSTOM' && (
+                              <>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Topic Definition</label>
+                                  <textarea 
+                                    placeholder="Define the custom PII entity type you want to detect..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                  />
+                                </div>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Examples</label>
+                                  <div className="space-y-2">
+                                    <input 
+                                      type="text" 
+                                      placeholder="Add example of custom PII to detect..."
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                    />
+                                    <button className="text-blue-600 hover:text-blue-700 text-sm">+ Add another example</button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
 
                             {/* Anonymization Method */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
