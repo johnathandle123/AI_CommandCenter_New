@@ -455,6 +455,25 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [v3GroupingMode, setV3GroupingMode] = useState<'input-output' | 'stakeholder' | 'risk-domain'>('input-output')
   const [v3AnonymizationMethod, setV3AnonymizationMethod] = useState('masking')
   const [v3EntitySelector, setV3EntitySelector] = useState('SSN')
+  
+  // Function to get appropriate entity for default guardrails
+  const getEntityForGuardrail = (guardrailName: string) => {
+    const entityMap: Record<string, string> = {
+      'Email Detection': 'EMAIL',
+      'Phone Number Detection': 'PHONE_NUMBER', 
+      'SSN Protection': 'SSN',
+      'Credit Card Protection': 'CREDIT_CARD',
+      'Address Scrubbing': 'ADDRESS',
+      'Name Protection': 'NAMES'
+    }
+    return entityMap[guardrailName] || 'CUSTOM'
+  }
+  
+  // Check if current guardrail is default
+  const isCurrentGuardrailDefault = (guardrailName: string) => {
+    const defaultGuardrails = ['Email Detection', 'Phone Number Detection', 'SSN Protection', 'Credit Card Protection', 'Address Scrubbing', 'Name Protection']
+    return defaultGuardrails.includes(guardrailName)
+  }
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
   const [protectScrolled, setProtectScrolled] = useState(false)
   const [observeScrolled, setObserveScrolled] = useState(false)
@@ -1630,8 +1649,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Entity Selectors</label>
                                   <select 
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                    value={v3EntitySelector}
+                                    value={selectedV3IndividualGuardrail ? getEntityForGuardrail(selectedV3IndividualGuardrail) : v3EntitySelector}
                                     onChange={(e) => setV3EntitySelector(e.target.value)}
+                                    disabled={selectedV3IndividualGuardrail ? isCurrentGuardrailDefault(selectedV3IndividualGuardrail) : false}
                                   >
                                     <option value="SSN">SSN</option>
                                     <option value="EMAIL">EMAIL</option>
@@ -1642,7 +1662,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                     <option value="CUSTOM">Custom</option>
                                   </select>
                                 </div>
-                                {v3EntitySelector === 'CUSTOM' && (
+                                {(!selectedV3IndividualGuardrail || !isCurrentGuardrailDefault(selectedV3IndividualGuardrail)) && (selectedV3IndividualGuardrail ? getEntityForGuardrail(selectedV3IndividualGuardrail) : v3EntitySelector) === 'CUSTOM' && (
                                   <>
                                     <div>
                                       <label className="block text-sm font-medium text-gray-700 mb-2">Topic Definition</label>
@@ -2262,8 +2282,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <label className="block text-sm font-medium text-gray-700 mb-2">Entity Selectors</label>
                               <select 
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                value={v3EntitySelector}
+                                value={selectedV3IndividualGuardrail ? getEntityForGuardrail(selectedV3IndividualGuardrail) : v3EntitySelector}
                                 onChange={(e) => setV3EntitySelector(e.target.value)}
+                                disabled={selectedV3IndividualGuardrail ? isCurrentGuardrailDefault(selectedV3IndividualGuardrail) : false}
                               >
                                 <option value="SSN">SSN</option>
                                 <option value="EMAIL">EMAIL</option>
@@ -2274,7 +2295,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 <option value="CUSTOM">Custom</option>
                               </select>
                             </div>
-                            {v3EntitySelector === 'CUSTOM' && (
+                            {(!selectedV3IndividualGuardrail || !isCurrentGuardrailDefault(selectedV3IndividualGuardrail)) && (selectedV3IndividualGuardrail ? getEntityForGuardrail(selectedV3IndividualGuardrail) : v3EntitySelector) === 'CUSTOM' && (
                               <>
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Topic Definition</label>
@@ -4062,8 +4083,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <label className="block text-sm font-medium text-gray-700 mb-3">Entity Selection</label>
                               <select 
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                value={v3EntitySelector}
+                                value={selectedV3IndividualGuardrail ? getEntityForGuardrail(selectedV3IndividualGuardrail) : v3EntitySelector}
                                 onChange={(e) => setV3EntitySelector(e.target.value)}
+                                disabled={selectedV3IndividualGuardrail ? isCurrentGuardrailDefault(selectedV3IndividualGuardrail) : false}
                               >
                                 <option value="EMAIL">Email Addresses</option>
                                 <option value="PHONE">Phone Numbers</option>
@@ -4075,7 +4097,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 <option value="CUSTOM">Custom</option>
                               </select>
                             </div>
-                            {v3EntitySelector === 'CUSTOM' && (
+                            {(!selectedV3IndividualGuardrail || !isCurrentGuardrailDefault(selectedV3IndividualGuardrail)) && (selectedV3IndividualGuardrail ? getEntityForGuardrail(selectedV3IndividualGuardrail) : v3EntitySelector) === 'CUSTOM' && (
                               <>
                                 <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Topic Definition</label>
@@ -4928,7 +4950,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     {guardrail.isDefault ? (
-                                      <div className="text-gray-400">→</div>
+                                      <div></div>
                                     ) : (
                                       <button 
                                         className="text-red-500 hover:text-red-700 p-1"
