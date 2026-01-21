@@ -4743,13 +4743,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 </td>
                               </tr>
                               {[
-                                { name: 'Basic Prompt Injection Detection', description: 'Standard protection against common injection attacks', status: 'Active', apps: 12, objects: 45 },
-                                { name: 'Advanced Jailbreak Prevention', description: 'Enhanced detection for sophisticated bypass attempts', status: 'Active', apps: 8, objects: 28 },
-                                { name: 'Context Manipulation Guard', description: 'Prevents attempts to alter system context', status: 'Inactive', apps: 5, objects: 15 },
-                                { name: 'Role-play Attack Detection', description: 'Blocks attempts to make AI assume different roles', status: 'Active', apps: 15, objects: 52 },
-                                { name: 'Instruction Override Protection', description: 'Prevents users from overriding system instructions', status: 'Active', apps: 22, objects: 78 },
-                                { name: 'Multi-turn Jailbreak Detection', description: 'Detects jailbreak attempts across conversation turns', status: 'Active', apps: 7, objects: 21 },
-                                { name: 'Encoding-based Attack Prevention', description: 'Blocks attempts using Base64, hex, or other encodings', status: 'Inactive', apps: 3, objects: 9 }
+                                { name: 'Basic Prompt Injection Detection', description: 'Standard protection against common injection attacks', status: 'Active', apps: 12, objects: 45, isDefault: true },
+                                { name: 'Advanced Jailbreak Prevention', description: 'Enhanced detection for sophisticated bypass attempts', status: 'Active', apps: 8, objects: 28, isDefault: true },
+                                { name: 'Context Manipulation Guard', description: 'Prevents attempts to alter system context', status: 'Inactive', apps: 5, objects: 15, isDefault: false },
+                                { name: 'Role-play Attack Detection', description: 'Blocks attempts to make AI assume different roles', status: 'Active', apps: 15, objects: 52, isDefault: true },
+                                { name: 'Instruction Override Protection', description: 'Prevents users from overriding system instructions', status: 'Active', apps: 22, objects: 78, isDefault: true },
+                                { name: 'Multi-turn Jailbreak Detection', description: 'Detects jailbreak attempts across conversation turns', status: 'Active', apps: 7, objects: 21, isDefault: false },
+                                { name: 'Encoding-based Attack Prevention', description: 'Blocks attempts using Base64, hex, or other encodings', status: 'Inactive', apps: 3, objects: 9, isDefault: false }
                               ].map((guardrail, index) => (
                                 <tr 
                                   key={index} 
@@ -4793,7 +4793,22 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                     <span className="text-sm text-gray-900">{guardrail.objects}</span>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div className="text-gray-400">→</div>
+                                    {guardrail.isDefault ? (
+                                      <div className="text-gray-400">→</div>
+                                    ) : (
+                                      <button 
+                                        className="text-red-500 hover:text-red-700 p-1"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          // Handle delete guardrail
+                                        }}
+                                        title="Delete guardrail"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      </button>
+                                    )}
                                   </td>
                                 </tr>
                               ))}
@@ -4853,22 +4868,22 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 </td>
                               </tr>
                               {[
-                                { name: 'Email Detection', description: 'Detect and mask email addresses', status: 'Active', apps: 22, objects: 68 },
-                                { name: 'Phone Number Detection', description: 'Detect and mask phone numbers', status: 'Active', apps: 19, objects: 54 },
-                                { name: 'SSN Protection', description: 'Find and protect social security numbers', status: 'Active', apps: 16, objects: 47 },
-                                { name: 'Credit Card Protection', description: 'Detect and mask credit card numbers', status: 'Active', apps: 14, objects: 39 },
-                                { name: 'Address Scrubbing', description: 'Remove physical addresses', status: 'Active', apps: 12, objects: 33 },
-                                { name: 'Name Protection', description: 'Detect and anonymize personal names', status: 'Active', apps: 25, objects: 71 },
-                                { name: 'IP Address Detection', description: 'Detect and mask IP addresses', status: 'Active', apps: 8, objects: 24 },
-                                { name: 'Date of Birth Protection', description: 'Detect and protect birth dates', status: 'Active', apps: 11, objects: 31 },
-                                { name: 'Driver License Detection', description: 'Detect and mask driver license numbers', status: 'Inactive', apps: 7, objects: 19 },
-                                { name: 'Passport Number Protection', description: 'Detect and protect passport numbers', status: 'Inactive', apps: 5, objects: 14 },
-                                { name: 'Bank Account Detection', description: 'Detect and mask bank account numbers', status: 'Active', apps: 9, objects: 26 },
-                                { name: 'Tax ID Protection', description: 'Detect and protect tax identification numbers', status: 'Active', apps: 6, objects: 18 },
-                                { name: 'Medical Record Number Detection', description: 'Detect and scrub medical record numbers', status: 'Active', apps: 4, objects: 12 },
-                                { name: 'Insurance Policy Detection', description: 'Detect and mask insurance policy numbers', status: 'Inactive', apps: 3, objects: 9 },
-                                { name: 'Employee ID Protection', description: 'Detect and protect employee identification numbers', status: 'Active', apps: 8, objects: 22 },
-                                { name: 'Custom PII Pattern Detection', description: 'User-defined patterns for organization-specific PII', status: 'Inactive', apps: 6, objects: 19 }
+                                { name: 'Email Detection', description: 'Detect and mask email addresses', status: 'Active', apps: 22, objects: 68, isDefault: true },
+                                { name: 'Phone Number Detection', description: 'Detect and mask phone numbers', status: 'Active', apps: 19, objects: 54, isDefault: true },
+                                { name: 'SSN Protection', description: 'Find and protect social security numbers', status: 'Active', apps: 16, objects: 47, isDefault: true },
+                                { name: 'Credit Card Protection', description: 'Detect and mask credit card numbers', status: 'Active', apps: 14, objects: 39, isDefault: true },
+                                { name: 'Address Scrubbing', description: 'Remove physical addresses', status: 'Active', apps: 12, objects: 33, isDefault: true },
+                                { name: 'Name Protection', description: 'Detect and anonymize personal names', status: 'Active', apps: 25, objects: 71, isDefault: true },
+                                { name: 'IP Address Detection', description: 'Detect and mask IP addresses', status: 'Active', apps: 8, objects: 24, isDefault: false },
+                                { name: 'Date of Birth Protection', description: 'Detect and protect birth dates', status: 'Active', apps: 11, objects: 31, isDefault: false },
+                                { name: 'Driver License Detection', description: 'Detect and mask driver license numbers', status: 'Inactive', apps: 7, objects: 19, isDefault: false },
+                                { name: 'Passport Number Protection', description: 'Detect and protect passport numbers', status: 'Inactive', apps: 5, objects: 14, isDefault: false },
+                                { name: 'Bank Account Detection', description: 'Detect and mask bank account numbers', status: 'Active', apps: 9, objects: 26, isDefault: false },
+                                { name: 'Tax ID Protection', description: 'Detect and protect tax identification numbers', status: 'Active', apps: 6, objects: 18, isDefault: false },
+                                { name: 'Medical Record Number Detection', description: 'Detect and scrub medical record numbers', status: 'Active', apps: 4, objects: 12, isDefault: false },
+                                { name: 'Insurance Policy Detection', description: 'Detect and mask insurance policy numbers', status: 'Inactive', apps: 3, objects: 9, isDefault: false },
+                                { name: 'Employee ID Protection', description: 'Detect and protect employee identification numbers', status: 'Active', apps: 8, objects: 22, isDefault: false },
+                                { name: 'Custom PII Pattern Detection', description: 'User-defined patterns for organization-specific PII', status: 'Inactive', apps: 6, objects: 19, isDefault: false }
                               ].map((guardrail, index) => (
                                 <tr 
                                   key={index} 
@@ -4912,7 +4927,22 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                     <span className="text-sm text-gray-900">{guardrail.objects}</span>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div className="text-gray-400">→</div>
+                                    {guardrail.isDefault ? (
+                                      <div className="text-gray-400">→</div>
+                                    ) : (
+                                      <button 
+                                        className="text-red-500 hover:text-red-700 p-1"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          // Handle delete guardrail
+                                        }}
+                                        title="Delete guardrail"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      </button>
+                                    )}
                                   </td>
                                 </tr>
                               ))}
