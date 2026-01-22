@@ -1125,7 +1125,14 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     style="SOLID"
                     color="ACCENT"
                     size="STANDARD"
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                      if (selectedV3GuardrailType === 'PII Scrubbing') {
+                        setWizardStep(2)
+                        setShowModal(true)
+                      } else {
+                        setShowModal(true)
+                      }
+                    }}
                   />
                 ) : null}
               </div>
@@ -7450,11 +7457,17 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
           {/* Progress Indicator */}
           <div className={`pb-6 pt-2 px-6 bg-white relative z-30 -mx-6 transition-shadow duration-300 ${!scrollState.top ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''}`}>
             <div className="flex items-center justify-center">
-            {[
+            {(selectedV3GuardrailType === 'PII Scrubbing' ? [
+              { num: 1, label: 'Name & Description' },
+              { num: 2, label: 'Scan Depth' },
+              { num: 3, label: 'Entity Types' },
+              { num: 4, label: 'Actions' },
+              { num: 5, label: 'Review' }
+            ] : [
               { num: 1, label: 'General' },
               { num: 2, label: 'Result' },
               { num: 3, label: 'Review' }
-            ].map((step, idx) => (
+            ]).map((step, idx) => (
               <div key={step.num} className="flex items-center">
                 <div className="flex flex-col items-center gap-2">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
@@ -7466,7 +7479,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     wizardStep >= step.num ? 'text-blue-500 font-semibold' : 'text-gray-500'
                   }`}>{step.label}</span>
                 </div>
-                {idx < 2 && <div className={`w-24 h-1 mx-4 -mt-6 transition-all duration-300 ${
+                {idx < (selectedV3GuardrailType === 'PII Scrubbing' ? 4 : 2) && <div className={`${selectedV3GuardrailType === 'PII Scrubbing' ? 'w-12' : 'w-24'} h-1 mx-2 -mt-6 transition-all duration-300 ${
                   wizardStep > step.num ? 'bg-blue-500' : 'bg-gray-200'
                 }`} />}
               </div>
@@ -7476,113 +7489,229 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
 
           {/* Scrollable Content Area */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-2 py-6 relative z-0">
-            {/* Step 1: General */}
-            {wizardStep === 1 && (
-              <div className="space-y-4 animate-in fade-in duration-300">
-                <TextField 
-                  label="Guardrail Name" 
-                  placeholder="Enter guardrail name"
-                  value={formData.name}
-                  onChange={(value) => setFormData({...formData, name: value})}
-                />
-                <div>
-                  <label className="block text-sm font-medium mb-2">Description</label>
-                  <textarea 
-                    placeholder="Describe what this guardrail does"
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none relative z-0"
-                  />
-                </div>
-                <div>
-                  <HeadingField text="Type" size="SMALL" marginBelow="LESS" />
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { id: 'harmful', icon: 'AlertTriangle', label: 'Harmful Content' },
-                      { id: 'profanity', icon: 'MessageSquareX', label: 'Profanity' },
-                      { id: 'pii', icon: 'Shield', label: 'PII Exposure' },
-                      { id: 'tone', icon: 'MessageCircle', label: 'Tone' },
-                      { id: 'logic', icon: 'Brain', label: 'Logic' },
-                      { id: 'performance', icon: 'Zap', label: 'Performance' }
-                    ].map((type) => (
-                      <div 
-                        key={type.id}
-                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                          selectedType === type.id ? 'border-blue-500 bg-blue-50 scale-105' : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => setSelectedType(type.id)}
-                      >
-                        <div className="flex flex-col items-center text-center space-y-2">
-                          <Icon icon={type.icon as any} size="MEDIUM" />
-                          <span className="text-sm font-medium">{type.label}</span>
-                        </div>
-                      </div>
-                    ))}
+            {selectedV3GuardrailType === 'PII Scrubbing' ? (
+              <>
+                {/* Step 1: Name & Description */}
+                {wizardStep === 1 && (
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    <TextField 
+                      label="Guardrail Name" 
+                      placeholder="Enter guardrail name"
+                      value={formData.name}
+                      onChange={(value) => setFormData({...formData, name: value})}
+                    />
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Description</label>
+                      <textarea 
+                        placeholder="Describe what this guardrail does"
+                        value={formData.description}
+                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none relative z-0"
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                )}
 
-            {/* Step 2: Result */}
-            {wizardStep === 2 && (
-              <div className="space-y-4 animate-in fade-in duration-300">
-                <HeadingField text="Enforcement Action" size="SMALL" marginBelow="LESS" />
-                <div className="space-y-3">
-                  {[
-                    { value: 'block', label: 'Block', desc: 'Prevent the action completely', icon: 'Ban' },
-                    { value: 'warn', label: 'Warn', desc: 'Show warning but allow action', icon: 'AlertTriangle' },
-                    { value: 'redirect', label: 'Redirect', desc: 'Route to alternative flow', icon: 'ArrowRight' }
-                  ].map((action) => (
-                    <div
-                      key={action.value}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                        formData.action === action.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => setFormData({...formData, action: action.value})}
-                    >
-                      <div className="flex items-start gap-3">
-                        <Icon icon={action.icon as any} size="MEDIUM" />
-                        <div className="flex-1">
-                          <div className="font-semibold">{action.label}</div>
-                          <div className="text-sm text-gray-600">{action.desc}</div>
-                          
-                          {formData.action === action.value && (
-                            <div className="mt-3 animate-in fade-in duration-200">
-                              <label className="block text-sm font-medium mb-2">Message</label>
-                              <textarea 
-                                placeholder="Enter the message to display when this guardrail is triggered"
-                                value={formData.actionMessage}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  setFormData({...formData, actionMessage: e.target.value})
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                                className="w-full h-24 p-3 border border-gray-300 rounded-md resize-none relative z-0"
-                              />
-                            </div>
-                          )}
-                        </div>
+                {/* Step 2: Sensitivity Level */}
+                {wizardStep === 2 && (
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">Scan Depth</label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option>Surface</option>
+                        <option>Deep</option>
+                        <option>Comprehensive</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Entity Selection */}
+                {wizardStep === 3 && (
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">Entity Types</label>
+                      <div className="space-y-3">
+                        <label className="flex items-center space-x-2">
+                          <input type="checkbox" defaultChecked className="rounded" />
+                          <span className="text-sm">Email Addresses</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input type="checkbox" defaultChecked className="rounded" />
+                          <span className="text-sm">Phone Numbers</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input type="checkbox" defaultChecked className="rounded" />
+                          <span className="text-sm">SSN</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input type="checkbox" className="rounded" />
+                          <span className="text-sm">Credit Cards</span>
+                        </label>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {/* Step 3: Review */}
-            {wizardStep === 3 && (
-              <div className="space-y-4 animate-in fade-in duration-300">
-                <HeadingField text="Review Your Guardrail" size="SMALL" marginBelow="STANDARD" />
-                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                  <div><span className="font-semibold">Name:</span> {formData.name || 'Not specified'}</div>
-                  <div><span className="font-semibold">Description:</span> {formData.description || 'Not specified'}</div>
-                  <div><span className="font-semibold">Type:</span> {selectedType || 'Not selected'}</div>
-                  <div><span className="font-semibold">Action:</span> {formData.action || 'Not selected'}</div>
-                  {formData.actionMessage && (
-                    <div><span className="font-semibold">Message:</span> {formData.actionMessage}</div>
-                  )}
-                </div>
-              </div>
+                {/* Step 4: Input & Output Handling */}
+                {wizardStep === 4 && (
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">Redaction Method</label>
+                      <div className="space-y-3">
+                        <label className="flex items-center space-x-2">
+                          <input type="radio" name="redaction-method" value="mask" defaultChecked />
+                          <span className="text-sm">Mask</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input type="radio" name="redaction-method" value="remove" />
+                          <span className="text-sm">Remove</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input type="radio" name="redaction-method" value="replace" />
+                          <span className="text-sm">Replace</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">Action on Match</label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option>Block</option>
+                        <option>Anonymize</option>
+                        <option>Flag for Review</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 5: Review */}
+                {wizardStep === 5 && (
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    <HeadingField text="Review Your PII Guardrail" size="SMALL" marginBelow="STANDARD" />
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                      <div><span className="font-semibold">Name:</span> {formData.name || 'Not specified'}</div>
+                      <div><span className="font-semibold">Description:</span> {formData.description || 'Not specified'}</div>
+                      <div><span className="font-semibold">Type:</span> PII Scrubbing</div>
+                      <div><span className="font-semibold">Sensitivity:</span> Medium</div>
+                      <div><span className="font-semibold">Entities:</span> Email, Phone, SSN</div>
+                      <div><span className="font-semibold">Input Action:</span> Anonymize</div>
+                      <div><span className="font-semibold">Output Action:</span> Anonymize</div>
+                      <div><span className="font-semibold">Method:</span> Masking</div>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Step 1: General */}
+                {wizardStep === 1 && (
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    <TextField 
+                      label="Guardrail Name" 
+                      placeholder="Enter guardrail name"
+                      value={formData.name}
+                      onChange={(value) => setFormData({...formData, name: value})}
+                    />
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Description</label>
+                      <textarea 
+                        placeholder="Describe what this guardrail does"
+                        value={formData.description}
+                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none relative z-0"
+                      />
+                    </div>
+                    <div>
+                      <HeadingField text="Type" size="SMALL" marginBelow="LESS" />
+                      <div className="grid grid-cols-3 gap-3">
+                        {[
+                          { id: 'harmful', icon: 'AlertTriangle', label: 'Harmful Content' },
+                          { id: 'profanity', icon: 'MessageSquareX', label: 'Profanity' },
+                          { id: 'pii', icon: 'Shield', label: 'PII Exposure' },
+                          { id: 'tone', icon: 'MessageCircle', label: 'Tone' },
+                          { id: 'logic', icon: 'Brain', label: 'Logic' },
+                          { id: 'performance', icon: 'Zap', label: 'Performance' }
+                        ].map((type) => (
+                          <div 
+                            key={type.id}
+                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                              selectedType === type.id ? 'border-blue-500 bg-blue-50 scale-105' : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => setSelectedType(type.id)}
+                          >
+                            <div className="flex flex-col items-center text-center space-y-2">
+                              <Icon icon={type.icon as any} size="MEDIUM" />
+                              <span className="text-sm font-medium">{type.label}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Result */}
+                {wizardStep === 2 && (
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    <HeadingField text="Enforcement Action" size="SMALL" marginBelow="LESS" />
+                    <div className="space-y-3">
+                      {[
+                        { value: 'block', label: 'Block', desc: 'Prevent the action completely', icon: 'Ban' },
+                        { value: 'warn', label: 'Warn', desc: 'Show warning but allow action', icon: 'AlertTriangle' },
+                        { value: 'redirect', label: 'Redirect', desc: 'Route to alternative flow', icon: 'ArrowRight' }
+                      ].map((action) => (
+                        <div
+                          key={action.value}
+                          className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                            formData.action === action.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          onClick={() => setFormData({...formData, action: action.value})}
+                        >
+                          <div className="flex items-start gap-3">
+                            <Icon icon={action.icon as any} size="MEDIUM" />
+                            <div className="flex-1">
+                              <div className="font-semibold">{action.label}</div>
+                              <div className="text-sm text-gray-600">{action.desc}</div>
+                              
+                              {formData.action === action.value && (
+                                <div className="mt-3 animate-in fade-in duration-200">
+                                  <label className="block text-sm font-medium mb-2">Message</label>
+                                  <textarea 
+                                    placeholder="Enter the message to display when this guardrail is triggered"
+                                    value={formData.actionMessage}
+                                    onChange={(e) => {
+                                      e.stopPropagation()
+                                      setFormData({...formData, actionMessage: e.target.value})
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full h-24 p-3 border border-gray-300 rounded-md resize-none relative z-0"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Review */}
+                {wizardStep === 3 && (
+                  <div className="space-y-4 animate-in fade-in duration-300">
+                    <HeadingField text="Review Your Guardrail" size="SMALL" marginBelow="STANDARD" />
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                      <div><span className="font-semibold">Name:</span> {formData.name || 'Not specified'}</div>
+                      <div><span className="font-semibold">Description:</span> {formData.description || 'Not specified'}</div>
+                      <div><span className="font-semibold">Type:</span> {selectedType || 'Not selected'}</div>
+                      <div><span className="font-semibold">Action:</span> {formData.action || 'Not selected'}</div>
+                      {formData.actionMessage && (
+                        <div><span className="font-semibold">Message:</span> {formData.actionMessage}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -7596,8 +7725,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 onClick={() => setWizardStep(Math.max(1, wizardStep - 1))}
               />
             )}
-            {wizardStep === 1 && <div />}
-            {wizardStep < 3 ? (
+            {wizardStep < (selectedV3GuardrailType === 'PII Scrubbing' ? 5 : 3) ? (
               <ButtonWidget 
                 label="Next" 
                 style="SOLID" 
