@@ -1095,7 +1095,29 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 </div>
               )}
               <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
-                <HeadingField text={appMode === 'revised-v3' && selectedV3GuardrailType && !selectedV3IndividualGuardrail ? `${selectedV3GuardrailType} Guardrails` : (appMode === 'v1' || appMode === 'future' || protectTab === 'configuration') ? "Guardrail Configuration" : "Guardrail Performance"} size="LARGE" marginBelow="NONE" />
+                {appMode === 'revised-v3' && !selectedV3GuardrailType ? (
+                  <>
+                    <div>
+                      <HeadingField text="Guardrail Configuration" size="LARGE" marginBelow="NONE" />
+                      <p className="text-sm text-gray-600">Configure AI safety measures to protect your applications</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
+                        <select 
+                          value={v3GroupingMode}
+                          onChange={(e) => setV3GroupingMode(e.target.value as 'input-output' | 'stakeholder' | 'risk-domain')}
+                          className="px-6 py-3 bg-transparent border-none outline-none text-sm font-medium text-gray-700 cursor-pointer"
+                        >
+                          <option value="input-output">Input/Output Grouping</option>
+                          <option value="stakeholder">Stakeholder Grouping</option>
+                          <option value="risk-domain">Risk Domain Grouping</option>
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <HeadingField text={appMode === 'revised-v3' && selectedV3GuardrailType && !selectedV3IndividualGuardrail ? `${selectedV3GuardrailType} Guardrails` : (appMode === 'v1' || appMode === 'future' || protectTab === 'configuration') ? "Guardrail Configuration" : "Guardrail Performance"} size="LARGE" marginBelow="NONE" />
+                )}
                 {protectTab === 'performance' && appMode === 'v2' ? (
                   <div className="relative flex p-1 rounded-md">
                     <div 
@@ -5954,27 +5976,6 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 </div>
               ) : appMode === 'revised-v3' ? (
                 <div key="v3-type-cards" className="mt-6 px-12" style={{ background: 'transparent' }}>
-                  {/* Enhanced Header */}
-                  <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Guardrail Configuration</h1>
-                    <p className="text-lg text-gray-600">Configure AI safety measures to protect your applications</p>
-                  </div>
-
-                  {/* Grouping Dropdown */}
-                  <div className="mb-8 flex justify-center">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
-                      <select 
-                        value={v3GroupingMode}
-                        onChange={(e) => setV3GroupingMode(e.target.value as 'input-output' | 'stakeholder' | 'risk-domain')}
-                        className="px-6 py-3 bg-transparent border-none outline-none text-sm font-medium text-gray-700 cursor-pointer"
-                      >
-                        <option value="input-output">Input/Output Grouping</option>
-                        <option value="stakeholder">Stakeholder Grouping</option>
-                        <option value="risk-domain">Risk Domain Grouping</option>
-                      </select>
-                    </div>
-                  </div>
-                  
                   <div className="max-w-6xl mx-auto space-y-12">
                     {v3GroupingMode === 'input-output' ? (
                       <>
