@@ -30,18 +30,25 @@ export default function CustomerPortalSite() {
   const handleSendMessage = () => {
     if (!chatInput.trim()) return
     
-    // Simple guardrail detection for demo
-    const guardrailTriggers = [
-      'hack', 'password', 'credit card', 'ssn', 'social security', 
-      'illegal', 'drugs', 'violence', 'hate', 'discrimination'
+    // Basic Prompt Injection Detection
+    const promptInjectionPhrases = [
+      'ignore previous instructions',
+      'forget everything',
+      'act as',
+      'pretend to be',
+      'roleplay as',
+      'you are now',
+      'system prompt',
+      'override',
+      'jailbreak'
     ]
     
-    const triggersGuardrail = guardrailTriggers.some(trigger => 
-      chatInput.toLowerCase().includes(trigger)
+    const containsPromptInjection = promptInjectionPhrases.some(phrase => 
+      chatInput.toLowerCase().includes(phrase)
     )
     
-    const response = triggersGuardrail 
-      ? "I'm sorry, but I cannot answer that question at this time as it doesn't follow [Company Name]'s content policies. Please contact our human support team for further assistance."
+    const response = containsPromptInjection 
+      ? "🚫 Message blocked by Basic Prompt Injection Detection. Your message contains content that violates our safety guidelines. Please rephrase your request without attempting to override system instructions."
       : "Thank you for your message. I'm here to help with your customer service needs. How can I assist you today?"
     
     setChatMessages(prev => [...prev, 

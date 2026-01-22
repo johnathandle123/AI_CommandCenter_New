@@ -1101,7 +1101,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <HeadingField text="Guardrail Configuration" size="LARGE" marginBelow="NONE" />
                       <p className="text-sm text-gray-600">Configure AI safety measures to protect your applications</p>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
                         <select 
                           value={v3GroupingMode}
@@ -1113,6 +1113,20 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <option value="risk-domain">Risk Domain Grouping</option>
                         </select>
                       </div>
+                      <ButtonWidget
+                        label="+ Add Guardrails"
+                        style="SOLID"
+                        color="ACCENT"
+                        size="STANDARD"
+                        onClick={() => {
+                          if (selectedV3GuardrailType === 'PII Scrubbing') {
+                            setWizardStep(2)
+                            setShowModal(true)
+                          } else {
+                            setShowModal(true)
+                          }
+                        }}
+                      />
                     </div>
                   </>
                 ) : (
@@ -1141,7 +1155,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </button>
                     ))}
                   </div>
-                ) : (appMode === 'v1' || protectTab === 'configuration') ? (
+                ) : (appMode === 'v1' || protectTab === 'configuration') && !(appMode === 'revised-v3' && !selectedV3GuardrailType) ? (
                   <ButtonWidget
                     label="+ Add Guardrails"
                     style="SOLID"
@@ -4508,49 +4522,59 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           selectedV3IndividualGuardrail === 'Obfuscated Code Detector') && (
                           <div className="space-y-4">
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">Detection Patterns</label>
-                              <div className="space-y-3">
-                                <label className="flex items-center space-x-2">
-                                  <input type="checkbox" defaultChecked className="rounded" />
-                                  <span className="text-sm">SQL Injection</span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="checkbox" defaultChecked className="rounded" />
-                                  <span className="text-sm">XSS</span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="checkbox" defaultChecked className="rounded" />
-                                  <span className="text-sm">Command Injection</span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="checkbox" className="rounded" />
-                                  <span className="text-sm">Malware Signatures</span>
-                                </label>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Code Analysis Depth</label>
+                              <div className="mb-2">
+                                <input type="range" min="0" max="1" step="0.1" defaultValue="0.5" className="w-full" />
+                              </div>
+                              <div className="flex justify-between text-xs">
+                                <div className="text-center">
+                                  <div className="font-medium text-gray-700">Surface</div>
+                                  <div className="text-gray-500">Basic pattern matching</div>
+                                  <div className="text-gray-400 italic mt-1">"SELECT * FROM" → [SQL]</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-medium text-gray-700">Deep</div>
+                                  <div className="text-gray-500">Advanced code analysis</div>
+                                  <div className="text-gray-400 italic mt-1">"eval(input)" → [CODE]</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-medium text-gray-700">Comprehensive</div>
+                                  <div className="text-gray-500">Full semantic analysis</div>
+                                  <div className="text-gray-400 italic mt-1">"import os" → [SYSTEM]</div>
+                                </div>
                               </div>
                             </div>
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">Code Analysis Depth</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Detection Patterns</label>
                               <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                                <option>Surface</option>
-                                <option>Deep</option>
-                                <option>Comprehensive</option>
+                                <option value="heuristic">Heuristic (Fast, pattern-based)</option>
+                                <option value="llm-classifier">LLM-Classifier (Model-based)</option>
                               </select>
                             </div>
+                            
+                            {/* User Input Handling */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Whitelist Patterns</label>
-                              <textarea placeholder="Enter safe code patterns..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" rows={4}></textarea>
-                            </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">Action on Match</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-3">User Input Handling</label>
+                              <p className="text-sm text-gray-600 mb-3">Configure what happens when malicious code is detected in user inputs</p>
+                              
                               <div className="space-y-3">
-                                <label className="flex items-center space-x-2">
-                                  <input type="radio" name="code-action" value="block" defaultChecked />
-                                  <span className="text-sm">Block</span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="radio" name="code-action" value="warn" />
-                                  <span className="text-sm">Warn</span>
-                                </label>
+                                <div className="p-4 border-2 border-red-500 bg-red-50 rounded-lg cursor-pointer transition-all duration-200">
+                                  <div className="font-semibold">Block</div>
+                                  <div className="text-sm text-gray-600">Prevent input from being processed</div>
+                                  <div className="mt-3 pt-3 border-t border-red-200">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Custom Block Message</label>
+                                    <textarea 
+                                      placeholder="Enter message to show when input is blocked..."
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                      defaultValue="Your input contains potentially malicious code and cannot be processed. Please remove any code patterns and try again."
+                                    />
+                                  </div>
+                                </div>
+                                
+                                <div className="p-4 border-2 border-gray-200 hover:border-gray-300 rounded-lg cursor-pointer transition-all duration-200">
+                                  <div className="font-semibold">Warn</div>
+                                  <div className="text-sm text-gray-600">Allow input but flag for review</div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -5984,22 +6008,17 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <p className="text-gray-600 mb-6">Protect your AI by checking user messages before processing</p>
                       
                       <div className="space-y-4">
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Prompt Injection & Jailbreak Detection')}
-                          >
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
-                                <Icon icon="Shield" size="MEDIUM" color="blue" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Prompt Injection & Jailbreak Detection" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Block attempts to manipulate or trick the AI system</p>
-                              </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Prompt Injection & Jailbreak Detection')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="Shield" size="MEDIUM" color="blue" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Prompt Injection & Jailbreak Detection</h3>
+                              <p className="text-gray-600 text-sm">Block attempts to manipulate or trick the AI system</p>
                             </div>
                           </div>
-                        </CardLayout>
+                        </div>
                         <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('PII Scrubbing')}>
                           {/* Toggle removed */}
                           <div className="flex items-start gap-4">
@@ -6012,74 +6031,50 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Toxic Content Detection')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
-                                <Icon icon="AlertTriangle" size="MEDIUM" color="red" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Toxic Content Detection" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Filter profanity, hate speech, and harmful language</p>
-                              </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Toxic Content Detection')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="AlertTriangle" size="MEDIUM" color="red" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Toxic Content Detection</h3>
+                              <p className="text-gray-600 text-sm">Filter profanity, hate speech, and harmful language</p>
                             </div>
                           </div>
-                        </CardLayout>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Custom Content Detection')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
-                                <Icon icon="Filter" size="MEDIUM" color="purple" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Custom Content Detection" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Block specific topics and inappropriate content</p>
-                              </div>
+                        </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Custom Content Detection')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-purple-100 group-hover:bg-purple-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="Filter" size="MEDIUM" color="purple" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Custom Content Detection</h3>
+                              <p className="text-gray-600 text-sm">Block specific topics and inappropriate content</p>
                             </div>
                           </div>
-                        </CardLayout>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Competitor Detection')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
-                                <Icon icon="Eye" size="MEDIUM" color="orange" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Competitor Detection" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Block competitor mentions and brand comparisons</p>
-                              </div>
+                        </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Competitor Detection')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="Eye" size="MEDIUM" color="orange" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Competitor Detection</h3>
+                              <p className="text-gray-600 text-sm">Block competitor mentions and brand comparisons</p>
                             </div>
                           </div>
-                        </CardLayout>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
-                                <Icon icon="Code" size="MEDIUM" color="orange" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Malicious Code Detection" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Identify and block potentially harmful code snippets</p>
-                              </div>
+                        </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="Code" size="MEDIUM" color="orange" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Malicious Code Detection</h3>
+                              <p className="text-gray-600 text-sm">Identify and block potentially harmful code snippets</p>
                             </div>
                           </div>
-                        </CardLayout>
+                        </div>
                       </div>
                     </div>
 
@@ -6088,108 +6083,72 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <p className="text-gray-600 mb-6">Check AI responses before they're sent to users</p>
                       
                       <div className="space-y-4">
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Hallucination & Grounding Checks')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cyan-100 border-2 border-gray-300">
-                                <Icon icon="CheckCircle" size="MEDIUM" color="cyan" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Hallucination & Grounding Checks" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Verify responses are grounded in source documents</p>
-                              </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Hallucination & Grounding Checks')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-cyan-100 group-hover:bg-cyan-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="CheckCircle" size="MEDIUM" color="cyan" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Hallucination & Grounding Checks</h3>
+                              <p className="text-gray-600 text-sm">Verify responses are grounded in source documents</p>
                             </div>
                           </div>
-                        </CardLayout>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
-                                <Icon icon="EyeOff" size="MEDIUM" color="teal" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Output PII Redaction" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Remove sensitive information from AI responses</p>
-                              </div>
+                        </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-teal-100 group-hover:bg-teal-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="EyeOff" size="MEDIUM" color="teal" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Output PII Redaction</h3>
+                              <p className="text-gray-600 text-sm">Remove sensitive information from AI responses</p>
                             </div>
                           </div>
-                        </CardLayout>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Harmful Content Prevention')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 border-2 border-gray-300">
-                                <Icon icon="ShieldAlert" size="MEDIUM" color="rose" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Harmful Content Prevention" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Block toxic, biased, or inappropriate AI outputs</p>
-                              </div>
+                        </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Harmful Content Prevention')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-rose-100 group-hover:bg-rose-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="ShieldAlert" size="MEDIUM" color="rose" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Harmful Content Prevention</h3>
+                              <p className="text-gray-600 text-sm">Block toxic, biased, or inappropriate AI outputs</p>
                             </div>
                           </div>
-                        </CardLayout>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
-                                <Icon icon="FileCheck" size="MEDIUM" color="indigo" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Factual Accuracy Validation" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Cross-check facts against trusted knowledge bases</p>
-                              </div>
+                        </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-indigo-100 group-hover:bg-indigo-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="FileCheck" size="MEDIUM" color="indigo" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Factual Accuracy Validation</h3>
+                              <p className="text-gray-600 text-sm">Cross-check facts against trusted knowledge bases</p>
                             </div>
                           </div>
-                        </CardLayout>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Compliance & Regulatory Checks')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
-                                <Icon icon="Scale" size="MEDIUM" color="amber" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Compliance & Regulatory Checks" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Ensure responses meet industry regulations (HIPAA, GDPR, etc.)</p>
-                              </div>
+                        </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Compliance & Regulatory Checks')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-amber-100 group-hover:bg-amber-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="Scale" size="MEDIUM" color="amber" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Compliance & Regulatory Checks</h3>
+                              <p className="text-gray-600 text-sm">Ensure responses meet industry regulations (HIPAA, GDPR, etc.)</p>
                             </div>
                           </div>
-                        </CardLayout>
-                        <CardLayout padding="MORE" showShadow={true}>
-                          <div 
-                            className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative"
-                            onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}
-                          >
-                            {/* Toggle removed */}
-                            <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-pink-100 border-2 border-gray-300">
-                                <Icon icon="Lock" size="MEDIUM" color="pink" />
-                              </div>
-                              <div className="flex-1">
-                                <HeadingField text="Sensitive Data Leakage Prevention" size="MEDIUM" marginBelow="LESS" />
-                                <p className="text-gray-600">Prevent exposure of proprietary or confidential information</p>
-                              </div>
+                        </div>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-pink-100 group-hover:bg-pink-200 rounded-xl flex items-center justify-center transition-colors">
+                              <Icon icon="Lock" size="MEDIUM" color="pink" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-900 mb-2">Sensitive Data Leakage Prevention</h3>
+                              <p className="text-gray-600 text-sm">Prevent exposure of proprietary or confidential information</p>
                             </div>
                           </div>
-                        </CardLayout>
+                        </div>
                       </div>
                     </div>
                       </>
@@ -6200,48 +6159,39 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <HeadingField text="Security & Cyber-Defense" size="LARGE" marginBelow="STANDARD" />
                           <p className="text-gray-600 mb-6">Focus: Protecting the infrastructure from attacks.</p>
                           <div className="space-y-4">
-                            <CardLayout padding="MORE" showShadow={true}>
-                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
-                                {/* Toggle removed */}
-                                <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
-                                    <Icon icon="Shield" size="MEDIUM" color="red" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <HeadingField text="Prompt Injection/Jailbreak Detection" size="MEDIUM" marginBelow="LESS" />
-                                    <p className="text-gray-600">Detect and block attempts to manipulate AI behavior</p>
-                                  </div>
+                            <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
+                              <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-xl flex items-center justify-center transition-colors">
+                                  <Icon icon="Shield" size="MEDIUM" color="red" />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900 mb-2">Prompt Injection/Jailbreak Detection</h3>
+                                  <p className="text-gray-600 text-sm">Detect and block attempts to manipulate AI behavior</p>
                                 </div>
                               </div>
-                            </CardLayout>
-                            <CardLayout padding="MORE" showShadow={true}>
-                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
-                                {/* Toggle removed */}
-                                <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
-                                    <Icon icon="Code" size="MEDIUM" color="red" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <HeadingField text="Malicious Code Detection" size="MEDIUM" marginBelow="LESS" />
-                                    <p className="text-gray-600">Scan for dangerous code patterns</p>
-                                  </div>
+                            </div>
+                            <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
+                              <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-xl flex items-center justify-center transition-colors">
+                                  <Icon icon="Code" size="MEDIUM" color="red" />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900 mb-2">Malicious Code Detection</h3>
+                                  <p className="text-gray-600 text-sm">Scan for dangerous code patterns</p>
                                 </div>
                               </div>
-                            </CardLayout>
-                            <CardLayout padding="MORE" showShadow={true}>
-                              <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
-                                {/* Toggle removed */}
-                                <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
-                                    <Icon icon="Lock" size="MEDIUM" color="red" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <HeadingField text="Sensitive Data Leakage Prevention" size="MEDIUM" marginBelow="LESS" />
-                                    <p className="text-gray-600">Prevent exposure of confidential information</p>
-                                  </div>
+                            </div>
+                            <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
+                              <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-xl flex items-center justify-center transition-colors">
+                                  <Icon icon="Lock" size="MEDIUM" color="red" />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900 mb-2">Sensitive Data Leakage Prevention</h3>
+                                  <p className="text-gray-600 text-sm">Prevent exposure of confidential information</p>
                                 </div>
                               </div>
-                            </CardLayout>
+                            </div>
                           </div>
                         </div>
 
