@@ -454,6 +454,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [selectedV3IndividualGuardrail, setSelectedV3IndividualGuardrail] = useState<string | null>(null)
   const [v3GroupingMode, setV3GroupingMode] = useState<'input-output' | 'stakeholder' | 'risk-domain'>('input-output')
   const [v3AnonymizationMethod, setV3AnonymizationMethod] = useState('masking')
+  const [v3InputAction, setV3InputAction] = useState('anonymize')
+  const [v3OutputAction, setV3OutputAction] = useState('anonymize')
+  const [v3InputAnonymizationMethod, setV3InputAnonymizationMethod] = useState('masking')
+  const [v3OutputAnonymizationMethod, setV3OutputAnonymizationMethod] = useState('masking')
   const [v3EntitySelector, setV3EntitySelector] = useState('SSN')
   
   // Function to get appropriate entity for default guardrails
@@ -4212,27 +4216,141 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               </>
                             )}
 
-                            {/* Anonymization Method */}
+                            {/* User Input Handling */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">Anonymization Method</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-3">User Input Handling</label>
+                              <p className="text-sm text-gray-600 mb-3">Configure what happens when PII is detected in user inputs</p>
+                              
                               <div className="space-y-3">
-                                {[
-                                  { value: 'masking', label: 'Masking', desc: 'Replace with asterisks (e.g., john@*****.com)' },
-                                  { value: 'redaction', label: 'Redaction', desc: 'Remove completely (e.g., [REDACTED])' },
-                                  { value: 'hashing', label: 'Hashing', desc: 'Replace with hash (e.g., #a1b2c3d4)' }
-                                ].map((method) => (
-                                  <div key={method.value}>
-                                    <div
-                                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                                        v3AnonymizationMethod === method.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                                      }`}
-                                      onClick={() => setV3AnonymizationMethod(method.value)}
-                                    >
-                                      <div className="font-semibold">{method.label}</div>
-                                      <div className="text-sm text-gray-600">{method.desc}</div>
+                                <div
+                                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                    v3InputAction === 'block' ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                                  }`}
+                                  onClick={() => setV3InputAction('block')}
+                                >
+                                  <div className="font-semibold">Block</div>
+                                  <div className="text-sm text-gray-600">Prevent input from being processed</div>
+                                  
+                                  {v3InputAction === 'block' && (
+                                    <div className="mt-3 pt-3 border-t border-red-200">
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">Custom Block Message</label>
+                                      <textarea 
+                                        placeholder="Enter message to show when input is blocked..."
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                        defaultValue="Your input contains sensitive information and cannot be processed. Please remove any personal data and try again."
+                                        onClick={(e) => e.stopPropagation()}
+                                      />
                                     </div>
-                                  </div>
-                                ))}
+                                  )}
+                                </div>
+                                
+                                <div
+                                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                    v3InputAction === 'anonymize' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                                  }`}
+                                  onClick={() => setV3InputAction('anonymize')}
+                                >
+                                  <div className="font-semibold">Anonymize</div>
+                                  <div className="text-sm text-gray-600">Transform PII before processing</div>
+                                  
+                                  {v3InputAction === 'anonymize' && (
+                                    <div className="mt-3 pt-3 border-t border-blue-200">
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">Anonymization Method</label>
+                                      <div className="space-y-2">
+                                        {[
+                                          { value: 'masking', label: 'Masking', desc: 'john@*****.com' },
+                                          { value: 'redaction', label: 'Redaction', desc: '[REDACTED]' },
+                                          { value: 'hashing', label: 'Hashing', desc: '#a1b2c3d4' }
+                                        ].map((method) => (
+                                          <label key={method.value} className="flex items-center space-x-3 cursor-pointer">
+                                            <input
+                                              type="radio"
+                                              name="v3InputAnonymizationMethod"
+                                              value={method.value}
+                                              checked={v3InputAnonymizationMethod === method.value}
+                                              onChange={() => setV3InputAnonymizationMethod(method.value)}
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="w-4 h-4 text-blue-600"
+                                            />
+                                            <div className="flex-1">
+                                              <div className="font-medium text-sm">{method.label}</div>
+                                              <div className="text-xs text-gray-600">{method.desc}</div>
+                                            </div>
+                                          </label>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* LLM Output Handling */}
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                              <label className="block text-sm font-medium text-gray-700 mb-3">LLM Output Handling</label>
+                              <p className="text-sm text-gray-600 mb-3">Configure what happens when PII is detected in LLM responses</p>
+                              
+                              <div className="space-y-3">
+                                <div
+                                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                    v3OutputAction === 'block' ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                                  }`}
+                                  onClick={() => setV3OutputAction('block')}
+                                >
+                                  <div className="font-semibold">Block</div>
+                                  <div className="text-sm text-gray-600">Prevent response from being shown</div>
+                                  
+                                  {v3OutputAction === 'block' && (
+                                    <div className="mt-3 pt-3 border-t border-red-200">
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">Custom Block Message</label>
+                                      <textarea 
+                                        placeholder="Enter message to show when output is blocked..."
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                        defaultValue="The response contains sensitive information and cannot be displayed. Please rephrase your question."
+                                        onClick={(e) => e.stopPropagation()}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div
+                                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                                    v3OutputAction === 'anonymize' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                                  }`}
+                                  onClick={() => setV3OutputAction('anonymize')}
+                                >
+                                  <div className="font-semibold">Anonymize</div>
+                                  <div className="text-sm text-gray-600">Transform PII before showing response</div>
+                                  
+                                  {v3OutputAction === 'anonymize' && (
+                                    <div className="mt-3 pt-3 border-t border-blue-200">
+                                      <label className="block text-sm font-medium text-gray-700 mb-2">Anonymization Method</label>
+                                      <div className="space-y-2">
+                                        {[
+                                          { value: 'masking', label: 'Masking', desc: 'john@*****.com' },
+                                          { value: 'redaction', label: 'Redaction', desc: '[REDACTED]' },
+                                          { value: 'hashing', label: 'Hashing', desc: '#a1b2c3d4' }
+                                        ].map((method) => (
+                                          <label key={method.value} className="flex items-center space-x-3 cursor-pointer">
+                                            <input
+                                              type="radio"
+                                              name="v3OutputAnonymizationMethod"
+                                              value={method.value}
+                                              checked={v3OutputAnonymizationMethod === method.value}
+                                              onChange={() => setV3OutputAnonymizationMethod(method.value)}
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="w-4 h-4 text-blue-600"
+                                            />
+                                            <div className="flex-1">
+                                              <div className="font-medium text-sm">{method.label}</div>
+                                              <div className="text-xs text-gray-600">{method.desc}</div>
+                                            </div>
+                                          </label>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
