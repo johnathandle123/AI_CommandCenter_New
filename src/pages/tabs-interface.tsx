@@ -463,15 +463,16 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
       'Phone Number Detection': 'PHONE_NUMBER', 
       'SSN Protection': 'SSN',
       'Credit Card Protection': 'CREDIT_CARD',
-      'Address Scrubbing': 'ADDRESS',
-      'Name Protection': 'NAMES'
+      'Name Protection': 'NAMES',
+      'Passport Number Protection': 'PASSPORT_NUMBER',
+      'Driver License Detection': 'DRIVER_LICENSE'
     }
     return entityMap[guardrailName] || 'CUSTOM'
   }
   
   // Check if current guardrail is default
   const isCurrentGuardrailDefault = (guardrailName: string) => {
-    const defaultGuardrails = ['Email Detection', 'Phone Number Detection', 'SSN Protection', 'Credit Card Protection', 'Address Scrubbing', 'Name Protection']
+    const defaultGuardrails = ['Name Protection', 'Passport Number Protection', 'Driver License Detection', 'SSN Protection', 'Credit Card Protection', 'Phone Number Detection', 'Email Detection']
     return defaultGuardrails.includes(guardrailName)
   }
   const [scrollState, setScrollState] = useState({ top: true, bottom: false })
@@ -507,18 +508,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         'Phone Number Detection', 
         'SSN Protection',
         'Credit Card Protection',
-        'Address Scrubbing',
         'Name Protection',
-        'IP Address Detection',
-        'Date of Birth Protection',
-        'Driver License Detection',
         'Passport Number Protection',
-        'Bank Account Detection',
-        'Tax ID Protection',
-        'Medical Record Number Detection',
-        'Insurance Policy Detection',
-        'Employee ID Protection',
-        'Custom PII Pattern Detection'
+        'Driver License Detection',
+        'Investment Account Numbers',
+        'Fund Ticker Symbols'
       ],
       'Toxic Content Detection': [
         'Profanity Filter',
@@ -1669,17 +1663,52 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                       <textarea 
                                         placeholder="Define the custom PII entity type you want to detect..."
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                        defaultValue={
+                                          selectedV3IndividualGuardrail === 'Investment Account Numbers' 
+                                            ? 'Detects Vanguard investment account numbers, brokerage account identifiers, and retirement account numbers to protect client financial accounts from unauthorized access. This guardrail triggers when patterns matching Vanguard account formats are detected in communications, preventing accidental disclosure of sensitive account information that could be used for unauthorized transactions or identity theft.'
+                                            : selectedV3IndividualGuardrail === 'Fund Ticker Symbols'
+                                            ? 'Identifies Vanguard fund ticker symbols, CUSIP numbers, and proprietary fund codes that could reveal specific client investment holdings or trading strategies. This guardrail triggers when fund identifiers are detected to prevent disclosure of investment positions, portfolio composition, or trading patterns that could be used for front-running or competitive intelligence.'
+                                            : ''
+                                        }
                                       />
                                     </div>
                                     <div>
                                       <label className="block text-sm font-medium text-gray-700 mb-2">Examples</label>
                                       <div className="space-y-2">
-                                        <input 
-                                          type="text" 
-                                          placeholder="Add example of custom PII to detect..."
-                                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                        />
-                                        <button className="text-blue-600 hover:text-blue-700 text-sm">+ Add another example</button>
+                                        {selectedV3IndividualGuardrail === 'Investment Account Numbers' && (
+                                          <>
+                                            <div className="text-sm font-medium text-green-700 mb-1">Should trigger:</div>
+                                            <input type="text" defaultValue="Account: 12345678901" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <input type="text" defaultValue="VG-987654321" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <input type="text" defaultValue="BROK-456789123" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <input type="text" defaultValue="401K-789456123" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <div className="text-sm font-medium text-red-700 mb-1 mt-3">Should NOT trigger:</div>
+                                            <input type="text" defaultValue="Phone: 555-123-4567" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <input type="text" defaultValue="Order #12345" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                          </>
+                                        )}
+                                        {selectedV3IndividualGuardrail === 'Fund Ticker Symbols' && (
+                                          <>
+                                            <div className="text-sm font-medium text-green-700 mb-1">Should trigger:</div>
+                                            <input type="text" defaultValue="VTSAX" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <input type="text" defaultValue="VTIAX" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <input type="text" defaultValue="CUSIP: 922908769" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <input type="text" defaultValue="VTI" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <div className="text-sm font-medium text-red-700 mb-1 mt-3">Should NOT trigger:</div>
+                                            <input type="text" defaultValue="VIP customer" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                            <input type="text" defaultValue="VISA card" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                          </>
+                                        )}
+                                        {!selectedV3IndividualGuardrail || (selectedV3IndividualGuardrail !== 'Investment Account Numbers' && selectedV3IndividualGuardrail !== 'Fund Ticker Symbols') && (
+                                          <>
+                                            <input 
+                                              type="text" 
+                                              placeholder="Add example of custom PII to detect..."
+                                              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                            />
+                                            <button className="text-blue-600 hover:text-blue-700 text-sm">+ Add another example</button>
+                                          </>
+                                        )}
                                       </div>
                                     </div>
                                   </>
@@ -2302,17 +2331,52 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                   <textarea 
                                     placeholder="Define the custom PII entity type you want to detect..."
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                    defaultValue={
+                                      selectedV3IndividualGuardrail === 'Investment Account Numbers' 
+                                        ? 'Detects Vanguard investment account numbers, brokerage account identifiers, and retirement account numbers to protect client financial accounts from unauthorized access. This guardrail triggers when patterns matching Vanguard account formats are detected in communications, preventing accidental disclosure of sensitive account information that could be used for unauthorized transactions or identity theft.'
+                                        : selectedV3IndividualGuardrail === 'Fund Ticker Symbols'
+                                        ? 'Identifies Vanguard fund ticker symbols, CUSIP numbers, and proprietary fund codes that could reveal specific client investment holdings or trading strategies. This guardrail triggers when fund identifiers are detected to prevent disclosure of investment positions, portfolio composition, or trading patterns that could be used for front-running or competitive intelligence.'
+                                        : ''
+                                    }
                                   />
                                 </div>
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Examples</label>
                                   <div className="space-y-2">
-                                    <input 
-                                      type="text" 
-                                      placeholder="Add example of custom PII to detect..."
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                    />
-                                    <button className="text-blue-600 hover:text-blue-700 text-sm">+ Add another example</button>
+                                    {selectedV3IndividualGuardrail === 'Investment Account Numbers' && (
+                                      <>
+                                        <div className="text-sm font-medium text-green-700 mb-1">Should trigger:</div>
+                                        <input type="text" defaultValue="Account: 12345678901" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="VG-987654321" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="BROK-456789123" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="401K-789456123" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <div className="text-sm font-medium text-red-700 mb-1 mt-3">Should NOT trigger:</div>
+                                        <input type="text" defaultValue="Phone: 555-123-4567" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="Order #12345" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                      </>
+                                    )}
+                                    {selectedV3IndividualGuardrail === 'Fund Ticker Symbols' && (
+                                      <>
+                                        <div className="text-sm font-medium text-green-700 mb-1">Should trigger:</div>
+                                        <input type="text" defaultValue="VTSAX" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="VTIAX" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="CUSIP: 922908769" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="VTI" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <div className="text-sm font-medium text-red-700 mb-1 mt-3">Should NOT trigger:</div>
+                                        <input type="text" defaultValue="VIP customer" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="VISA card" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                      </>
+                                    )}
+                                    {!selectedV3IndividualGuardrail || (selectedV3IndividualGuardrail !== 'Investment Account Numbers' && selectedV3IndividualGuardrail !== 'Fund Ticker Symbols') && (
+                                      <>
+                                        <input 
+                                          type="text" 
+                                          placeholder="Add example of custom PII to detect..."
+                                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                        />
+                                        <button className="text-blue-600 hover:text-blue-700 text-sm">+ Add another example</button>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
                               </>
@@ -4040,18 +4104,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           selectedV3IndividualGuardrail === 'Phone Number Detection' ||
                           selectedV3IndividualGuardrail === 'SSN Protection' ||
                           selectedV3IndividualGuardrail === 'Credit Card Protection' ||
-                          selectedV3IndividualGuardrail === 'Address Scrubbing' ||
                           selectedV3IndividualGuardrail === 'Name Protection' ||
-                          selectedV3IndividualGuardrail === 'IP Address Detection' ||
-                          selectedV3IndividualGuardrail === 'Date of Birth Protection' ||
-                          selectedV3IndividualGuardrail === 'Driver License Detection' ||
                           selectedV3IndividualGuardrail === 'Passport Number Protection' ||
-                          selectedV3IndividualGuardrail === 'Bank Account Detection' ||
-                          selectedV3IndividualGuardrail === 'Tax ID Protection' ||
-                          selectedV3IndividualGuardrail === 'Medical Record Number Detection' ||
-                          selectedV3IndividualGuardrail === 'Insurance Policy Detection' ||
-                          selectedV3IndividualGuardrail === 'Employee ID Protection' ||
-                          selectedV3IndividualGuardrail === 'Custom PII Pattern Detection') && (
+                          selectedV3IndividualGuardrail === 'Driver License Detection' ||
+                          selectedV3IndividualGuardrail === 'Investment Account Numbers' ||
+                          selectedV3IndividualGuardrail === 'Fund Ticker Symbols') && (
                           <div className="space-y-4">
                             {/* Sensitivity Threshold - FIRST */}
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
@@ -4104,17 +4161,52 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                   <textarea 
                                     placeholder="Define the custom PII entity type you want to detect..."
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md h-20"
+                                    defaultValue={
+                                      selectedV3IndividualGuardrail === 'Investment Account Numbers' 
+                                        ? 'Detects Vanguard investment account numbers, brokerage account identifiers, and retirement account numbers to protect client financial accounts from unauthorized access. This guardrail triggers when patterns matching Vanguard account formats are detected in communications, preventing accidental disclosure of sensitive account information that could be used for unauthorized transactions or identity theft.'
+                                        : selectedV3IndividualGuardrail === 'Fund Ticker Symbols'
+                                        ? 'Identifies Vanguard fund ticker symbols, CUSIP numbers, and proprietary fund codes that could reveal specific client investment holdings or trading strategies. This guardrail triggers when fund identifiers are detected to prevent disclosure of investment positions, portfolio composition, or trading patterns that could be used for front-running or competitive intelligence.'
+                                        : ''
+                                    }
                                   />
                                 </div>
                                 <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Examples</label>
                                   <div className="space-y-2">
-                                    <input 
-                                      type="text" 
-                                      placeholder="Add example of custom PII to detect..."
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                    />
-                                    <button className="text-blue-600 hover:text-blue-700 text-sm">+ Add another example</button>
+                                    {selectedV3IndividualGuardrail === 'Investment Account Numbers' && (
+                                      <>
+                                        <div className="text-sm font-medium text-green-700 mb-1">Should trigger:</div>
+                                        <input type="text" defaultValue="Account: 12345678901" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="VG-987654321" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="BROK-456789123" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="401K-789456123" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <div className="text-sm font-medium text-red-700 mb-1 mt-3">Should NOT trigger:</div>
+                                        <input type="text" defaultValue="Phone: 555-123-4567" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="Order #12345" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                      </>
+                                    )}
+                                    {selectedV3IndividualGuardrail === 'Fund Ticker Symbols' && (
+                                      <>
+                                        <div className="text-sm font-medium text-green-700 mb-1">Should trigger:</div>
+                                        <input type="text" defaultValue="VTSAX" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="VTIAX" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="CUSIP: 922908769" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="VTI" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <div className="text-sm font-medium text-red-700 mb-1 mt-3">Should NOT trigger:</div>
+                                        <input type="text" defaultValue="VIP customer" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                        <input type="text" defaultValue="VISA card" className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                                      </>
+                                    )}
+                                    {!selectedV3IndividualGuardrail || (selectedV3IndividualGuardrail !== 'Investment Account Numbers' && selectedV3IndividualGuardrail !== 'Fund Ticker Symbols') && (
+                                      <>
+                                        <input 
+                                          type="text" 
+                                          placeholder="Add example of custom PII to detect..."
+                                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                        />
+                                        <button className="text-blue-600 hover:text-blue-700 text-sm">+ Add another example</button>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
                               </>
@@ -4894,18 +4986,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 { name: 'Phone Number Detection', description: 'Detect and mask phone numbers', status: 'Active', apps: 19, objects: 54, isDefault: true },
                                 { name: 'SSN Protection', description: 'Find and protect social security numbers', status: 'Active', apps: 16, objects: 47, isDefault: true },
                                 { name: 'Credit Card Protection', description: 'Detect and mask credit card numbers', status: 'Active', apps: 14, objects: 39, isDefault: true },
-                                { name: 'Address Scrubbing', description: 'Remove physical addresses', status: 'Active', apps: 12, objects: 33, isDefault: true },
                                 { name: 'Name Protection', description: 'Detect and anonymize personal names', status: 'Active', apps: 25, objects: 71, isDefault: true },
-                                { name: 'IP Address Detection', description: 'Detect and mask IP addresses', status: 'Active', apps: 8, objects: 24, isDefault: false },
-                                { name: 'Date of Birth Protection', description: 'Detect and protect birth dates', status: 'Active', apps: 11, objects: 31, isDefault: false },
-                                { name: 'Driver License Detection', description: 'Detect and mask driver license numbers', status: 'Inactive', apps: 7, objects: 19, isDefault: false },
-                                { name: 'Passport Number Protection', description: 'Detect and protect passport numbers', status: 'Inactive', apps: 5, objects: 14, isDefault: false },
-                                { name: 'Bank Account Detection', description: 'Detect and mask bank account numbers', status: 'Active', apps: 9, objects: 26, isDefault: false },
-                                { name: 'Tax ID Protection', description: 'Detect and protect tax identification numbers', status: 'Active', apps: 6, objects: 18, isDefault: false },
-                                { name: 'Medical Record Number Detection', description: 'Detect and scrub medical record numbers', status: 'Active', apps: 4, objects: 12, isDefault: false },
-                                { name: 'Insurance Policy Detection', description: 'Detect and mask insurance policy numbers', status: 'Inactive', apps: 3, objects: 9, isDefault: false },
-                                { name: 'Employee ID Protection', description: 'Detect and protect employee identification numbers', status: 'Active', apps: 8, objects: 22, isDefault: false },
-                                { name: 'Custom PII Pattern Detection', description: 'User-defined patterns for organization-specific PII', status: 'Inactive', apps: 6, objects: 19, isDefault: false }
+                                { name: 'Passport Number Protection', description: 'Detect and protect passport numbers', status: 'Inactive', apps: 5, objects: 14, isDefault: true },
+                                { name: 'Driver License Detection', description: 'Detect and mask driver license numbers', status: 'Inactive', apps: 7, objects: 19, isDefault: true },
+                                { name: 'Investment Account Numbers', description: 'Detect Vanguard investment account numbers and brokerage identifiers', status: 'Active', apps: 12, objects: 35, isDefault: false },
+                                { name: 'Fund Ticker Symbols', description: 'Identify Vanguard fund tickers and CUSIP numbers', status: 'Active', apps: 8, objects: 24, isDefault: false }
                               ].map((guardrail, index) => (
                                 <tr 
                                   key={index} 
@@ -6414,23 +6499,16 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         { name: 'Multi-turn Jailbreak Detection', type: 'Prompt Injection', description: 'Detects jailbreak attempts across conversation turns', status: 'Active', apps: 7, objects: 21 },
                         { name: 'Encoding-based Attack Prevention', type: 'Prompt Injection', description: 'Blocks attempts using Base64, hex, or other encodings', status: 'Inactive', apps: 3, objects: 9 },
                         
-                        // PII Scrubbing (16 items)
+                        // PII Scrubbing (9 items)
                         { name: 'Email Detection', type: 'PII Scrubbing', description: 'Detect and mask email addresses', status: 'Active', apps: 22, objects: 68 },
                         { name: 'Phone Number Detection', type: 'PII Scrubbing', description: 'Detect and mask phone numbers', status: 'Active', apps: 19, objects: 54 },
                         { name: 'SSN Protection', type: 'PII Scrubbing', description: 'Find and protect social security numbers', status: 'Active', apps: 16, objects: 47 },
                         { name: 'Credit Card Protection', type: 'PII Scrubbing', description: 'Detect and mask credit card numbers', status: 'Active', apps: 14, objects: 39 },
-                        { name: 'Address Scrubbing', type: 'PII Scrubbing', description: 'Remove physical addresses', status: 'Active', apps: 12, objects: 33 },
                         { name: 'Name Protection', type: 'PII Scrubbing', description: 'Detect and anonymize personal names', status: 'Active', apps: 25, objects: 71 },
-                        { name: 'IP Address Detection', type: 'PII Scrubbing', description: 'Detect and mask IP addresses', status: 'Active', apps: 8, objects: 24 },
-                        { name: 'Date of Birth Protection', type: 'PII Scrubbing', description: 'Detect and protect birth dates', status: 'Active', apps: 11, objects: 31 },
-                        { name: 'Driver License Detection', type: 'PII Scrubbing', description: 'Detect and mask driver license numbers', status: 'Inactive', apps: 7, objects: 19 },
                         { name: 'Passport Number Protection', type: 'PII Scrubbing', description: 'Detect and protect passport numbers', status: 'Inactive', apps: 5, objects: 14 },
-                        { name: 'Bank Account Detection', type: 'PII Scrubbing', description: 'Detect and mask bank account numbers', status: 'Active', apps: 9, objects: 26 },
-                        { name: 'Tax ID Protection', type: 'PII Scrubbing', description: 'Detect and protect tax identification numbers', status: 'Active', apps: 6, objects: 18 },
-                        { name: 'Medical Record Number Detection', type: 'PII Scrubbing', description: 'Detect and scrub medical record numbers', status: 'Active', apps: 4, objects: 12 },
-                        { name: 'Insurance Policy Detection', type: 'PII Scrubbing', description: 'Detect and mask insurance policy numbers', status: 'Inactive', apps: 3, objects: 9 },
-                        { name: 'Employee ID Protection', type: 'PII Scrubbing', description: 'Detect and protect employee identification numbers', status: 'Active', apps: 8, objects: 22 },
-                        { name: 'Custom PII Pattern Detection', type: 'PII Scrubbing', description: 'User-defined patterns for organization-specific PII', status: 'Inactive', apps: 6, objects: 19 },
+                        { name: 'Driver License Detection', type: 'PII Scrubbing', description: 'Detect and mask driver license numbers', status: 'Inactive', apps: 7, objects: 19 },
+                        { name: 'Investment Account Numbers', type: 'PII Scrubbing', description: 'Detect Vanguard investment account numbers and brokerage identifiers', status: 'Active', apps: 12, objects: 35 },
+                        { name: 'Fund Ticker Symbols', type: 'PII Scrubbing', description: 'Identify Vanguard fund tickers and CUSIP numbers', status: 'Active', apps: 8, objects: 24 },
                         
                         // Toxic Content (6 items)
                         { name: 'Profanity Filter', type: 'Toxic Content', description: 'Block explicit language and curse words', status: 'Active', apps: 32, objects: 78 },
