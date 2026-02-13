@@ -427,7 +427,7 @@ interface TabsInterfaceProps {
   activeSection: string
   cardStyle?: 'white' | 'glass' | 'greyscale'
   onSectionChange?: (section: string) => void
-  appMode?: 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3' | 'revised-v4'
+  appMode?: 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3' | 'revised-v4' | 'mvp'
 }
 
 export default function TabsInterface({ activeSection, cardStyle = 'glass', onSectionChange, appMode = 'future' }: TabsInterfaceProps) {
@@ -458,6 +458,34 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [v3OutputAction, setV3OutputAction] = useState('anonymize')
   const [v3InputAnonymizationMethod, setV3InputAnonymizationMethod] = useState('masking')
   const [v3OutputAnonymizationMethod, setV3OutputAnonymizationMethod] = useState('masking')
+  // MVP folder state
+  const [mvpFolders, setMvpFolders] = useState([
+    { id: 1, name: 'Prompt and Jailbreak Detection', description: 'Detect and block attempts to manipulate or bypass AI safety measures', icon: 'Shield', color: 'blue' },
+    { id: 2, name: 'PII Scrubbing', description: 'Identify and protect personally identifiable information', icon: 'Eye', color: 'green' },
+    { id: 3, name: 'Toxic Content Detection', description: 'Filter harmful, offensive, or inappropriate content', icon: 'AlertTriangle', color: 'red' },
+    { id: 4, name: 'Custom Content Detection', description: 'Block specific topics and custom-defined content', icon: 'Filter', color: 'purple' },
+    { id: 5, name: 'Competitor Detection', description: 'Prevent mentions of competitor brands and products', icon: 'Ban', color: 'orange' },
+    { id: 6, name: 'Malicious Code Detection', description: 'Identify and block potentially harmful code patterns', icon: 'Code', color: 'yellow' },
+    { id: 7, name: 'Compliance and Regulatory Checks', description: 'Ensure adherence to legal and regulatory requirements', icon: 'FileText', color: 'indigo' },
+    { id: 8, name: 'Sensitive Data Leakage Prevention', description: 'Prevent unauthorized disclosure of confidential information', icon: 'Lock', color: 'pink' }
+  ])
+  const [selectedMvpFolder, setSelectedMvpFolder] = useState<number | null>(null)
+  const [showMvpFolderModal, setShowMvpFolderModal] = useState(false)
+  const [editingMvpFolder, setEditingMvpFolder] = useState<number | null>(null)
+  const [mvpFolderForm, setMvpFolderForm] = useState({ name: '', description: '' })
+  // AI Guardrail Creation
+  const [showAiGuardrailModal, setShowAiGuardrailModal] = useState(false)
+  const [guardrailPrompt, setGuardrailPrompt] = useState('')
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [suggestedType, setSuggestedType] = useState<'Keyword' | 'Expression' | 'Semantic' | 'Regex' | null>(null)
+  const [selectedGuardrailType, setSelectedGuardrailType] = useState<'Keyword' | 'Expression' | 'Semantic' | 'Regex' | null>(null)
+
+  // Debug logging
+  useEffect(() => {
+    if (appMode === 'mvp') {
+      console.log('MVP Mode - selectedMvpFolder:', selectedMvpFolder, 'selectedV3IndividualGuardrail:', selectedV3IndividualGuardrail)
+    }
+  }, [appMode, selectedMvpFolder, selectedV3IndividualGuardrail])
   const [v3EntitySelector, setV3EntitySelector] = useState('SSN')
   
   // Function to get appropriate entity for default guardrails
@@ -830,8 +858,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   }
 
   const renderContent = () => {
-    // In V1/V2 mode, force to protect section
-    const currentSection = appMode === 'v1' || appMode === 'v2' ? 'protect' : activeSection
+    // In V1/V2/MVP mode, force to protect section
+    const currentSection = appMode === 'v1' || appMode === 'v2' || appMode === 'mvp' ? 'protect' : activeSection
     
     switch (currentSection) {
       case 'home':
@@ -1048,7 +1076,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            {(selectedGuardrail === null && (appMode !== 'revised-v2' || !selectedRevisedGuardrail) && (appMode !== 'revised-v3' || !selectedV3IndividualGuardrail) && (appMode !== 'revised-v4' || !selectedV3IndividualGuardrail)) && (
+            {(selectedGuardrail === null && (appMode !== 'revised-v2' || !selectedRevisedGuardrail) && (appMode !== 'revised-v3' || !selectedV3IndividualGuardrail) && (appMode !== 'revised-v4' || !selectedV3IndividualGuardrail) && (appMode !== 'mvp' || !selectedV3IndividualGuardrail)) && (
             <div className={`sticky top-0 z-10 ${headerBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${protectScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
               {appMode === 'v2' && (
                 <div className="relative flex gap-8 mb-4 border-b border-white/30">
@@ -1108,7 +1136,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           onChange={(e) => setV3GroupingMode(e.target.value as 'input-output' | 'stakeholder' | 'risk-domain')}
                           className="px-6 py-3 bg-transparent border-none outline-none text-sm font-medium text-gray-700 cursor-pointer"
                         >
-                          <option value="input-output">Input/Output Grouping</option>
+                          <option value="input-output">Default</option>
                           <option value="stakeholder">Stakeholder Grouping</option>
                           <option value="risk-domain">Risk Domain Grouping</option>
                         </select>
@@ -1119,18 +1147,24 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         color="ACCENT"
                         size="STANDARD"
                         onClick={() => {
-                          if (selectedV3GuardrailType === 'PII Scrubbing') {
-                            setWizardStep(2)
-                            setShowModal(true)
-                          } else {
-                            setShowModal(true)
-                          }
+                          setShowAiGuardrailModal(true)
+                          setGuardrailPrompt('')
+                          setSuggestedType(null)
+                          setSelectedGuardrailType(null)
                         }}
                       />
                     </div>
                   </>
                 ) : (
-                  <HeadingField text={appMode === 'revised-v3' && selectedV3GuardrailType && !selectedV3IndividualGuardrail ? `${selectedV3GuardrailType} Guardrails` : (appMode === 'v1' || appMode === 'future' || protectTab === 'configuration') ? "Guardrail Configuration" : "Guardrail Performance"} size="LARGE" marginBelow="NONE" />
+                  <HeadingField text={
+                    appMode === 'mvp' && selectedMvpFolder 
+                      ? mvpFolders.find(f => f.id === selectedMvpFolder)?.name || "Guardrail Configuration"
+                      : appMode === 'revised-v3' && selectedV3GuardrailType && !selectedV3IndividualGuardrail 
+                      ? `${selectedV3GuardrailType} Guardrails` 
+                      : (appMode === 'v1' || appMode === 'future' || appMode === 'mvp' || protectTab === 'configuration') 
+                      ? "Guardrail Configuration" 
+                      : "Guardrail Performance"
+                  } size="LARGE" marginBelow="NONE" />
                 )}
                 {protectTab === 'performance' && appMode === 'v2' ? (
                   <div className="relative flex p-1 rounded-md">
@@ -1155,19 +1189,18 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </button>
                     ))}
                   </div>
-                ) : (appMode === 'v1' || protectTab === 'configuration') && !(appMode === 'revised-v3' && !selectedV3GuardrailType) ? (
+                ) : (appMode === 'v1' || (appMode === 'mvp' && selectedMvpFolder) || protectTab === 'configuration') && !(appMode === 'revised-v3' && !selectedV3GuardrailType) && !(appMode === 'mvp' && !selectedMvpFolder) ? (
                   <ButtonWidget
                     label="+ Add Guardrails"
                     style="SOLID"
                     color="ACCENT"
                     size="STANDARD"
                     onClick={() => {
-                      if (selectedV3GuardrailType === 'PII Scrubbing') {
-                        setWizardStep(2)
-                        setShowModal(true)
-                      } else {
-                        setShowModal(true)
-                      }
+                      console.log('Add Guardrails button clicked!')
+                      setShowAiGuardrailModal(true)
+                      setGuardrailPrompt('')
+                      setSuggestedType(null)
+                      setSelectedGuardrailType(null)
                     }}
                   />
                 ) : null}
@@ -3743,7 +3776,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   </div>
                 </div>
               )
-            ) : (appMode === 'revised-v3' || appMode === 'revised-v4') ? (
+            ) : (appMode === 'revised-v3' || appMode === 'revised-v4' || appMode === 'mvp') ? (
               selectedV3IndividualGuardrail ? (
                 <div className="flex flex-col h-screen">
                   {/* Header - Sticky */}
@@ -3753,7 +3786,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-2 cursor-pointer"
                     >
                       <ChevronLeft size={20} />
-                      <span className="font-medium">Back to {appMode === 'revised-v4' ? 'All Guardrails' : `${selectedV3GuardrailType} List`}</span>
+                      <span className="font-medium">Back to {appMode !== 'revised-v3' ? 'All Guardrails' : `${selectedV3GuardrailType} List`}</span>
                     </button>
                     <div className="flex items-center justify-between">
                       <h1 className="text-2xl font-bold">{selectedV3IndividualGuardrail}</h1>
@@ -4406,61 +4439,122 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           selectedV3IndividualGuardrail === 'Sexual Content Filter' ||
                           selectedV3IndividualGuardrail === 'Violence & Gore Detection' ||
                           selectedV3IndividualGuardrail === 'Self-Harm Prevention') && (
-                          <div className="space-y-4">
+                          <div className="space-y-6">
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Severity Threshold</label>
-                              <div className="flex items-center space-x-4">
-                                <input type="range" min="0.1" max="1.0" step="0.1" defaultValue="0.7" className="flex-1" />
-                                <span className="text-sm text-gray-600 w-12">0.7</span>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-3">Topic Definition</h3>
+                              <p className="text-gray-600 mb-4">Define what constitutes {selectedV3IndividualGuardrail?.toLowerCase()} for your application.</p>
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Severity Threshold</label>
+                                  <div className="flex items-center space-x-4">
+                                    <input type="range" min="0.1" max="1.0" step="0.1" defaultValue="0.7" className="flex-1" />
+                                    <span className="text-sm text-gray-600 w-12">0.7</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Content Categories</label>
+                                  <div className="space-y-2">
+                                    <label className="flex items-center">
+                                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" defaultChecked />
+                                      <span className="ml-2 text-sm text-gray-700">Profanity</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" defaultChecked />
+                                      <span className="ml-2 text-sm text-gray-700">Hate Speech</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" defaultChecked />
+                                      <span className="ml-2 text-sm text-gray-700">Sexual Content</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                      <span className="ml-2 text-sm text-gray-700">Violence</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" defaultChecked />
+                                      <span className="ml-2 text-sm text-gray-700">Self-Harm</span>
+                                    </label>
+                                  </div>
+                                </div>
                               </div>
                             </div>
+
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">Content Categories</label>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-3">Examples</h3>
+                              <p className="text-gray-600 mb-4">Examples of content that would be flagged by this guardrail.</p>
                               <div className="space-y-3">
-                                <label className="flex items-center space-x-2">
-                                  <input type="checkbox" defaultChecked className="rounded" />
-                                  <span className="text-sm">Profanity</span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="checkbox" defaultChecked className="rounded" />
-                                  <span className="text-sm">Hate Speech</span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="checkbox" defaultChecked className="rounded" />
-                                  <span className="text-sm">Sexual Content</span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="checkbox" className="rounded" />
-                                  <span className="text-sm">Violence</span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="checkbox" defaultChecked className="rounded" />
-                                  <span className="text-sm">Self-Harm</span>
-                                </label>
+                                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="w-16 flex-shrink-0 inline-block px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded">BLOCKED</span>
+                                    <span className="text-sm font-medium text-red-800">High Severity</span>
+                                  </div>
+                                  <p className="text-sm text-red-700">"I hate all people from [group]"</p>
+                                </div>
+                                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="w-16 flex-shrink-0 inline-block px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded">FLAGGED</span>
+                                    <span className="text-sm font-medium text-yellow-800">Medium Severity</span>
+                                  </div>
+                                  <p className="text-sm text-yellow-700">"This is really annoying"</p>
+                                </div>
+                                <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="w-16 flex-shrink-0 inline-block px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded">ALLOWED</span>
+                                    <span className="text-sm font-medium text-green-800">Low Severity</span>
+                                  </div>
+                                  <p className="text-sm text-green-700">"I disagree with this approach"</p>
+                                </div>
                               </div>
                             </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">Language Selection</label>
-                              <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                                <option>English</option>
-                                <option>Spanish</option>
-                                <option>French</option>
-                                <option>German</option>
-                              </select>
-                            </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">Action on Match</label>
+
+                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                              <h3 className="text-lg font-semibold text-gray-900 mb-3">User Input Handling</h3>
+                              <p className="text-gray-600 mb-4">How to handle toxic content in user messages.</p>
                               <div className="space-y-3">
-                                <label className="flex items-center space-x-2">
-                                  <input type="radio" name="toxic-action" value="block" defaultChecked />
-                                  <span className="text-sm">Block</span>
+                                <label className="flex items-center">
+                                  <input type="radio" name="toxic-input" className="text-blue-600 focus:ring-blue-500" defaultChecked />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Block:</strong> Reject the message and show warning
+                                  </span>
                                 </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="radio" name="toxic-action" value="warn" />
-                                  <span className="text-sm">Warn</span>
+                                <label className="flex items-center">
+                                  <input type="radio" name="toxic-input" className="text-blue-600 focus:ring-blue-500" />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Sanitize:</strong> Remove toxic parts and process cleaned message
+                                  </span>
+                                </label>
+                                <label className="flex items-center">
+                                  <input type="radio" name="toxic-input" className="text-blue-600 focus:ring-blue-500" />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Scan:</strong> Flag for review but allow processing
+                                  </span>
                                 </label>
                               </div>
-                              <textarea placeholder="Warning message..." className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md text-sm" rows={2}></textarea>
+                            </div>
+
+                            <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                              <h3 className="text-lg font-semibold text-gray-900 mb-3">LLM Output Handling</h3>
+                              <p className="text-gray-600 mb-4">How to handle toxic content in AI responses.</p>
+                              <div className="space-y-3">
+                                <label className="flex items-center">
+                                  <input type="radio" name="toxic-output" className="text-purple-600 focus:ring-purple-500" defaultChecked />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Reject:</strong> Block response and generate alternative
+                                  </span>
+                                </label>
+                                <label className="flex items-center">
+                                  <input type="radio" name="toxic-output" className="text-purple-600 focus:ring-purple-500" />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Redact:</strong> Remove toxic parts from response
+                                  </span>
+                                </label>
+                                <label className="flex items-center">
+                                  <input type="radio" name="toxic-output" className="text-purple-600 focus:ring-purple-500" />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Validate:</strong> Flag for human review before sending
+                                  </span>
+                                </label>
+                              </div>
                             </div>
                           </div>
                         )}
@@ -4472,42 +4566,109 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           selectedV3IndividualGuardrail === 'Religious Content Filter' ||
                           selectedV3IndividualGuardrail === 'Financial Advice Blocker' ||
                           selectedV3IndividualGuardrail === 'Medical Advice Prevention') && (
-                          <div className="space-y-4">
+                          <div className="space-y-6">
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Blocked Topics</label>
-                              <textarea placeholder="Enter blocked topics, one per line..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" rows={4}></textarea>
-                            </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Allowed Topics</label>
-                              <textarea placeholder="Enter allowed topics, one per line..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" rows={4}></textarea>
-                            </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">Competitor Names</label>
-                              <div className="space-y-2">
-                                <div className="flex gap-2">
-                                  <input type="text" placeholder="Add competitor name..." className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm" />
-                                  <button className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm">Add</button>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-3">Topic Definition</h3>
+                              <p className="text-gray-600 mb-4">Define the topics and content to filter for {selectedV3IndividualGuardrail?.toLowerCase()}.</p>
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Blocked Topics</label>
+                                  <textarea placeholder="Enter blocked topics, one per line..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" rows={4}></textarea>
                                 </div>
-                                <div className="text-xs text-gray-500">Microsoft, Google, Oracle</div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Competitor Names</label>
+                                  <div className="space-y-2">
+                                    <div className="flex gap-2">
+                                      <input type="text" placeholder="Add competitor name..." className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm" />
+                                      <button className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm">Add</button>
+                                    </div>
+                                    <div className="text-xs text-gray-500">Microsoft, Google, Oracle</div>
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">Similarity Threshold</label>
+                                  <div className="flex items-center space-x-4">
+                                    <input type="range" min="0.1" max="1.0" step="0.1" defaultValue="0.8" className="flex-1" />
+                                    <span className="text-sm text-gray-600 w-12">0.8</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
+
                             <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Similarity Threshold</label>
-                              <div className="flex items-center space-x-4">
-                                <input type="range" min="0.1" max="1.0" step="0.1" defaultValue="0.8" className="flex-1" />
-                                <span className="text-sm text-gray-600 w-12">0.8</span>
-                              </div>
-                            </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                              <label className="block text-sm font-medium text-gray-700 mb-3">Action on Match</label>
+                              <h3 className="text-lg font-semibold text-gray-900 mb-3">Examples</h3>
+                              <p className="text-gray-600 mb-4">Examples of content that would be flagged by this guardrail.</p>
                               <div className="space-y-3">
-                                <label className="flex items-center space-x-2">
-                                  <input type="radio" name="topic-action" value="block" defaultChecked />
-                                  <span className="text-sm">Block</span>
+                                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="w-16 flex-shrink-0 inline-block px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded">BLOCKED</span>
+                                    <span className="text-sm font-medium text-red-800">Competitor Mention</span>
+                                  </div>
+                                  <p className="text-sm text-red-700">"Microsoft's solution is better than ours"</p>
+                                </div>
+                                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="w-16 flex-shrink-0 inline-block px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded">BLOCKED</span>
+                                    <span className="text-sm font-medium text-red-800">Off-Topic</span>
+                                  </div>
+                                  <p className="text-sm text-red-700">"Let's discuss politics instead"</p>
+                                </div>
+                                <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="w-16 flex-shrink-0 inline-block px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded">ALLOWED</span>
+                                    <span className="text-sm font-medium text-green-800">On-Topic</span>
+                                  </div>
+                                  <p className="text-sm text-green-700">"How can I configure this feature?"</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                              <h3 className="text-lg font-semibold text-gray-900 mb-3">User Input Handling</h3>
+                              <p className="text-gray-600 mb-4">How to handle filtered topics in user messages.</p>
+                              <div className="space-y-3">
+                                <label className="flex items-center">
+                                  <input type="radio" name="topic-input" className="text-blue-600 focus:ring-blue-500" defaultChecked />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Block:</strong> Reject the message and show warning
+                                  </span>
                                 </label>
-                                <label className="flex items-center space-x-2">
-                                  <input type="radio" name="topic-action" value="warn" />
-                                  <span className="text-sm">Warn</span>
+                                <label className="flex items-center">
+                                  <input type="radio" name="topic-input" className="text-blue-600 focus:ring-blue-500" />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Sanitize:</strong> Remove filtered content and process cleaned message
+                                  </span>
+                                </label>
+                                <label className="flex items-center">
+                                  <input type="radio" name="topic-input" className="text-blue-600 focus:ring-blue-500" />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Scan:</strong> Flag for review but allow processing
+                                  </span>
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                              <h3 className="text-lg font-semibold text-gray-900 mb-3">LLM Output Handling</h3>
+                              <p className="text-gray-600 mb-4">How to handle filtered topics in AI responses.</p>
+                              <div className="space-y-3">
+                                <label className="flex items-center">
+                                  <input type="radio" name="topic-output" className="text-purple-600 focus:ring-purple-500" defaultChecked />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Reject:</strong> Block response and generate alternative
+                                  </span>
+                                </label>
+                                <label className="flex items-center">
+                                  <input type="radio" name="topic-output" className="text-purple-600 focus:ring-purple-500" />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Redact:</strong> Remove filtered content from response
+                                  </span>
+                                </label>
+                                <label className="flex items-center">
+                                  <input type="radio" name="topic-output" className="text-purple-600 focus:ring-purple-500" />
+                                  <span className="ml-2 text-sm text-gray-700">
+                                    <strong>Validate:</strong> Flag for human review before sending
+                                  </span>
                                 </label>
                               </div>
                             </div>
@@ -5998,7 +6159,216 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     </div>
                   </div>
                 </div>
-              ) : appMode === 'revised-v3' ? (
+              ) : appMode !== 'revised-v4' ? (
+                appMode === 'mvp' && !selectedMvpFolder ? (
+                  // MVP Folder List View
+                  <div key="mvp-folders" className="mt-6 px-20" style={{ background: 'transparent' }}>
+                    <div className="space-y-3">
+                      {mvpFolders.map((folder) => (
+                        <div key={folder.id} className="relative">
+                          <CardLayout padding="MORE" showShadow={true}>
+                            <div className="flex items-center gap-4">
+                              <div 
+                                className="flex-1 flex items-center gap-4 cursor-pointer"
+                                onClick={() => setSelectedMvpFolder(folder.id)}
+                              >
+                                <div className={`w-12 h-12 bg-${folder.color}-100 rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                  <Icon icon={folder.icon as any} size="MEDIUM" color={folder.color} />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-lg text-gray-900">{folder.name}</h3>
+                                  <p className="text-sm text-gray-600">{folder.description}</p>
+                                </div>
+                                <Icon icon="ChevronRight" size="MEDIUM" color="gray" />
+                              </div>
+                              <div className="border-l border-gray-200 pl-4">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    const menu = document.getElementById(`folder-menu-${folder.id}`) as HTMLElement
+                                    const rect = e.currentTarget.getBoundingClientRect()
+                                    menu.style.top = `${rect.bottom + 4}px`
+                                    menu.style.left = `${rect.right - 120}px`
+                                    menu.classList.toggle('hidden')
+                                  }}
+                                  className="p-2 hover:bg-gray-100 rounded-md"
+                                >
+                                  <Icon icon="MoreVertical" size="SMALL" />
+                                </button>
+                              </div>
+                            </div>
+                          </CardLayout>
+                          {/* Dropdown menu positioned outside card */}
+                          <div 
+                            id={`folder-menu-${folder.id}`}
+                            className="hidden fixed bg-white border border-gray-200 rounded-md shadow-lg z-50 min-w-[120px]"
+                            style={{ top: '0px', left: '0px' }}
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setEditingMvpFolder(folder.id)
+                                setMvpFolderForm({ name: folder.name, description: folder.description })
+                                setShowMvpFolderModal(true)
+                                const menu = document.getElementById(`folder-menu-${folder.id}`) as HTMLElement
+                                menu.classList.add('hidden')
+                              }}
+                              className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (confirm(`Delete folder "${folder.name}"?`)) {
+                                  setMvpFolders(mvpFolders.filter(f => f.id !== folder.id))
+                                }
+                                const menu = document.getElementById(`folder-menu-${folder.id}`) as HTMLElement
+                                menu.classList.add('hidden')
+                              }}
+                              className="block w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {/* Add New Folder */}
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer p-6"
+                        onClick={() => {
+                          setEditingMvpFolder(null)
+                          setMvpFolderForm({ name: '', description: '' })
+                          setShowMvpFolderModal(true)
+                        }}
+                      >
+                        <div className="flex items-center justify-center gap-3">
+                          <Icon icon="FolderPlus" size="MEDIUM" color="gray" />
+                          <p className="text-sm font-medium text-gray-600">Create New Folder</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Folder Create/Edit Modal */}
+                    {showMvpFolderModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-xl p-6 w-[500px]">
+                          <h2 className="text-xl font-bold mb-4">{editingMvpFolder ? 'Edit Folder' : 'Create New Folder'}</h2>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Folder Name</label>
+                              <input
+                                type="text"
+                                value={mvpFolderForm.name}
+                                onChange={(e) => setMvpFolderForm({ ...mvpFolderForm, name: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                placeholder="e.g., Input Protection"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                              <textarea
+                                value={mvpFolderForm.description}
+                                onChange={(e) => setMvpFolderForm({ ...mvpFolderForm, description: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md h-24"
+                                placeholder="Describe what this folder contains..."
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-3 mt-6">
+                            <ButtonWidget
+                              label="Cancel"
+                              style="OUTLINE"
+                              color="SECONDARY"
+                              onClick={() => setShowMvpFolderModal(false)}
+                            />
+                            <ButtonWidget
+                              label={editingMvpFolder ? 'Save Changes' : 'Create Folder'}
+                              style="SOLID"
+                              color="ACCENT"
+                              onClick={() => {
+                                if (editingMvpFolder) {
+                                  setMvpFolders(mvpFolders.map(f => 
+                                    f.id === editingMvpFolder 
+                                      ? { ...f, name: mvpFolderForm.name, description: mvpFolderForm.description }
+                                      : f
+                                  ))
+                                } else {
+                                  const newFolder = {
+                                    id: Math.max(...mvpFolders.map(f => f.id), 0) + 1,
+                                    name: mvpFolderForm.name,
+                                    description: mvpFolderForm.description,
+                                    icon: 'Folder',
+                                    color: 'blue'
+                                  }
+                                  setMvpFolders([...mvpFolders, newFolder])
+                                }
+                                setShowMvpFolderModal(false)
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : appMode === 'mvp' && selectedMvpFolder && !selectedV3IndividualGuardrail ? (
+                  // MVP Folder Contents - Show revised-v4 style table
+                  <div key="mvp-folder-table" className="mt-6 px-48" style={{ background: 'transparent' }}>
+                    <button 
+                      onClick={() => setSelectedMvpFolder(null)}
+                      className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 cursor-pointer"
+                    >
+                      <ChevronLeft size={20} />
+                      <span className="font-medium">Back to Folders</span>
+                    </button>
+                    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Guardrail Name
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Type
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Applied To
+                            </th>
+                            <th className="px-6 py-3"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {/* Sample guardrails - in real app these would be filtered by folder */}
+                          {[
+                            { name: 'Basic Prompt Injection Detection', type: 'Jailbreak Detection', status: 'Active', apps: '3', objects: '12 objects' },
+                            { name: 'SSN Detection', type: 'PII Scrubbing', status: 'Active', apps: '5', objects: '8 objects' }
+                          ].map((guardrail, index) => (
+                            <tr 
+                              key={index}
+                              className="hover:bg-gray-50 cursor-pointer"
+                              onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="text-sm font-medium text-gray-900">{guardrail.name}</span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="text-sm text-gray-600">{guardrail.type}</span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${guardrail.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>{guardrail.status}</span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap"><span className="text-sm text-blue-600">{guardrail.apps} apps</span></td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div className="text-gray-400">→</div></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
                 <div key="v3-type-cards" className="mt-6 px-12" style={{ background: 'transparent' }}>
                   <div className="max-w-6xl mx-auto space-y-12">
                     {v3GroupingMode === 'input-output' ? (
@@ -6494,6 +6864,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     )}
                   </div>
                 </div>
+              )
               ) : appMode === 'revised-v4' ? (
               <div key="v4-flat-table" className="mt-6 px-48" style={{ background: 'transparent' }}>
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
@@ -7115,6 +7486,122 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 </div>
               )}
             </div>
+
+            {/* AI Guardrail Creation Modal - Global */}
+            {showAiGuardrailModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-xl p-6 w-[600px]">
+                  <h2 className="text-xl font-bold mb-4">Create Guardrail with AI</h2>
+                  
+                  {!suggestedType ? (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Describe what you want this guardrail to do
+                        </label>
+                        <textarea
+                          value={guardrailPrompt}
+                          onChange={(e) => setGuardrailPrompt(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md h-32"
+                          placeholder="e.g., Block any messages that contain social security numbers or credit card information"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-3">
+                        <ButtonWidget
+                          label="Cancel"
+                          style="OUTLINE"
+                          color="SECONDARY"
+                          onClick={() => setShowAiGuardrailModal(false)}
+                        />
+                        <ButtonWidget
+                          label={isAnalyzing ? "Analyzing..." : "Analyze"}
+                          style="SOLID"
+                          color="ACCENT"
+                          onClick={() => {
+                            setIsAnalyzing(true)
+                            setTimeout(() => {
+                              const prompt = guardrailPrompt.toLowerCase()
+                              let type: 'Keyword' | 'Expression' | 'Semantic' | 'Regex' = 'Semantic'
+                              
+                              if (prompt.includes('ssn') || prompt.includes('credit card') || prompt.includes('phone number') || prompt.includes('email')) {
+                                type = 'Regex'
+                              } else if (prompt.includes('specific word') || prompt.includes('exact phrase') || prompt.includes('contains')) {
+                                type = 'Keyword'
+                              } else if (prompt.includes('pattern') || prompt.includes('format')) {
+                                type = 'Expression'
+                              }
+                              
+                              setSuggestedType(type)
+                              setSelectedGuardrailType(type)
+                              setIsAnalyzing(false)
+                            }, 1500)
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-sm text-gray-700 mb-2">
+                          <strong>Your request:</strong> {guardrailPrompt}
+                        </p>
+                        <p className="text-sm text-blue-700">
+                          <strong>Recommended type:</strong> {suggestedType}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Guardrail Type
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {(['Keyword', 'Expression', 'Semantic', 'Regex'] as const).map((type) => (
+                            <div
+                              key={type}
+                              onClick={() => setSelectedGuardrailType(type)}
+                              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                selectedGuardrailType === type
+                                  ? 'border-blue-500 bg-blue-50'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <div className="font-semibold text-sm">{type}</div>
+                              <div className="text-xs text-gray-600 mt-1">
+                                {type === 'Keyword' && 'Match exact words or phrases'}
+                                {type === 'Expression' && 'Match patterns and formats'}
+                                {type === 'Semantic' && 'Understand meaning and context'}
+                                {type === 'Regex' && 'Advanced pattern matching'}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end gap-3">
+                        <ButtonWidget
+                          label="Back"
+                          style="OUTLINE"
+                          color="SECONDARY"
+                          onClick={() => {
+                            setSuggestedType(null)
+                            setSelectedGuardrailType(null)
+                          }}
+                        />
+                        <ButtonWidget
+                          label="Continue to Configuration"
+                          style="SOLID"
+                          color="ACCENT"
+                          onClick={() => {
+                            setSelectedV3IndividualGuardrail(`${selectedGuardrailType} Guardrail`)
+                            setShowAiGuardrailModal(false)
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )
       

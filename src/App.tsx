@@ -19,7 +19,7 @@ import CustomerPortalSite from './pages/customer-portal-site'
 function MainApp() {
   const [activeSection, setActiveSection] = useState('home')
   const [cardStyle, setCardStyle] = useState<'white' | 'glass' | 'greyscale'>('white')
-  const [appMode, setAppMode] = useState<'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3' | 'revised-v4'>('future')
+  const [appMode, setAppMode] = useState<'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3' | 'revised-v4' | 'mvp'>('future')
   const [showWaffleMenu, setShowWaffleMenu] = useState(false)
 
   const waffleApps = [
@@ -69,7 +69,7 @@ function MainApp() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
               <select 
                 value={appMode}
-                onChange={(e) => setAppMode(e.target.value as 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3' | 'revised-v4')}
+                onChange={(e) => setAppMode(e.target.value as 'v1' | 'v2' | 'future' | 'revised' | 'revised-v2' | 'revised-v3' | 'revised-v4' | 'mvp')}
                 className="px-6 py-3 bg-transparent border-none outline-none text-sm font-medium text-gray-700 cursor-pointer"
               >
                 <option value="v1" className="text-gray-900">V1</option>
@@ -79,6 +79,7 @@ function MainApp() {
                 <option value="revised-v2" className="text-gray-900">Revised V2</option>
                 <option value="revised-v3" className="text-gray-900">Revised V3</option>
                 <option value="revised-v4" className="text-gray-900">Revised V4</option>
+                <option value="mvp" className="text-gray-900">MVP</option>
               </select>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
@@ -188,7 +189,7 @@ function MainApp() {
         )}
         <div className="flex-1 overflow-auto relative z-10">
           <TabsInterface 
-            activeSection={appMode === 'v1' || appMode === 'v2' ? 'protect' : activeSection} 
+            activeSection={appMode === 'v1' || appMode === 'v2' || appMode === 'mvp' ? 'protect' : activeSection} 
             cardStyle={cardStyle} 
             onSectionChange={setActiveSection}
             appMode={appMode}
