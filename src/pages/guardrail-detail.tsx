@@ -25,6 +25,7 @@ export default function GuardrailDetail({ guardrail, onBack, onSave }: Guardrail
   const [input, setInput] = useState('')
   const [configTab, setConfigTab] = useState<'input' | 'output'>('input')
   const [anonymizationMethod, setAnonymizationMethod] = useState('masking')
+  const [detectionMethod, setDetectionMethod] = useState<'keyword' | 'regex' | 'semantic' | 'hybrid'>('keyword')
   const configInputRef = useRef<HTMLButtonElement>(null)
   const configOutputRef = useRef<HTMLButtonElement>(null)
 
@@ -197,37 +198,77 @@ export default function GuardrailDetail({ guardrail, onBack, onSave }: Guardrail
                 {/* Jailbreak/Prompt Injection Configuration */}
                 {(name.includes('Jailbreak') || name.includes('Prompt') || name.includes('Injection') || name.includes('Context')) && (
                   <div className="space-y-6">
-                    <div className="mb-4">
-                      <HeadingField text="Prompt Injection Configuration" size="MEDIUM" marginBelow="NONE" />
-                      <p className="text-sm text-gray-600 mt-1">
-                        Configure detection settings for prompt injection and jailbreak attempts.
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Sensitivity Threshold</label>
-                      <div className="flex items-center space-x-4">
-                        <input type="range" min="0" max="1" step="0.1" defaultValue={name.includes('Context') ? "0.8" : name.includes('Advanced') ? "0.7" : "0.5"} className="flex-1" />
-                        <span className="text-sm text-gray-600 w-12">{name.includes('Context') ? "0.8" : name.includes('Advanced') ? "0.7" : "0.5"}</span>
+                    <div className="bg-white border border-gray-200 rounded-xl p-4">
+                      <h3 className="text-base font-semibold text-gray-900 mb-1">Detection Method</h3>
+                      <p className="text-sm text-gray-600 mb-4">How would you like to detect the custom content?</p>
+                      
+                      <div className="space-y-4">
+                        {[
+                          {
+                            value: 'keyword' as const,
+                            title: 'Keyword',
+                            description: 'The words are very specific and unlikely to change',
+                            examples: ['Internal code names', 'Specific banned phrases', 'Known product or project names']
+                          },
+                          {
+                            value: 'regex' as const,
+                            title: 'Regex',
+                            description: 'The content follows a clear pattern or format',
+                            examples: ['Account numbers', 'IDs', 'Ticket numbers', 'Financial formats (e.g. FY24, Q3 earnings)']
+                          },
+                          {
+                            value: 'semantic' as const,
+                            title: 'Semantic',
+                            description: 'People might phrase the same request many different ways',
+                            examples: ['"How did we do financially last quarter?"', '"Can you share internal plans?"', 'Harassment or threats with varied wording']
+                          },
+                          {
+                            value: 'hybrid' as const,
+                            title: 'Hybrid',
+                            description: 'The topic is important or sensitive',
+                            examples: ['Internal financial information', 'Competitor discussions', 'Violence or self-harm', 'Compliance issues']
+                          }
+                        ].map((method) => (
+                          <div
+                            key={method.value}
+                            onClick={() => setDetectionMethod(method.value)}
+                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                              detectionMethod === method.value
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                detectionMethod === method.value
+                                  ? 'border-blue-500 bg-blue-500'
+                                  : 'border-gray-400'
+                              }`}>
+                                {detectionMethod === method.value && (
+                                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-semibold text-gray-900 mb-2">{method.title}</div>
+                                <div className="text-sm text-gray-700 mb-2">{method.description}</div>
+                                <div className="text-sm">
+                                  <div className="font-medium text-gray-700 mb-1">Good examples:</div>
+                                  <ul className="space-y-1">
+                                    {method.examples.map((example, idx) => (
+                                      <li key={idx} className="text-gray-600 flex items-start gap-2">
+                                        <span className="text-gray-400 mt-0.5">•</span>
+                                        <span>{example}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Higher values = more sensitive detection</p>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Detection Mode</label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        <option value="heuristic">Heuristic (Pattern-based)</option>
-                        <option value="llm_classifier">LLM Classifier (AI-based)</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Action on Match</label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        <option value="block">Block (Prevent execution)</option>
-                        <option value="sanitize">Sanitize (Clean input)</option>
-                        <option value="flag">Flag (Log and continue)</option>
-                      </select>
                     </div>
                   </div>
                 )}
