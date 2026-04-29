@@ -2,6 +2,7 @@ import { HeadingField, CardLayout, ButtonWidget } from '@pglevy/sailwind'
 import { useState, useEffect } from 'react'
 import { Settings, Globe, MessageCircle, X, ChevronLeft, Save, Search, Grid3X3, Info, Database } from 'lucide-react'
 import { useLocation } from 'wouter'
+import VersionSwitcher from '../components/VersionSwitcher'
 
 export default function CustomerPortalSite() {
   const [showPreview, setShowPreview] = useState(false)
@@ -255,6 +256,7 @@ export default function CustomerPortalSite() {
             />
           </div>
           <div className="flex items-center gap-3">
+            <VersionSwitcher />
             <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2">
               <Save size={16} />
               Save
@@ -293,7 +295,7 @@ export default function CustomerPortalSite() {
             >
               <Grid3X3 size={20} className={showWaffleMenu ? "text-blue-500" : "text-black"} />
             </button>
-            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-lime-500 text-white font-medium text-sm">
+            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-semibold text-sm">
               J
             </div>
             <img 

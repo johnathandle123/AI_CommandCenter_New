@@ -93,6 +93,16 @@ export default function Home() {
             <p className="text-gray-700">Configure and manage your customer portal site with live chat integration and AI-powered customer service capabilities.</p>
           </CardLayout>
         </div>
+
+        <div 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => setLocation('/process-hq')}
+        >
+          <CardLayout padding="MORE" showShadow={true}>
+            <HeadingField text="Process HQ" size="MEDIUM" marginBelow="LESS" />
+            <p className="text-gray-700">View reports, dashboards, process insights, and the data catalog across your environment.</p>
+          </CardLayout>
+        </div>
       </div>
     </div>
   )

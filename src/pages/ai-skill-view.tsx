@@ -1,7 +1,8 @@
-import { HeadingField, CardLayout } from '@pglevy/sailwind'
+import { HeadingField } from '@pglevy/sailwind'
 import { Search, Grid3X3, Paintbrush, Settings, Brain, Monitor, Database, Flag, FileText, Info, HelpCircle, ChevronLeft, Save } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'wouter'
+import VersionSwitcher from '../components/VersionSwitcher'
 
 export default function AISkillView() {
   const [showWaffleMenu, setShowWaffleMenu] = useState(false)
@@ -15,7 +16,7 @@ export default function AISkillView() {
 
   const waffleApps = [
     { name: 'Appian Designer', icon: Paintbrush, color: 'bg-blue-500', active: true, path: '/appian-designer' },
-    { name: 'Admin Console', icon: Settings, color: 'bg-green-500', path: '/dashboard' },
+    { name: 'Admin Console', icon: Settings, color: 'bg-green-500', path: '/admin-console' },
     { name: 'AI Command Center', icon: Brain, color: 'bg-purple-500', path: '/dashboard' },
     { name: 'Operations Console', icon: Monitor, color: 'bg-orange-500', path: '/dashboard' },
     { name: 'Cloud Database', icon: Database, color: 'bg-teal-500', path: '/dashboard' },
@@ -63,6 +64,7 @@ export default function AISkillView() {
             />
           </div>
           <div className="flex items-center gap-3">
+            <VersionSwitcher />
             <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2">
               <Save size={16} />
               Save
@@ -108,7 +110,7 @@ export default function AISkillView() {
             >
               <Grid3X3 size={20} className={showWaffleMenu ? "text-blue-500" : "text-black"} />
             </button>
-            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-lime-500 text-white font-medium text-sm">
+            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-semibold text-sm">
               J
             </div>
             <img 
@@ -246,12 +248,12 @@ export default function AISkillView() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { type: 'Prompt Injection Detection', icon: '🛡️', description: 'Detect and block prompt injection attacks' },
-                      { type: 'PII Scrubbing', icon: '🔒', description: 'Automatically redact sensitive information' },
-                      { type: 'Toxicity Filter', icon: '⚠️', description: 'Block inappropriate or harmful content' },
-                      { type: 'Hallucination Detection', icon: '✓', description: 'Verify responses against knowledge base' },
-                      { type: 'Topic Filtering', icon: '🚫', description: 'Restrict conversations to allowed topics' },
-                      { type: 'Custom Guardrail', icon: '⚙️', description: 'Create a custom guardrail rule' }
+                      { type: 'Prompt Injection Detection', description: 'Detect and block prompt injection attacks' },
+                      { type: 'PII Scrubbing', description: 'Automatically redact sensitive information' },
+                      { type: 'Toxicity Filter', description: 'Block inappropriate or harmful content' },
+                      { type: 'Hallucination Detection', description: 'Verify responses against knowledge base' },
+                      { type: 'Topic Filtering', description: 'Restrict conversations to allowed topics' },
+                      { type: 'Custom Guardrail', description: 'Create a custom guardrail rule' }
                     ].map((item, idx) => (
                       <button
                         key={idx}
@@ -259,9 +261,8 @@ export default function AISkillView() {
                           setSelectedGuardrailType(item.type)
                           setWizardStep('configure')
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 text-left transition-colors"
+                        className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 text-left transition-colors"
                       >
-                        <div className="text-3xl mb-2">{item.icon}</div>
                         <div className="font-medium mb-1">{item.type}</div>
                         <div className="text-sm text-gray-600">{item.description}</div>
                       </button>
@@ -361,16 +362,16 @@ export default function AISkillView() {
       {/* Main Content */}
       <div className="flex h-[calc(100vh-80px)]">
         {/* Left Column - Prompt Configuration */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 bg-gray-50">
-          {/* Sticky Tabs */}
-          <div className="sticky top-0 z-10 bg-gray-50 pb-4 mb-2">
-            <div className="max-w-3xl mx-auto">
-              <div className="flex border-b border-gray-200 bg-white rounded-t-lg">
+        <div className="flex-1 overflow-y-auto">
+          <div className="container mx-auto px-6 py-6 max-w-6xl">
+            {/* Tabs */}
+            <div className="bg-white rounded-t-lg border border-gray-200 border-b-0">
+              <div className="flex border-b border-gray-200">
                 <button 
                   className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === 'settings' 
-                      ? 'border-blue-500 text-blue-600 bg-blue-50' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-600 text-blue-600' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                   onClick={() => setActiveTab('settings')}
                 >
@@ -379,8 +380,8 @@ export default function AISkillView() {
                 <button 
                   className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === 'guardrails' 
-                      ? 'border-blue-500 text-blue-600 bg-blue-50' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-600 text-blue-600' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                   onClick={() => setActiveTab('guardrails')}
                 >
@@ -388,15 +389,15 @@ export default function AISkillView() {
                 </button>
               </div>
             </div>
-          </div>
 
-          <div className="max-w-3xl mx-auto space-y-6">
+          <div className="space-y-6">
             {activeTab === 'settings' && (
               <>
-                <CardLayout padding="MORE" showShadow={true}>
-                  <HeadingField text="Prompt" size="MEDIUM" marginBelow="STANDARD" />
-                  
-                  <div className="space-y-4">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="border-b border-gray-200 p-4 bg-gray-50">
+                    <HeadingField text="Prompt" size="MEDIUM" marginBelow="NONE" />
+                  </div>
+                  <div className="p-6 space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">System Prompt</label>
                       <textarea 
@@ -409,10 +410,13 @@ export default function AISkillView() {
                       <label htmlFor="dynamic-prompt" className="text-sm text-gray-700">Enable dynamic prompt optimization</label>
                     </div>
                   </div>
-                </CardLayout>
+                </div>
 
-                <CardLayout padding="MORE" showShadow={true}>
-                  <HeadingField text="Examples" size="MEDIUM" marginBelow="STANDARD" />
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="border-b border-gray-200 p-4 bg-gray-50">
+                    <HeadingField text="Examples" size="MEDIUM" marginBelow="NONE" />
+                  </div>
+                  <div className="p-6">
                   <p className="text-sm text-gray-600 mb-4">Provide example inputs and outputs to help the model understand your expectations</p>
                   
                   <div className="space-y-4">
@@ -438,15 +442,17 @@ export default function AISkillView() {
                       <span>+ Add Another Example</span>
                     </button>
                   </div>
-                </CardLayout>
+                  </div>
+                </div>
 
-                <CardLayout padding="MORE" showShadow={true}>
-                  <div className="flex items-center justify-between mb-4">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="border-b border-gray-200 p-4 bg-gray-50 flex items-center justify-between">
                     <HeadingField text="Guardrails" size="MEDIUM" marginBelow="NONE" />
-                    <button className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
                       + Add Guardrail
                     </button>
                   </div>
+                  <div className="p-6">
                   <p className="text-sm text-gray-600 mb-4">Select existing guardrails or create new ones to protect your AI skill</p>
                   
                   <div className="space-y-3">
@@ -589,55 +595,61 @@ export default function AISkillView() {
                       </table>
                     </div>
                   </div>
-                </CardLayout>
+                  </div>
+                </div>
 
-                <CardLayout padding="MORE" showShadow={true}>
-                  <HeadingField text="Test Prompt" size="MEDIUM" marginBelow="STANDARD" />
-                  
-                  <div className="space-y-4">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="border-b border-gray-200 p-4 bg-gray-50">
+                    <HeadingField text="Test Prompt" size="MEDIUM" marginBelow="NONE" />
+                  </div>
+                  <div className="p-6 space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Test Input</label>
                       <textarea 
                         placeholder="Enter sample text to test your prompt..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md h-24 text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg h-24 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
-                    <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
                       TEST
                     </button>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Test Output</label>
-                      <div className="w-full px-3 py-2 border border-gray-200 rounded-md h-32 bg-gray-50 text-sm text-gray-500">
+                      <div className="w-full px-3 py-2 border border-gray-200 rounded-lg h-32 bg-gray-50 text-sm text-gray-500">
                         Test results will appear here...
                       </div>
                     </div>
                   </div>
-                </CardLayout>
+                </div>
               </>
             )}
 
             {activeTab === 'guardrails' && (
               <>
-                <CardLayout padding="MORE" showShadow={true}>
-              <HeadingField text="Prompt" size="MEDIUM" marginBelow="STANDARD" />
-              
-              <div className="space-y-4">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="border-b border-gray-200 p-4 bg-gray-50">
+                    <HeadingField text="Prompt" size="MEDIUM" marginBelow="NONE" />
+                  </div>
+                  <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Describe what you want the skill to do
                   </label>
                   <textarea 
                     defaultValue="You are a helpful customer support assistant. Answer questions clearly and professionally based on the customer's inquiry. If you don't know the answer, direct the customer to a human agent."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md h-32 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg h-32 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Tell the model what you want it to do using plain language..."
                   />
                   <p className="text-xs text-gray-500 mt-1">Use plain language to describe what you're going to send the model and what you expect in response.</p>
                 </div>
-              </div>
-            </CardLayout>
+                  </div>
+                </div>
 
-            <CardLayout padding="MORE" showShadow={true}>
-              <HeadingField text="Examples" size="MEDIUM" marginBelow="STANDARD" />
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="border-b border-gray-200 p-4 bg-gray-50">
+                    <HeadingField text="Examples" size="MEDIUM" marginBelow="NONE" />
+                  </div>
+                  <div className="p-6">
               <p className="text-sm text-gray-600 mb-4">Provide example inputs and outputs to help the model understand your expectations</p>
               
               <div className="space-y-4">
@@ -646,14 +658,14 @@ export default function AISkillView() {
                     <label className="block text-xs font-medium text-gray-600 mb-1">Example Input</label>
                     <textarea 
                       defaultValue="How do I reset my password?"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md h-16 text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg h-16 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Example Output</label>
                     <textarea 
                       defaultValue="To reset your password, click on 'Forgot Password' on the login page and follow the instructions sent to your email."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md h-16 text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg h-16 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -662,15 +674,17 @@ export default function AISkillView() {
                   <span>+ Add Another Example</span>
                 </button>
               </div>
-            </CardLayout>
+                  </div>
+                </div>
 
-            <CardLayout padding="MORE" showShadow={true}>
-              <div className="flex items-center justify-between mb-4">
-                <HeadingField text="Guardrails" size="MEDIUM" marginBelow="NONE" />
-                <button className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                  + Add Guardrail
-                </button>
-              </div>
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="border-b border-gray-200 p-4 bg-gray-50 flex items-center justify-between">
+                    <HeadingField text="Guardrails" size="MEDIUM" marginBelow="NONE" />
+                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+                      + Add Guardrail
+                    </button>
+                  </div>
+                  <div className="p-6">
               <p className="text-sm text-gray-600 mb-4">Select existing guardrails or create new ones to protect your AI skill</p>
               
               <div className="space-y-3">
@@ -813,30 +827,32 @@ export default function AISkillView() {
                   </table>
                 </div>
               </div>
-            </CardLayout>
+                  </div>
+                </div>
               </>
             )}
+          </div>
           </div>
         </div>
 
         {/* Right Panel - Settings, Details, Usage */}
         <div className="w-80 border-l border-gray-200 bg-white overflow-y-auto">
           <div className="p-6 space-y-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h3 className="font-semibold text-gray-900 mb-4">Settings</h3>
-              
-              <div className="space-y-4">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="border-b border-gray-200 p-3 bg-gray-50">
+                <span className="text-sm font-bold text-gray-700">Settings</span>
+              </div>
+              <div className="p-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Model Selection</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Model Selection</label>
+                  <select className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option>Claude 3.5 Sonnet</option>
                     <option>GPT-4 Turbo</option>
                     <option>Claude 3 Opus</option>
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Temperature</label>
                   <div className="flex items-center gap-2 mb-1">
                     <input type="range" min="0" max="1" step="0.1" defaultValue="0.7" className="flex-1" />
                     <span className="text-sm text-gray-600 w-8">0.7</span>
@@ -846,57 +862,33 @@ export default function AISkillView() {
                     <span>Creative</span>
                   </div>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Max Tokens</label>
-                  <input 
-                    type="number" 
-                    defaultValue="2000"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Tokens</label>
+                  <input type="number" defaultValue="2000" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h3 className="font-semibold text-gray-900 mb-4">Details</h3>
-              
-              <div className="space-y-3 text-sm">
-                <div>
-                  <div className="text-gray-600">Type</div>
-                  <div className="font-medium">Prompt Builder</div>
-                </div>
-                <div>
-                  <div className="text-gray-600">Created</div>
-                  <div className="font-medium">1/10/2026</div>
-                </div>
-                <div>
-                  <div className="text-gray-600">Last Modified</div>
-                  <div className="font-medium">1/15/2026 9:00 AM</div>
-                </div>
-                <div>
-                  <div className="text-gray-600">Modified By</div>
-                  <div className="font-medium">John Doe</div>
-                </div>
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="border-b border-gray-200 p-3 bg-gray-50">
+                <span className="text-sm font-bold text-gray-700">Details</span>
+              </div>
+              <div className="p-4 space-y-3 text-sm">
+                <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="font-medium text-gray-900">Prompt Builder</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Created</span><span className="font-medium text-gray-900">1/10/2026</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Last Modified</span><span className="font-medium text-gray-900">1/15/2026 9:00 AM</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Modified By</span><span className="font-medium text-gray-900">John Doe</span></div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h3 className="font-semibold text-gray-900 mb-4">Usage</h3>
-              
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Total Invocations</div>
-                  <div className="text-2xl font-bold text-blue-700">1,247</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Avg Response Time</div>
-                  <div className="text-2xl font-bold text-blue-700">1.2s</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Success Rate</div>
-                  <div className="text-2xl font-bold text-green-700">98.5%</div>
-                </div>
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="border-b border-gray-200 p-3 bg-gray-50">
+                <span className="text-sm font-bold text-gray-700">Usage</span>
+              </div>
+              <div className="p-4 space-y-3">
+                <div><div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Invocations</div><div className="text-2xl font-bold text-gray-900">1,247</div></div>
+                <div><div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Avg Response Time</div><div className="text-2xl font-bold text-gray-900">1.2s</div></div>
+                <div><div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Success Rate</div><div className="text-2xl font-bold text-green-700">98.5%</div></div>
               </div>
             </div>
           </div>

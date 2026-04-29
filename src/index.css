@@ -140,6 +140,16 @@
   }
 }
 
+@layer base {
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2.25rem !important;
+  }
+}
+
 @layer utilities {
   /* Application Header with gradient border and background */
   .app-header-sail {
@@ -219,4 +229,210 @@
   .bg-teal-500 {
     background-color: #14b8a6 !important;
   }
+}
+
+/* Smooth tab transitions */
+.waffle-menu button,
+button.border-b-2,
+button.border-transparent {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+@keyframes sparkCircle {
+  0% { offset-distance: 0%; opacity: 0; transform: scale(0); }
+  10% { opacity: 1; transform: scale(1); }
+  80% { opacity: 1; transform: scale(1); }
+  90% { opacity: 0; transform: scale(0); }
+  100% { offset-distance: 100%; opacity: 0; transform: scale(0); }
+}
+
+/* Waffle menu icon-specific hover animations */
+.waffle-menu .grid button:hover .lucide-sparkles {
+  animation: iconPulse 0.8s ease-in-out infinite;
+}
+.waffle-menu .grid button:hover .lucide-paintbrush {
+  animation: iconPulse 0.8s ease-in-out;
+}
+.waffle-menu .grid button:hover .lucide-settings {
+  animation: iconSpin 0.8s ease-in-out;
+}
+.waffle-menu .grid button:hover .lucide-activity {
+  animation: iconHeartbeat 0.6s ease-in-out infinite;
+}
+.waffle-menu .grid button:hover .lucide-brain {
+  animation: iconPulse 1s ease-in-out infinite;
+}
+.waffle-menu .grid button:hover .lucide-monitor {
+  animation: iconBlink 0.8s ease-in-out;
+}
+.waffle-menu .grid button:hover .lucide-database {
+  animation: iconBounce 0.5s ease-in-out;
+}
+.waffle-menu .grid button:hover .lucide-flag {
+  animation: iconWave 0.6s ease-in-out;
+  transform-origin: bottom center;
+}
+.waffle-menu .grid button:hover .lucide-file-text {
+  animation: iconSlide 0.5s ease-in-out;
+}
+.waffle-menu .grid button:hover .lucide-info,
+.waffle-menu .grid button:hover .lucide-circle-help {
+  animation: iconPulse 0.8s ease-in-out;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+@keyframes iconPaint {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(2px, -1px) rotate(-5deg); }
+  30% { transform: translate(-1px, -2px) rotate(3deg); }
+  45% { transform: translate(2px, -3px) rotate(-4deg); }
+  60% { transform: translate(-1px, -1px) rotate(2deg); }
+  75% { transform: translate(1px, -2px) rotate(-3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+@keyframes iconSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(180deg); }
+}
+@keyframes iconHeartbeat {
+  0%, 100% { transform: scaleX(1); }
+  30% { transform: scaleX(1.15); }
+  60% { transform: scaleX(0.9); }
+}
+@keyframes iconBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes iconWave {
+  0%, 100% { transform: rotate(0deg); transform-origin: bottom center; }
+  25% { transform: rotate(10deg); transform-origin: bottom center; }
+  75% { transform: rotate(-8deg); transform-origin: bottom center; }
+}
+@keyframes iconSlide {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+
+@keyframes appiaIconEntry {
+  0% { opacity: 0; transform: scale(0) translateY(12px); }
+  60% { opacity: 1; transform: scale(1.03) translateY(-1px); }
+  80% { transform: scale(0.99) translateY(0.5px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes appiaIconFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.01); }
+}
+
+@keyframes meshGradient {
+  0%, 100% { background-position: 0% 0%; }
+  33% { background-position: 100% 0%; }
+  66% { background-position: 50% 100%; }
+}
+
+@keyframes gradientFade {
+  0% { filter: saturate(1) brightness(1); }
+  100% { filter: saturate(0) brightness(0.15); }
+}
+
+@keyframes letterReveal {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes messageIn {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Toggle switch styles (global) */
+.toggle-switch {
+  appearance: none;
+  width: 2.75rem;
+  height: 1.5rem;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.toggle-switch:checked {
+  background-color: #2563eb;
+}
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+.toggle-switch:checked::after {
+  transform: translateX(1.25rem);
+}
+
+@keyframes stampPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes btnGlowSpin {
+  0% { opacity: 1; rotate: 0deg; }
+  90% { opacity: 1; rotate: 360deg; }
+  100% { opacity: 0; rotate: 360deg; }
+}
+
+/* Gradient text action button — wrap text in <span> for gradient */
+.btn-gradient-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s;
+  cursor: pointer;
+  color: #3b82f6;
+}
+.btn-gradient-text:hover {
+  border-color: #c4b5fd;
+  box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.2);
+}
+.btn-gradient-text svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+/* Manual/secondary action button */
+.btn-manual {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #111827;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.btn-manual:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
 }

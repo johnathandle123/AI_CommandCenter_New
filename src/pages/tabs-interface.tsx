@@ -75,14 +75,9 @@ const AnimatedPercentage = ({ value, duration = 800 }: { value: number; duration
 }
 
 const getCardStyles = (cardStyle: 'white' | 'glass' | 'greyscale') => {
-  const cardBg = cardStyle === 'glass' 
-    ? 'background-color: rgba(255, 255, 255, 0.3) !important; backdrop-filter: blur(20px) !important; box-shadow: none !important;'
-    : 'background-color: white !important;'
-  
-  const bodyBg = cardStyle === 'glass' ? 'body { background: transparent !important; }' : ''
+  const cardBg = 'background-color: white !important;'
   
   return `
-    ${bodyBg}
     /* Toggle switch styles */
     .toggle-switch {
       appearance: none;
@@ -118,25 +113,7 @@ const getCardStyles = (cardStyle: 'white' | 'glass' | 'greyscale') => {
     .space-y-4 div.bg-white {
       ${cardBg}
       border-radius: 4px !important;
-      position: relative !important;
-      border: 1px solid rgba(255,255,255,0.5) !important;
-    }
-    .grid div[class*="shadow-"]::before,
-    .space-y-4 div[class*="shadow-"]::before,
-    .grid div.bg-white::before,
-    .space-y-0 div.bg-white::before,
-    .space-y-4 div.bg-white::before {
-      content: '' !important;
-      position: absolute !important;
-      inset: -1px !important;
-      border-radius: 4px !important;
-      padding: 1px !important;
-      background: linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0.1), rgba(255,255,255,0)) !important;
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0) !important;
-      -webkit-mask-composite: xor !important;
-      mask-composite: exclude !important;
-      pointer-events: none !important;
-      z-index: -1 !important;
+      border: 1px solid #e5e7eb !important;
     }
   `
 }
@@ -152,15 +129,13 @@ const tabStyles = `
   .compact-tabs [role="tablist"] {
     width: 100% !important;
     display: flex !important;
-    background-color: transparent !important;
-    backdrop-filter: blur(40px) !important;
-    -webkit-backdrop-filter: blur(40px) !important;
+    background-color: white !important;
     position: sticky !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
     z-index: 1 !important;
-    border-bottom: none !important;
+    border-bottom: 1px solid #e5e7eb !important;
     padding-left: 32px !important;
     margin: 0 !important;
   }
@@ -170,13 +145,11 @@ const tabStyles = `
     border: none !important;
     pointer-events: none !important;
   }
-  /* Semi-transparent card backgrounds */
   .compact-tabs [role="tabpanel"] div[class*="shadow-"] {
-    background-color: rgba(255, 255, 255, 0.3) !important;
-    backdrop-filter: blur(10px) !important;
+    background-color: white !important;
     box-shadow: none !important;
-    border-radius: 16px !important;
-    border: 1px solid white !important;
+    border-radius: 4px !important;
+    border: 1px solid #e5e7eb !important;
   }
   .compact-tabs [role="tabpanel"] {
     padding-top: 0 !important;
@@ -190,11 +163,9 @@ const tabStyles = `
     top: 48px !important;
     left: 0 !important;
     right: 0 !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(40px) !important;
-    -webkit-backdrop-filter: blur(40px) !important;
+    background: white !important;
     z-index: 1 !important;
-    border-bottom: 1px solid white !important;
+    border-bottom: 1px solid #e5e7eb !important;
     transition: box-shadow 0.2s ease !important;
     padding: 16px 32px 16px 32px !important;
     margin: 0 -32px 0 -32px !important;
@@ -210,8 +181,7 @@ const tabStyles = `
   }
   [data-radix-dialog-overlay], .dialog-overlay, .modal-backdrop, .scrim, [data-state="open"] {
     z-index: 2147483646 !important;
-    background-color: rgba(255, 255, 255, 0.5) !important;
-    backdrop-filter: blur(40px) !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
   }
   div[style*="position: fixed"], div[style*="z-index"] {
     z-index: 2147483645 !important;
@@ -220,7 +190,6 @@ const tabStyles = `
     max-width: 850px !important;
     width: 850px !important;
     background-color: white !important;
-    backdrop-filter: none !important;
   }
 `
 
@@ -256,7 +225,7 @@ function DraggableCard({ id, title, data, color, unit, change, getPerformanceSta
         <div className="p-4 cursor-grab active:cursor-grabbing">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3 flex-1">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white flex-shrink-0">
                 <Icon icon={stamp.icon} size="MEDIUM" />
               </div>
               <div className="flex-1">
@@ -459,6 +428,27 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   const [v3OutputAction, setV3OutputAction] = useState('anonymize')
   const [v3InputAnonymizationMethod, setV3InputAnonymizationMethod] = useState('masking')
   const [v3OutputAnonymizationMethod, setV3OutputAnonymizationMethod] = useState('masking')
+  // Guardrail configurator state
+  const [grDetection, setGrDetection] = useState('')
+  const [grKeywords, setGrKeywords] = useState('')
+  const [grRegex, setGrRegex] = useState('')
+  const [grRegexValid, setGrRegexValid] = useState<boolean | null>(null)
+  const [grTopic, setGrTopic] = useState('')
+  const [grExamples, setGrExamples] = useState('')
+  const [grThreshold, setGrThreshold] = useState('0.8')
+  const [grExpression, setGrExpression] = useState('')
+  const [grInputAction, setGrInputAction] = useState('')
+  const [grOutputAction, setGrOutputAction] = useState('')
+  const [grBlockMsg, setGrBlockMsg] = useState('This request has been blocked by a guardrail policy.')
+  const [grWarnMsg, setGrWarnMsg] = useState('This content may not comply with our policies. Do you want to proceed?')
+  const [grAllowTone, setGrAllowTone] = useState('')
+  const [grMaskMethod, setGrMaskMethod] = useState('')
+  const [grActionTab, setGrActionTab] = useState<'input' | 'output'>('input')
+  const [grTestRan, setGrTestRan] = useState(false)
+  const [grTestResult, setGrTestResult] = useState<'triggered' | 'not-triggered' | null>(null)
+  const [grShowAiHelp, setGrShowAiHelp] = useState(false)
+  const [grAiPrompt, setGrAiPrompt] = useState('')
+  const [grAiResult, setGrAiResult] = useState('')
   // MVP folder state
   const [mvpFolders, setMvpFolders] = useState([
     { id: 1, name: 'Prompt and Jailbreak Detection', description: 'Detect and block attempts to manipulate or bypass AI safety measures', icon: 'Shield', color: 'blue' },
@@ -471,6 +461,72 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
     { id: 8, name: 'Sensitive Data Leakage Prevention', description: 'Prevent unauthorized disclosure of confidential information', icon: 'Lock', color: 'pink' }
   ])
   const [selectedMvpFolder, setSelectedMvpFolder] = useState<number | null>(null)
+
+  const openGuardrailConfig = (guardrailName: string) => {
+    const allGuardrails = Object.values(folderGuardrails).flat()
+    const g = allGuardrails.find(gr => gr.name === guardrailName)
+    if (g) {
+      setGrDetection(g.type === 'Regex' ? 'regex' : g.type === 'Semantic' ? 'semantic' : 'keyword')
+      setGrRegex(g.regex || '')
+      setGrRegexValid(g.regex ? true : null)
+      setGrKeywords(g.keywords || '')
+      setGrTopic(g.topic || '')
+      setGrExamples(g.examples || '')
+      setGrThreshold(g.threshold || '0.8')
+      setGrInputAction(g.inputAction || '')
+      setGrOutputAction(g.outputAction || '')
+      setGrBlockMsg(g.blockMsg || 'This request has been blocked by a guardrail policy.')
+      setGrMaskMethod(g.maskMethod || '')
+    }
+    setSelectedV3IndividualGuardrail(guardrailName)
+  }
+
+  const folderGuardrails: Record<number, { name: string; type: string; appliedTo: string; detection: string; action: string; regex?: string; keywords?: string; topic?: string; examples?: string; threshold?: string; inputAction?: string; outputAction?: string; blockMsg?: string; maskMethod?: string }[]> = {
+    1: [
+      { name: 'Shell Injection', type: 'Keyword', appliedTo: 'User Input', detection: 'Keywords: sudo, rm -rf, chmod, bash', action: 'Block', keywords: 'sudo\nrm -rf\nchmod\nbash', inputAction: 'block', outputAction: '', blockMsg: 'System Security: Execution of system-level commands is prohibited.' },
+      { name: 'Script Injection', type: 'Regex', appliedTo: 'User Input', detection: 'Regex: <script>.*</script>', action: 'Block', regex: '<script>.*<\\/script>', inputAction: 'block', outputAction: '', blockMsg: 'Malicious Script Detected: Your input contains code that could compromise system security.' },
+    ],
+    2: [
+      { name: 'Names (Input)', type: 'Semantic', appliedTo: 'User Input', detection: 'Semantic: Personal names', action: 'Block', topic: 'Personal names of individuals', examples: 'My name is John Smith\nPlease look up Jane Doe\nContact Sarah Johnson about this', threshold: '0.75', inputAction: 'block', outputAction: '', blockMsg: 'Please do not include personal names in your request.' },
+      { name: 'Names (Output)', type: 'Semantic', appliedTo: 'AI Response', detection: 'Semantic: Personal names', action: 'Mask', topic: 'Personal names of individuals', examples: 'The account belongs to John Smith\nJane Doe submitted the request', threshold: '0.75', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with [NAME_REDACTED]' },
+      { name: 'SSN (Input)', type: 'Regex', appliedTo: 'User Input', detection: 'Regex: SSN pattern', action: 'Block', regex: '\\b\\d{3}-\\d{2}-\\d{4}\\b', inputAction: 'block', outputAction: '', blockMsg: 'For your security, please do not include Social Security Numbers in your request.' },
+      { name: 'SSN (Output)', type: 'Regex', appliedTo: 'AI Response', detection: 'Regex: SSN pattern', action: 'Mask', regex: '\\b\\d{3}-\\d{2}-\\d{4}\\b', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with ***-**-****' },
+      { name: 'Phone Number (Input)', type: 'Regex', appliedTo: 'User Input', detection: 'Regex: Phone patterns', action: 'Block', regex: '\\b(\\+?1[-.\\s]?)?(\\(?\\d{3}\\)?[-.\\s]?)?\\d{3}[-.\\s]?\\d{4}\\b', inputAction: 'block', outputAction: '', blockMsg: 'Please remove phone numbers before submitting your request.' },
+      { name: 'Phone Number (Output)', type: 'Regex', appliedTo: 'AI Response', detection: 'Regex: Phone patterns', action: 'Mask', regex: '\\b(\\+?1[-.\\s]?)?(\\(?\\d{3}\\)?[-.\\s]?)?\\d{3}[-.\\s]?\\d{4}\\b', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with (***) ***-****' },
+      { name: 'Address (Input)', type: 'Semantic', appliedTo: 'User Input', detection: 'Semantic: Physical addresses', action: 'Block', topic: 'Physical mailing addresses and locations', examples: 'I live at 123 Main Street, Springfield IL 62701\nShip to 456 Oak Ave, Apt 2B\nMy address is 789 Pine Rd', threshold: '0.8', inputAction: 'block', outputAction: '', blockMsg: 'Please do not include physical addresses in your request.' },
+      { name: 'Address (Output)', type: 'Semantic', appliedTo: 'AI Response', detection: 'Semantic: Physical addresses', action: 'Mask', topic: 'Physical mailing addresses and locations', examples: 'The office is located at 123 Main Street\nShipping address: 456 Oak Ave', threshold: '0.8', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with [ADDRESS_REDACTED]' },
+      { name: 'Email (Input)', type: 'Regex', appliedTo: 'User Input', detection: 'Regex: Email addresses', action: 'Block', regex: '\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b', inputAction: 'block', outputAction: '', blockMsg: 'Please remove email addresses before submitting your request.' },
+      { name: 'Email (Output)', type: 'Regex', appliedTo: 'AI Response', detection: 'Regex: Email addresses', action: 'Mask', regex: '\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with [EMAIL_REDACTED]' },
+      { name: 'Credit Card (Input)', type: 'Regex', appliedTo: 'User Input', detection: 'Regex: Credit card numbers', action: 'Block', regex: '\\b(?:4\\d{3}|5[1-5]\\d{2}|3[47]\\d{2}|6(?:011|5\\d{2}))[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{1,4}\\b', inputAction: 'block', outputAction: '', blockMsg: 'Sensitive financial data detected. Please do not include credit card numbers.' },
+      { name: 'Credit Card (Output)', type: 'Regex', appliedTo: 'AI Response', detection: 'Regex: Credit card numbers', action: 'Mask', regex: '\\b(?:4\\d{3}|5[1-5]\\d{2}|3[47]\\d{2}|6(?:011|5\\d{2}))[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{1,4}\\b', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with ****-****-****-1234' },
+    ],
+    3: [
+      { name: 'Hate Speech & Harassment', type: 'Keyword', appliedTo: 'Both', detection: 'Keywords: Prohibited slur list', action: 'Block', keywords: '[Prohibited slur list]', inputAction: 'block', outputAction: 'block', blockMsg: 'This message was blocked because it contains language that violates our anti-harassment policy.' },
+      { name: 'Profanity Filter (Input)', type: 'Keyword', appliedTo: 'User Input', detection: 'Keywords: Expletive list', action: 'Block', keywords: '[Expletive list]', inputAction: 'block', outputAction: '', blockMsg: 'Please use professional language to continue using this tool.' },
+      { name: 'Profanity Filter (Output)', type: 'Keyword', appliedTo: 'AI Response', detection: 'Keywords: Expletive list', action: 'Mask', keywords: '[Expletive list]', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with ####' },
+      { name: 'Self-Harm & Violence', type: 'Keyword', appliedTo: 'User Input', detection: 'Keywords: bomb, kill, suicide, attack', action: 'Block', keywords: 'bomb\nkill\nsuicide\nattack', inputAction: 'block', outputAction: '', blockMsg: 'Security Alert: This request cannot be processed due to safety restrictions regarding violent content.' },
+    ],
+    4: [
+      { name: 'Internal Project Names', type: 'Keyword', appliedTo: 'AI Response', detection: 'Keywords: Project Apollo, Stealth Launch', action: 'Mask', keywords: 'Project Apollo\nStealth Launch', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with [INTERNAL_PROJECT]' },
+      { name: 'Prohibited Topics (Politics/Religion)', type: 'Keyword', appliedTo: 'User Input', detection: 'Keywords: election, democrat, republican, religion', action: 'Block', keywords: 'election\ndemocrat\nrepublican\nreligion', inputAction: 'block', outputAction: '', blockMsg: 'As an enterprise AI, I am not authorized to discuss political or religious topics.' },
+    ],
+    5: [
+      { name: 'Competitor Names', type: 'Keyword', appliedTo: 'AI Response', detection: 'Keywords: Competitor A, Competitor B', action: 'Mask', keywords: 'Competitor A\nCompetitor B', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with [MARKET_RIVAL]' },
+      { name: 'Competitor URLs', type: 'Regex', appliedTo: 'AI Response', detection: 'Regex: .*(competitor1|competitor2)\\.com.*', action: 'Block', regex: '.*(competitor1|competitor2)\\.com.*', inputAction: '', outputAction: 'block', blockMsg: 'I am unable to provide direct links to external competitor documentation.' },
+    ],
+    6: [
+      { name: 'Shell Injection', type: 'Keyword', appliedTo: 'User Input', detection: 'Keywords: sudo, rm -rf, chmod, bash', action: 'Block', keywords: 'sudo\nrm -rf\nchmod\nbash', inputAction: 'block', outputAction: '', blockMsg: 'System Security: Execution of system-level commands is prohibited.' },
+      { name: 'Script Injection', type: 'Regex', appliedTo: 'User Input', detection: 'Regex: <script>.*</script>', action: 'Block', regex: '<script>.*<\\/script>', inputAction: 'block', outputAction: '', blockMsg: 'Malicious Script Detected: Your input contains code that could compromise system security.' },
+    ],
+    7: [
+      { name: 'Financial Advice', type: 'Keyword', appliedTo: 'AI Response', detection: 'Keywords: buy stock, invest in, price target', action: 'Block', keywords: 'buy stock\ninvest in\nprice target', inputAction: '', outputAction: 'block', blockMsg: 'Legal Disclaimer: This AI is not a licensed financial advisor and cannot provide specific investment picks.' },
+      { name: 'Medical Diagnosis', type: 'Keyword', appliedTo: 'AI Response', detection: 'Keywords: diagnose, prescription, cure', action: 'Block', keywords: 'diagnose\nprescription\ncure', inputAction: '', outputAction: 'block', blockMsg: 'Regulatory Alert: For medical concerns, please consult a licensed healthcare professional.' },
+    ],
+    8: [
+      { name: 'API & Auth Keys', type: 'Regex', appliedTo: 'AI Response', detection: 'Regex: [A-Za-z0-9]{32,}', action: 'Mask', regex: '[A-Za-z0-9]{32,}', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with sk-live-************' },
+      { name: 'Internal Credentials', type: 'Keyword', appliedTo: 'AI Response', detection: 'Keywords: AdminPass, RootLogin, db_password', action: 'Mask', keywords: 'AdminPass\nRootLogin\ndb_password', inputAction: '', outputAction: 'mask', maskMethod: 'Replace with [CREDENTIALS_REMOVED]' },
+    ],
+  }
   const [showMvpFolderModal, setShowMvpFolderModal] = useState(false)
   const [editingMvpFolder, setEditingMvpFolder] = useState<number | null>(null)
   const [mvpFolderForm, setMvpFolderForm] = useState({ name: '', description: '' })
@@ -865,221 +921,162 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
     
     switch (currentSection) {
       case 'home':
-        const homeHeaderBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
-          <div className="h-full w-full" style={{ background: 'transparent' }}>
+          <div className="h-full w-full overflow-auto" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            <div className={`sticky top-0 z-10 ${homeHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
-              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">👋</span>
-                  <h1 className="text-2xl font-bold text-left mt-0 mb-0 text-black">
-                    Hello Alex
-                  </h1>
-                </div>
+            <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between" style={{ minHeight: '80px' }}>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">👋</span>
+                <HeadingField text="Hello Alex" size="LARGE" marginBelow="NONE" />
               </div>
+              <select className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-sm font-medium text-gray-700">
+                <option>Last 30 days</option>
+                <option>Last 7 days</option>
+                <option>Last 90 days</option>
+              </select>
             </div>
-            
-            <div className="mt-6 px-20">
-              {/* KPI Cards */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-blue-500 rounded-lg shadow-md overflow-hidden">
-                  <div className="p-6 bg-transparent opacity-100 border-0">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-lg p-3 flex items-center justify-center border border-white" style={{
-                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 100%)'
-                      }}>
-                        <Icon icon="DollarSign" size="MEDIUM" />
-                      </div>
+            <div className="container mx-auto px-6 py-6 max-w-7xl">
+
+              {/* KPI Summary */}
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                {[
+                  { label: 'Potential Monthly Savings', value: '$1,238', sub: 'across 5 recommendations' },
+                  { label: 'Skills Needing Attention', value: '2', sub: 'quality or cost issues' },
+                  { label: 'Guardrails Blocked', value: '111', sub: 'threats this month' },
+                  { label: 'Adoption Growth', value: '+22%', sub: 'vs. previous month' },
+                ].map((kpi, i) => (
+                  <div key={i} className="bg-white rounded-lg border border-gray-200 p-5">
+                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">{kpi.label}</div>
+                    <div className="text-2xl font-bold text-gray-900 mb-1">{kpi.value}</div>
+                    <div className="text-xs text-gray-500">{kpi.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Cost Optimization Alerts */}
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+                <div className="border-b border-gray-200 p-4 bg-gray-50">
+                  <HeadingField text="Cost Optimization" size="MEDIUM" marginBelow="NONE" />
+                </div>
+                <div className="divide-y divide-gray-200">
+                  {[
+                    { severity: 'high', title: 'Invoice Processing AI has high token usage', desc: 'Average 1,456 tokens per call — 2.3x higher than similar skills. Shortening the system prompt could reduce costs by ~$18/day.', saving: '$540/mo', action: 'Review Prompt' },
+                    { severity: 'high', title: 'Unused AI Skill detected', desc: 'Asset Tracking AI Skill has had 0 invocations in the last 14 days but is still consuming connected system resources.', saving: '$85/mo', action: 'Deactivate' },
+                    { severity: 'medium', title: 'Consider batching Document Review calls', desc: '68% of Document Review AI calls process single pages. Batching into multi-page requests could reduce invocations by 40%.', saving: '$290/mo', action: 'View Details' },
+                    { severity: 'medium', title: 'Model downgrade opportunity', desc: 'HR Onboarding AI uses a high-capability model but handles simple FAQ-style queries. A smaller model could handle 94% of these at 60% lower cost.', saving: '$197/mo', action: 'Compare Models' },
+                    { severity: 'low', title: 'Cache frequently repeated queries', desc: '23% of Customer Support AI calls are identical questions. Enabling response caching could save ~$4.20/day.', saving: '$126/mo', action: 'Enable Caching' },
+                  ].map((alert, i) => (
+                    <div key={i} className="p-5 flex items-start gap-4">
+                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${alert.severity === 'high' ? 'bg-red-500' : alert.severity === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'}`}></div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-normal text-left mt-0 mb-0 text-white">Cost</h3>
-                        <div className="flex items-center gap-3 mb-1">
-                          <div className="text-4xl font-bold text-white">$12,450</div>
-                          <div className="bg-blue-900 px-2 py-1 rounded-md flex items-center gap-1">
-                            <TrendingDown size={14} className="text-white" />
-                            <span className="text-white text-sm font-medium">8.2%</span>
-                          </div>
+                        <div className="font-semibold text-gray-900 mb-1">{alert.title}</div>
+                        <p className="text-sm text-gray-600 mb-2">{alert.desc}</p>
+                        <div className="flex items-center gap-3">
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Save {alert.saving}</span>
+                          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">{alert.action} →</button>
                         </div>
-                        <div className="text-white uppercase text-sm tracking-wider">Current Month</div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quality & Security */}
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="border-b border-gray-200 p-4 bg-gray-50">
+                    <HeadingField text="Quality Trends" size="MEDIUM" marginBelow="NONE" />
                   </div>
-                  <div className="relative">
-                    <svg className="w-full h-16" viewBox="0 0 200 60" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="costGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
-                          <stop offset="100%" stopColor="rgba(255,255,255,0.2)" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M0,45 C20,38 30,32 50,30 C70,28 80,22 100,20 C120,18 130,16 150,18 C170,20 180,8 200,5" 
-                            fill="none" stroke="white" strokeWidth="2" />
-                      <path d="M0,45 C20,38 30,32 50,30 C70,28 80,22 100,20 C120,18 130,16 150,18 C170,20 180,8 200,5 L200,60 L0,60 Z" 
-                            fill="url(#costGradient)" />
-                    </svg>
+                  <div className="p-5 space-y-4">
+                    {[
+                      { label: 'Guardrail trigger rate trending down', detail: 'PII detection triggers dropped 34% this month — prompt improvements are working.', trend: 'positive' },
+                      { label: 'Hallucination flags increasing for Tax Calculator', detail: '12 flagged responses this week vs. 3 last week. Knowledge base may need updating.', trend: 'negative' },
+                      { label: 'Customer Support accuracy at all-time high', detail: '96.2% accuracy over the last 7 days, up from 91.8% after prompt tuning.', trend: 'positive' },
+                    ].map((insight, i) => (
+                      <div key={i} className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${insight.trend === 'positive' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                          <span className="text-xs font-bold">{insight.trend === 'positive' ? '↑' : '↓'}</span>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{insight.label}</div>
+                          <div className="text-xs text-gray-500 mt-1">{insight.detail}</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                
-                <div className="bg-orange-500 rounded-lg shadow-md overflow-hidden">
-                  <div className="p-6 bg-transparent opacity-100 border-0">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-lg p-3 flex items-center justify-center border border-white" style={{
-                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 100%)'
-                      }}>
-                        <Icon icon="Shield" size="MEDIUM" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-normal text-left mt-0 mb-0 text-white">Guardrail Hits</h3>
-                        <div className="flex items-center gap-3 mb-1">
-                          <div className="text-4xl font-bold text-white">247</div>
-                          <div className="bg-orange-800 px-2 py-1 rounded-md flex items-center gap-1">
-                            <TrendingDown size={14} className="text-white" />
-                            <span className="text-white text-sm font-medium">12.5%</span>
-                          </div>
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="border-b border-gray-200 p-4 bg-gray-50">
+                    <HeadingField text="Security & Compliance" size="MEDIUM" marginBelow="NONE" />
+                  </div>
+                  <div className="p-5 space-y-4">
+                    {[
+                      { label: '42 PII exposure attempts blocked this week', detail: 'All caught by input guardrails. Top source: Customer Support AI (28 attempts).', trend: 'positive' },
+                      { label: '19 prompt injection attempts detected', detail: 'Up 15% from last week. Consider tightening injection detection sensitivity.', trend: 'negative' },
+                      { label: 'All AI skills compliant with data retention policy', detail: 'No logs older than 90 days found. Auto-purge is functioning correctly.', trend: 'positive' },
+                    ].map((insight, i) => (
+                      <div key={i} className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${insight.trend === 'positive' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                          <span className="text-xs font-bold">{insight.trend === 'positive' ? '✓' : '!'}</span>
                         </div>
-                        <div className="text-white uppercase text-sm tracking-wider">Last 24 Hours</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <svg className="w-full h-16" viewBox="0 0 200 60" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="guardrailGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
-                          <stop offset="100%" stopColor="rgba(255,255,255,0.2)" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M0,35 C25,28 35,22 50,20 C65,18 75,12 100,15 C125,18 135,28 150,30 C175,32 185,28 200,25" 
-                            fill="none" stroke="white" strokeWidth="2" />
-                      <path d="M0,35 C25,28 35,22 50,20 C65,18 75,12 100,15 C125,18 135,28 150,30 C175,32 185,28 200,25 L200,60 L0,60 Z" 
-                            fill="url(#guardrailGradient)" />
-                    </svg>
-                  </div>
-                </div>
-                
-                <div className="bg-teal-500 rounded-lg shadow-md overflow-hidden">
-                  <div className="p-6 bg-transparent opacity-100 border-0">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-lg p-3 flex items-center justify-center border border-white" style={{
-                        background: 'linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 100%)'
-                      }}>
-                        <Icon icon="FileText" size="MEDIUM" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-normal text-left mt-0 mb-0 text-white">Requirements</h3>
-                        <div className="flex items-center gap-3 mb-1">
-                          <div className="text-4xl font-bold text-white">18</div>
-                          <div className="bg-teal-900 px-2 py-1 rounded-md flex items-center gap-1">
-                            <TrendingDown size={14} className="text-white" />
-                            <span className="text-white text-sm font-medium">3.1%</span>
-                          </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{insight.label}</div>
+                          <div className="text-xs text-gray-500 mt-1">{insight.detail}</div>
                         </div>
-                        <div className="text-white uppercase text-sm tracking-wider">Active</div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <svg className="w-full h-16" viewBox="0 0 200 60" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="requirementsGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
-                          <stop offset="100%" stopColor="rgba(255,255,255,0.2)" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M0,40 C25,37 35,34 50,32 C70,30 80,27 100,25 C120,23 130,21 150,20 C170,19 180,17 200,15" 
-                            fill="none" stroke="white" strokeWidth="2" />
-                      <path d="M0,40 C25,37 35,34 50,32 C70,30 80,27 100,25 C120,23 130,21 150,20 C170,19 180,17 200,15 L200,60 L0,60 Z" 
-                            fill="url(#requirementsGradient)" />
-                    </svg>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* Navigation Cards */}
-              <div className="space-y-4">
-                <div 
-                  className="cursor-pointer hover:shadow-lg transition-shadow bg-white rounded-lg shadow-md p-6 relative group"
-                  onClick={() => onSectionChange?.('protect')}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="rounded-lg p-3 flex items-center justify-center border" style={{
-                      background: 'linear-gradient(to bottom, rgba(34, 197, 94, 0.6) 0%, rgba(34, 197, 94, 0.1) 100%)',
-                      borderColor: '#22c55e'
-                    }}>
-                      <Icon icon="Shield" size="MEDIUM" />
-                    </div>
-                    <div className="flex-1">
-                      <HeadingField text="Protect" size="MEDIUM" marginBelow="LESS" />
-                      <p className="text-gray-700">Safeguard your AI systems with comprehensive security measures and guardrails to prevent unauthorized access and misuse.</p>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                      <button className="bg-white text-black border border-gray-300 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium">
-                        Go to Protect
-                        <ArrowRight size={16} />
-                      </button>
-                    </div>
-                  </div>
+              {/* Usage & Adoption */}
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="border-b border-gray-200 p-4 bg-gray-50">
+                  <HeadingField text="Usage & Adoption" size="MEDIUM" marginBelow="NONE" />
                 </div>
-
-                <div 
-                  className="cursor-pointer hover:shadow-lg transition-shadow bg-white rounded-lg shadow-md p-6 relative group"
-                  onClick={() => onSectionChange?.('monitor')}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="rounded-lg p-3 flex items-center justify-center border" style={{
-                      background: 'linear-gradient(to bottom, rgba(168, 85, 247, 0.6) 0%, rgba(168, 85, 247, 0.1) 100%)',
-                      borderColor: '#a855f7'
-                    }}>
-                      <Icon icon="CheckCircle" size="MEDIUM" />
-                    </div>
-                    <div className="flex-1">
-                      <HeadingField text="Evaluate" size="MEDIUM" marginBelow="LESS" />
-                      <p className="text-gray-700">Assess and measure AI model performance, accuracy, and compliance with established standards and requirements.</p>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                      <button className="bg-white text-black border border-gray-300 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium">
-                        Go to Evaluate
-                        <ArrowRight size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div 
-                  className="cursor-pointer hover:shadow-lg transition-shadow bg-white rounded-lg shadow-md p-6 relative group"
-                  onClick={() => onSectionChange?.('observe')}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="rounded-lg p-3 flex items-center justify-center border" style={{
-                      background: 'linear-gradient(to bottom, rgba(239, 68, 68, 0.6) 0%, rgba(239, 68, 68, 0.1) 100%)',
-                      borderColor: '#ef4444'
-                    }}>
-                      <Icon icon="Eye" size="MEDIUM" />
-                    </div>
-                    <div className="flex-1">
-                      <HeadingField text="Observe" size="MEDIUM" marginBelow="LESS" />
-                      <p className="text-gray-700">Monitor AI system behavior in real-time, track metrics, and gain insights into usage patterns and anomalies.</p>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                      <button className="bg-white text-black border border-gray-300 px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium">
-                        Go to Observe
-                        <ArrowRight size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">AI Skill</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Requests (30d)</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Unique Users</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Avg Accuracy</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Cost (30d)</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Cost/Request</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {[
+                      { name: 'Customer Support AI', requests: '64,680', users: 142, accuracy: '96.2%', cost: '$4,269', perReq: '$0.066', trend: '+18%', trendUp: true },
+                      { name: 'Invoice Processing AI', requests: '29,610', users: 38, accuracy: '91.4%', cost: '$2,172', perReq: '$0.073', trend: '+5%', trendUp: true },
+                      { name: 'HR Onboarding AI', requests: '20,970', users: 89, accuracy: '94.8%', cost: '$984', perReq: '$0.047', trend: '+32%', trendUp: true },
+                      { name: 'Document Review AI', requests: '8,430', users: 24, accuracy: '93.1%', cost: '$612', perReq: '$0.073', trend: '-8%', trendUp: false },
+                      { name: 'Tax Calculator AI', requests: '5,210', users: 15, accuracy: '89.2%', cost: '$398', perReq: '$0.076', trend: '-3%', trendUp: false },
+                    ].map((skill, i) => (
+                      <tr key={i} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{skill.name}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{skill.requests}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{skill.users}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{skill.accuracy}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{skill.cost}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{skill.perReq}</td>
+                        <td className="px-6 py-4"><span className={`text-sm font-medium ${skill.trendUp ? 'text-green-600' : 'text-red-500'}`}>{skill.trend}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         )
       
       case 'protect':
-        const headerBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            {(selectedGuardrail === null && (appMode !== 'revised-v2' || !selectedRevisedGuardrail) && (appMode !== 'revised-v3' || !selectedV3IndividualGuardrail) && (appMode !== 'revised-v4' || !selectedV3IndividualGuardrail) && (appMode !== 'mvp' || !selectedV3IndividualGuardrail)) && (
-            <div className={`sticky top-0 z-10 ${headerBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${protectScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
+            {(selectedGuardrail === null && (appMode !== 'revised-v2' || !selectedRevisedGuardrail) && (appMode !== 'revised-v3' || !selectedV3IndividualGuardrail) && (appMode !== 'revised-v4' || !selectedV3IndividualGuardrail) && (appMode !== 'mvp' || !selectedV3IndividualGuardrail) && (appMode !== 'future' || !selectedV3IndividualGuardrail)) && (
+            <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between" style={{ minHeight: '80px' }}>
               {appMode === 'v2' && (
                 <div className="relative flex gap-8 mb-4 border-b border-white/30">
                   <button
@@ -1124,7 +1121,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   </button>
                 </div>
               )}
-              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
+              <div className="flex justify-between items-center w-full">
                 {appMode === 'revised-v3' && !selectedV3GuardrailType ? (
                   <>
                     <div>
@@ -1132,7 +1129,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <p className="text-sm text-gray-600">Configure AI safety measures to protect your applications</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
+                      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-1">
                         <select 
                           value={v3GroupingMode}
                           onChange={(e) => setV3GroupingMode(e.target.value as 'input-output' | 'stakeholder' | 'risk-domain')}
@@ -1160,6 +1157,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 ) : (
                   <HeadingField text={
                     appMode === 'mvp' && selectedMvpFolder 
+                      ? mvpFolders.find(f => f.id === selectedMvpFolder)?.name || "Guardrail Configuration"
+                      : appMode === 'future' && selectedMvpFolder
                       ? mvpFolders.find(f => f.id === selectedMvpFolder)?.name || "Guardrail Configuration"
                       : appMode === 'revised-v3' && selectedV3GuardrailType && !selectedV3IndividualGuardrail 
                       ? `${selectedV3GuardrailType} Guardrails` 
@@ -1191,7 +1190,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </button>
                     ))}
                   </div>
-                ) : (appMode === 'v1' || appMode === 'mvp' || protectTab === 'configuration') && !(appMode === 'revised-v3' && !selectedV3GuardrailType) ? (
+                ) : (appMode === 'v1' || appMode === 'mvp' || appMode === 'future' || protectTab === 'configuration') && !(appMode === 'revised-v3' && !selectedV3GuardrailType) ? (
                   <ButtonWidget
                     label="+ Add Guardrails"
                     style="SOLID"
@@ -1218,7 +1217,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         <CardLayout padding="MORE" showShadow={true}>
                           <div className="h-full flex items-center gap-4">
                           <div className="flex items-center gap-3 flex-1">
-                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white flex-shrink-0">
                               <Icon icon="Shield" size="MEDIUM" />
                             </div>
                             <div className="flex-1">
@@ -1266,7 +1265,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         <CardLayout padding="MORE" showShadow={true}>
                           <div className="h-full flex items-center gap-4">
                           <div className="flex items-center gap-3 flex-1">
-                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white flex-shrink-0">
                               <Icon icon="TrendingUp" size="MEDIUM" />
                             </div>
                             <div className="flex-1">
@@ -1314,7 +1313,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         <CardLayout padding="NONE" showShadow={true}>
                         <div className="p-4">
                         <div className="flex items-center gap-3">
-                        <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                        <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white flex-shrink-0">
                           <Icon icon="TrendingUp" size="MEDIUM" />
                         </div>
                         <div className="flex-1">
@@ -1484,7 +1483,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           {/* Popover */}
                           {chartHover && (
                             <div 
-                              className="absolute bg-white/90 backdrop-blur-lg text-black px-3 py-2 rounded-lg shadow-lg text-sm z-50 pointer-events-none border border-white/50 h-8 flex items-center"
+                              className="absolute bg-white text-black px-3 py-2 rounded-lg border border-gray-200 text-sm z-50 pointer-events-none h-8 flex items-center"
                               style={{
                                 left: `${chartHover.x}%`,
                                 top: `${(chartHover.yCoord / 50) * 100}%`,
@@ -1502,7 +1501,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         {/* Top Violators */}
                         <CardLayout padding="MORE" showShadow={true}>
                           <div className="flex items-center gap-3 mb-4">
-                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white flex-shrink-0">
                               <Icon icon="Box" size="MEDIUM" />
                             </div>
                             <div className="flex-1">
@@ -1542,7 +1541,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
 
                           <div className="mt-6">
                           <div className="flex items-center gap-3 mb-4">
-                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white flex-shrink-0">
                               <Icon icon="Shield" size="MEDIUM" />
                             </div>
                             <div className="flex-1">
@@ -1552,7 +1551,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#F2B3D1'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white" style={{backgroundColor: '#F2B3D1'}}>
                                   <Icon icon="Database" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Data Protection</span>
@@ -1561,7 +1560,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#D4B5E8'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white" style={{backgroundColor: '#D4B5E8'}}>
                                   <Icon icon="AlertTriangle" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Harmful Content</span>
@@ -1570,7 +1569,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#9DD2E8'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white" style={{backgroundColor: '#9DD2E8'}}>
                                   <Icon icon="MessageSquareX" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Profanity</span>
@@ -1579,7 +1578,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#9DDAC7'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white" style={{backgroundColor: '#9DDAC7'}}>
                                   <Icon icon="CheckCircle" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Compliance</span>
@@ -1588,7 +1587,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                             <div className="flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: '#9BB1D6'}}>
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white" style={{backgroundColor: '#9BB1D6'}}>
                                   <Icon icon="Lock" size="MEDIUM" />
                                 </div>
                                 <span className="text-sm text-gray-700">Access Control</span>
@@ -1603,7 +1602,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     </div>
             ) : (
               // V1/Future: only configuration, V2: show based on selected tab, Revised: show new guardrail config
-              (appMode === 'v1' || appMode === 'future' || (protectTab === 'configuration' && appMode === 'v2')) ? (
+              (appMode === 'v1' || (protectTab === 'configuration' && appMode === 'v2')) ? (
                 appMode === 'v2' && protectTab === 'configuration' ? (
                   // Show revised v2 content for V2 configuration mode
                   selectedRevisedGuardrail ? (
@@ -2129,7 +2128,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                   onClick={() => setSelectedRevisedGuardrail(guardrail.name)}
                                 >
                                   <div className="flex items-start gap-4">
-                                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-${guardrail.color}-100`}>
+                                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg bg-${guardrail.color}-100`}>
                                       <div className={`w-6 h-6 rounded-full bg-${guardrail.color}-500`}></div>
                                     </div>
                                     <div className="flex-1">
@@ -2163,7 +2162,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                   onClick={() => setSelectedRevisedGuardrail(guardrail.name)}
                                 >
                                   <div className="flex items-start gap-4">
-                                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-${guardrail.color}-100`}>
+                                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg bg-${guardrail.color}-100`}>
                                       <div className={`w-6 h-6 rounded-full bg-${guardrail.color}-500`}></div>
                                     </div>
                                     <div className="flex-1">
@@ -2249,7 +2248,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 </div>
                                 <div className="flex items-start gap-3 pr-20">
                                   <div title={guardrail.type}>
-                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white" style={{backgroundColor: typeStamp.bg}}>
+                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white" style={{backgroundColor: typeStamp.bg}}>
                                       <Icon icon={typeStamp.icon} size="MEDIUM" />
                                     </div>
                                   </div>
@@ -2282,7 +2281,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           onClick={() => setSelectedRevisedGuardrail('Prompt Injection & Jailbreak Detection')}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100">
                               <div className="w-6 h-6 rounded-full bg-blue-500"></div>
                             </div>
                             <span className="font-medium text-gray-900">Prompt Injection & Jailbreak Detection</span>
@@ -2379,7 +2378,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           }}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-green-100">
                               <div className="w-6 h-6 rounded-full bg-green-500"></div>
                             </div>
                             <span className="font-medium text-gray-900">PII (Personally Identifiable Information) Scrubbing</span>
@@ -2508,7 +2507,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           }}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-yellow-100">
                               <div className="w-6 h-6 rounded-full bg-yellow-500"></div>
                             </div>
                             <span className="font-medium text-gray-900">Topic Filtering</span>
@@ -2548,7 +2547,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           }}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-red-100">
                               <div className="w-6 h-6 rounded-full bg-red-500"></div>
                             </div>
                             <span className="font-medium text-gray-900">Competitor Filtering</span>
@@ -2588,7 +2587,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           }}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100">
                               <div className="w-6 h-6 rounded-full bg-purple-500"></div>
                             </div>
                             <span className="font-medium text-gray-900">Profanity Filtering</span>
@@ -2644,7 +2643,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           }}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-orange-100">
                               <div className="w-6 h-6 rounded-full bg-orange-500"></div>
                             </div>
                             <span className="font-medium text-gray-900">Hallucination & Grounding Checks (RAG)</span>
@@ -2689,7 +2688,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           }}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-pink-100">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-pink-100">
                               <div className="w-6 h-6 rounded-full bg-pink-500"></div>
                             </div>
                             <span className="font-medium text-gray-900">Toxicity & Sentiment Enforcement</span>
@@ -2741,7 +2740,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           }}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-teal-100">
                               <div className="w-6 h-6 rounded-full bg-teal-500"></div>
                             </div>
                             <span className="font-medium text-gray-900">Structural & Format Validation</span>
@@ -2783,7 +2782,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
               selectedRevisedGuardrail ? (
                 <div className="flex flex-col h-screen">
                   {/* Header - Sticky */}
-                  <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex-shrink-0">
+                  <div className="bg-white border-b border-gray-200 px-8 py-4">
                     <button 
                       onClick={() => setSelectedRevisedGuardrail(null)}
                       className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-2 cursor-pointer"
@@ -2864,7 +2863,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         )}
                         {selectedRevisedGuardrail === 'Prompt Injection & Jailbreak Detection' && (
                           <div className="space-y-4">
-                            <div className="bg-white border border-gray-200 rounded-xl p-4">
+                            <div className="bg-white border border-gray-200 rounded-lg p-4">
                               <h3 className="text-base font-semibold text-gray-900 mb-1">Detection Method</h3>
                               <p className="text-sm text-gray-600 mb-4">How would you like to detect the custom content?</p>
                               
@@ -3058,7 +3057,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
 
                     {/* Right Pane - Test */}
                     <div className="w-1/2 flex flex-col h-full">
-                      <div className="p-8 border-b border-gray-200 bg-white flex-shrink-0 sticky top-0 z-10">
+                      <div className="px-8 py-4 border-b border-gray-200 bg-white">
                         <HeadingField text="Test Guardrail" size="MEDIUM" marginBelow="NONE" />
                       </div>
                       
@@ -3100,7 +3099,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             onClick={() => setSelectedRevisedGuardrail('Prompt Injection & Jailbreak Detection')}
                           >
                             <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 border-2 border-gray-300">
                                 <Icon icon="Shield" size="MEDIUM" color="blue" />
                               </div>
                               <div className="flex-1">
@@ -3116,7 +3115,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             onClick={() => setSelectedRevisedGuardrail('PII Scrubbing')}
                           >
                             <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-green-100 border-2 border-gray-300">
                                 <Icon icon="Eye" size="MEDIUM" color="green" />
                               </div>
                               <div className="flex-1">
@@ -3132,7 +3131,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             onClick={() => setSelectedRevisedGuardrail('Topic Filtering')}
                           >
                             <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100 border-2 border-gray-300">
                                 <Icon icon="MessageSquare" size="MEDIUM" color="purple" />
                               </div>
                               <div className="flex-1">
@@ -3148,7 +3147,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             onClick={() => setSelectedRevisedGuardrail('Competitor Filtering')}
                           >
                             <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-orange-100 border-2 border-gray-300">
                                 <Icon icon="Ban" size="MEDIUM" color="orange" />
                               </div>
                               <div className="flex-1">
@@ -3164,7 +3163,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             onClick={() => setSelectedRevisedGuardrail('Profanity Filtering')}
                           >
                             <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 border-2 border-gray-300">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-red-100 border-2 border-gray-300">
                                 <Icon icon="MessageSquareX" size="MEDIUM" color="red" />
                               </div>
                               <div className="flex-1">
@@ -3189,7 +3188,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             onClick={() => setSelectedRevisedGuardrail('Hallucination & Grounding Checks (RAG)')}
                           >
                             <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-100 border-2 border-gray-300">
                                 <Icon icon="CheckCircle" size="MEDIUM" color="indigo" />
                               </div>
                               <div className="flex-1">
@@ -3205,7 +3204,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             onClick={() => setSelectedRevisedGuardrail('Toxicity & Sentiment Enforcement')}
                           >
                             <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-pink-100 border-2 border-gray-300">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-pink-100 border-2 border-gray-300">
                                 <Icon icon="Heart" size="MEDIUM" color="pink" />
                               </div>
                               <div className="flex-1">
@@ -3221,7 +3220,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             onClick={() => setSelectedRevisedGuardrail('Structural & Format Validation')}
                           >
                             <div className="flex items-start gap-4">
-                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
+                              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-teal-100 border-2 border-gray-300">
                                 <Icon icon="FileText" size="MEDIUM" color="teal" />
                               </div>
                               <div className="flex-1">
@@ -3236,11 +3235,11 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   </div>
                 </div>
               )
-            ) : (appMode === 'revised-v3' || appMode === 'revised-v4' || appMode === 'mvp') ? (
-              selectedV3IndividualGuardrail ? (
+            ) : (appMode === 'revised-v3' || appMode === 'revised-v4' || appMode === 'mvp' || appMode === 'future') ? (
+              (appMode !== 'future' && selectedV3IndividualGuardrail) ? (
                 <div className="flex flex-col h-screen">
                   {/* Header - Sticky */}
-                  <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex-shrink-0">
+                  <div className="bg-white border-b border-gray-200 px-8 py-4">
                     <button 
                       onClick={() => setSelectedV3IndividualGuardrail(null)}
                       className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-2 cursor-pointer"
@@ -4564,7 +4563,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
 
                     {/* Right Pane - Test */}
                     <div className="w-1/2 flex flex-col h-full">
-                      <div className="p-8 border-b border-gray-200 bg-white flex-shrink-0 sticky top-0 z-10">
+                      <div className="px-8 py-4 border-b border-gray-200 bg-white">
                         <HeadingField text="Test Guardrail" size="MEDIUM" marginBelow="NONE" />
                         <p className="text-sm text-gray-600 mt-1">
                           Test your guardrail configuration with sample inputs.
@@ -4603,13 +4602,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -4728,13 +4727,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -4855,13 +4854,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -4941,13 +4940,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -5027,13 +5026,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -5112,13 +5111,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -5197,13 +5196,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -5282,13 +5281,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -5367,13 +5366,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -5452,13 +5451,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -5537,13 +5536,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enabled</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guardrail Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applications</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appian Objects</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Enabled</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Appian Objects</th>
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -5620,20 +5619,20 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   </div>
                 </div>
               ) : appMode !== 'revised-v4' ? (
-                appMode === 'mvp' && !selectedMvpFolder ? (
-                  // MVP Folder List View
-                  <div key="mvp-folders" className="mt-6 px-20" style={{ background: 'transparent' }}>
+                (appMode === 'mvp' || appMode === 'future') && !selectedMvpFolder ? (
+                  // MVP/Future Folder List View
+                  <div key="mvp-folders" className="container mx-auto px-6 py-6 max-w-7xl" style={{ background: 'transparent' }}>
                     <div className="space-y-3">
                       {mvpFolders.map((folder) => (
                         <div key={folder.id} className="relative">
-                          <CardLayout padding="MORE" showShadow={true}>
+                          <div className="bg-white rounded-lg border border-gray-200 p-6">
                             <div className="flex items-center gap-4">
                               <div 
                                 className="flex-1 flex items-center gap-4 cursor-pointer"
                                 onClick={() => setSelectedMvpFolder(folder.id)}
                               >
-                                <div className={`w-12 h-12 bg-${folder.color}-100 rounded-lg flex items-center justify-center flex-shrink-0`}>
-                                  <Icon icon={folder.icon as any} size="MEDIUM" color={folder.color} />
+                                <div className={`w-12 h-12 bg-${folder.color}-500 rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                  <Icon icon={folder.icon as any} size="MEDIUM" color="white" />
                                 </div>
                                 <div className="flex-1">
                                   <h3 className="font-semibold text-lg text-gray-900">{folder.name}</h3>
@@ -5657,7 +5656,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 </button>
                               </div>
                             </div>
-                          </CardLayout>
+                          </div>
                           {/* Dropdown menu positioned outside card */}
                           <div 
                             id={`folder-menu-${folder.id}`}
@@ -5771,9 +5770,99 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       </div>
                     )}
                   </div>
-                ) : appMode === 'mvp' && selectedMvpFolder && !selectedV3IndividualGuardrail ? (
-                  // MVP Folder Contents - Show revised-v4 style table
-                  <div key="mvp-folder-table" className="mt-6 px-48" style={{ background: 'transparent' }}>
+                ) : (appMode === 'mvp' || appMode === 'future') && (selectedMvpFolder || selectedV3GuardrailType) && selectedV3IndividualGuardrail ? (
+                  <div key="future-guardrail-config" className="h-full w-full flex flex-col" style={{ background: 'transparent' }}>
+                    {/* Header */}
+                    <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between" style={{ minHeight: '80px' }}>
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => setSelectedV3IndividualGuardrail(null)} className="p-1 rounded-md hover:bg-gray-100 text-gray-500"><ChevronLeft size={20} /></button>
+                        <HeadingField text={selectedV3IndividualGuardrail || ''} size="LARGE" marginBelow="NONE" />
+                      </div>
+                      <div className="flex gap-3">
+                        <ButtonWidget label="Cancel" style="OUTLINE" color="SECONDARY" onClick={() => setSelectedV3IndividualGuardrail(null)} />
+                        <ButtonWidget label="Save Guardrail" style="SOLID" color="ACCENT" onClick={() => setSelectedV3IndividualGuardrail(null)} />
+                      </div>
+                    </div>
+                    {/* Body: Config + Test Panel */}
+                    <div className="flex-1 flex min-h-0">
+                      {/* Left: Configuration - scrollable */}
+                      <div className="flex-1 overflow-auto px-8 py-6">
+                        <div className="max-w-3xl space-y-4">
+                          {/* Detection Method - stacked, left aligned */}
+                          <div className="bg-white rounded-lg border border-gray-200 p-6">
+                            <h3 className="text-sm font-bold text-gray-900 mb-4">Detection Method</h3>
+                            <div className="space-y-2">
+                              {([{ id: 'keyword', label: 'Keyword', desc: 'Match specific words or phrases', icon: 'Type' }, { id: 'regex', label: 'Regex', desc: 'Pattern-based matching', icon: 'Code' }, { id: 'semantic', label: 'Semantic', desc: 'AI-powered meaning detection', icon: 'Brain' }, { id: 'expression', label: 'Appian Expression', desc: 'Use an existing expression rule', icon: 'Zap' }] as const).map(m => (
+                                <div key={m.id} onClick={() => setGrDetection(m.id)} className={`p-4 border-2 rounded-lg cursor-pointer transition-all flex items-center gap-3 ${grDetection === m.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                                  <Icon icon={m.icon} size="SMALL" />
+                                  <div><div className="text-sm font-semibold">{m.label}</div><div className="text-xs text-gray-500">{m.desc}</div></div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          {/* Detection config */}
+                          {grDetection === 'keyword' && (<div className="bg-white rounded-lg border border-gray-200 p-6"><h3 className="text-sm font-bold text-gray-900 mb-3">Keywords</h3><textarea value={grKeywords} onChange={e => setGrKeywords(e.target.value)} placeholder="Enter keywords, one per line..." className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none text-sm font-mono" /><p className="text-xs text-gray-500 mt-2">Each line is a separate keyword or phrase.</p></div>)}
+                          {grDetection === 'regex' && (<div className="bg-white rounded-lg border border-gray-200 p-6"><h3 className="text-sm font-bold text-gray-900 mb-3">Regex Pattern</h3><div className="flex gap-2 mb-2"><input value={grRegex} onChange={e => { setGrRegex(e.target.value); try { new RegExp(e.target.value); setGrRegexValid(true) } catch { setGrRegexValid(false) } }} placeholder={'e.g., \\b\\d{3}-\\d{2}-\\d{4}\\b'} className="flex-1 p-3 border border-gray-300 rounded-md text-sm font-mono" /><button onClick={() => setGrShowAiHelp(true)} className="px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-100 flex items-center gap-1.5"><Icon icon="Sparkles" size="SMALL" /> AI Help</button></div>{grRegexValid !== null && <div className={`text-xs font-medium mb-2 ${grRegexValid ? 'text-green-600' : 'text-red-500'}`}>{grRegexValid ? '✓ Valid pattern' : '✗ Invalid pattern'}</div>}{grRegex && grRegexValid && <div className="mt-2 p-3 bg-gray-50 rounded-md"><div className="text-xs font-medium text-gray-600 mb-1">Preview — example match</div><code className="text-sm text-blue-600 font-mono">{
+                            grRegex.includes('\\d{3}-\\d{2}-\\d{4}') ? '123-45-6789' :
+                            grRegex.includes('\\d{3}[-.\\s]?\\d{4}') ? '(555) 123-4567' :
+                            grRegex.includes('@[A-Za-z0-9') ? 'user@example.com' :
+                            grRegex.includes('4\\d{3}|5[1-5]') ? '4111-1111-1111-1111' :
+                            grRegex.includes('script') ? '<script>alert("xss")</script>' :
+                            grRegex.includes('competitor') ? 'www.competitor1.com/docs' :
+                            grRegex.includes('[A-Za-z0-9]{32') ? 'sk-live-abc123def456ghi789jkl012mno345' :
+                            'sample-match'
+                          }</code></div>}</div>)}
+                          {grDetection === 'semantic' && (<><div className="bg-white rounded-lg border border-gray-200 p-6"><h3 className="text-sm font-bold text-gray-900 mb-3">Topic & Examples</h3><label className="block text-sm font-medium mb-2">Topic</label><input value={grTopic} onChange={e => setGrTopic(e.target.value)} placeholder="e.g., Personal health information" className="w-full p-3 border border-gray-300 rounded-md text-sm mb-4" /><label className="block text-sm font-medium mb-2">Examples</label><textarea value={grExamples} onChange={e => setGrExamples(e.target.value)} placeholder="Example phrases, one per line..." className="w-full h-24 p-3 border border-gray-300 rounded-md resize-none text-sm" /></div><div className="bg-white rounded-lg border border-gray-200 p-6"><h3 className="text-sm font-bold text-gray-900 mb-3">Confidence Threshold: <span className="text-blue-600">{grThreshold}</span></h3><input type="range" min="0.1" max="1" step="0.05" value={grThreshold} onChange={e => setGrThreshold(e.target.value)} className="w-full" /><div className="flex justify-between text-xs text-gray-400 mt-1"><span>Lenient (0.1)</span><span>Balanced (0.5)</span><span>Strict (1.0)</span></div></div></>)}
+                          {grDetection === 'expression' && (<div className="bg-white rounded-lg border border-gray-200 p-6"><h3 className="text-sm font-bold text-gray-900 mb-3">Appian Expression Rule</h3><select value={grExpression} onChange={e => setGrExpression(e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm bg-white appearance-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath fill=%27%236b7280%27 d=%27M2 4l4 4 4-4%27/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}><option value="">Choose an expression rule...</option><option value="rule!validatePII">rule!validatePII</option><option value="rule!checkToxicity">rule!checkToxicity</option><option value="rule!contentFilter">rule!contentFilter</option><option value="rule!promptInjectionCheck">rule!promptInjectionCheck</option></select></div>)}
+                          {/* Actions - tabbed, stacked, left aligned */}
+                          <div className="bg-white rounded-lg border border-gray-200 p-6">
+                            <h3 className="text-sm font-bold text-gray-900 mb-4">Actions</h3>
+                            <div className="flex gap-4 border-b border-gray-200 mb-4">
+                              <button onClick={() => setGrActionTab('input')} className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${grActionTab === 'input' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>User Input</button>
+                              <button onClick={() => setGrActionTab('output')} className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${grActionTab === 'output' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>LLM Output</button>
+                            </div>
+                            {(() => { const action = grActionTab === 'input' ? grInputAction : grOutputAction; const setAction = grActionTab === 'input' ? setGrInputAction : setGrOutputAction; return (
+                              <div className="space-y-2">
+                                {([{ id: 'block', label: 'Block', desc: 'Stop the request with a message', icon: 'Ban' }, { id: 'warn', label: 'Warn', desc: 'Show a warning before proceeding', icon: 'AlertTriangle' }, { id: 'allow', label: 'Allow', desc: 'Allow with a specified tone', icon: 'Check' }, { id: 'mask', label: 'Mask', desc: 'Redact the matched content', icon: 'EyeOff' }] as const).map(a => (
+                                  <div key={a.id} onClick={() => setAction(a.id)} className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${action === a.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                                    <div className="flex items-center gap-3">
+                                      <Icon icon={a.icon} size="SMALL" />
+                                      <div className="flex-1"><div className="text-sm font-semibold">{a.label}</div><div className="text-xs text-gray-500">{a.desc}</div></div>
+                                    </div>
+                                    {action === a.id && a.id === 'block' && <textarea value={grBlockMsg} onChange={e => { e.stopPropagation(); setGrBlockMsg(e.target.value) }} onClick={e => e.stopPropagation()} placeholder="Block message shown to user..." className="w-full h-16 p-3 border border-gray-300 rounded-md resize-none text-sm mt-3" />}
+                                    {action === a.id && a.id === 'warn' && <textarea value={grWarnMsg} onChange={e => { e.stopPropagation(); setGrWarnMsg(e.target.value) }} onClick={e => e.stopPropagation()} placeholder="Warning message shown before proceeding..." className="w-full h-16 p-3 border border-gray-300 rounded-md resize-none text-sm mt-3" />}
+                                    {action === a.id && a.id === 'allow' && <input value={grAllowTone} onChange={e => { e.stopPropagation(); setGrAllowTone(e.target.value) }} onClick={e => e.stopPropagation()} placeholder="e.g., professional, empathetic, neutral" className="w-full p-3 border border-gray-300 rounded-md text-sm mt-3" />}
+                                    {action === a.id && a.id === 'mask' && <div className="mt-3" onClick={e => e.stopPropagation()}><select value={grMaskMethod} onChange={e => setGrMaskMethod(e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm bg-white appearance-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath fill=%27%236b7280%27 d=%27M2 4l4 4 4-4%27/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}><option value="">Select masking method...</option><option value="Replace with ***">Replace with ***</option><option value="Replace with [REDACTED]">Replace with [REDACTED]</option><option value="Hash value">Hash value</option><option value="Remove entirely">Remove entirely</option></select></div>}
+                                  </div>
+                                ))}
+                              </div>
+                            ) })()}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Right: Test Panel - fixed */}
+                      <div className="w-[360px] flex-shrink-0 border-l border-gray-200 bg-white p-6 overflow-auto">
+                        <h3 className="text-sm font-bold text-gray-900 mb-4">Test Guardrail</h3>
+                        <p className="text-xs text-gray-500 mb-4">Enter sample text to test how this guardrail responds.</p>
+                        <textarea placeholder="Type or paste sample input..." className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none text-sm mb-3" />
+                        <ButtonWidget label="Run Test" style="SOLID" color="ACCENT" size="SMALL" onClick={() => { setGrTestRan(true); setGrTestResult(Math.random() > 0.5 ? 'triggered' : 'not-triggered') }} />
+                        {grTestRan && grTestResult && (
+                          <div className={`mt-4 p-4 rounded-lg border ${grTestResult === 'triggered' ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                            <div className={`text-sm font-semibold ${grTestResult === 'triggered' ? 'text-green-700' : 'text-yellow-700'}`}>
+                              {grTestResult === 'triggered' ? '✓ Guardrail Triggered' : '⚠ Guardrail Not Triggered'}
+                            </div>
+                            <p className={`text-xs mt-1 ${grTestResult === 'triggered' ? 'text-green-600' : 'text-yellow-600'}`}>
+                              {grTestResult === 'triggered' ? 'The guardrail successfully detected the content and would apply the configured action.' : 'The guardrail did not detect matching content in the sample input.'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {grShowAiHelp && (<div className="fixed inset-0 bg-black/40 z-[200] flex items-center justify-center" onClick={() => setGrShowAiHelp(false)}><div className="bg-white rounded-2xl shadow-2xl w-[500px] p-6" onClick={e => e.stopPropagation()}><div className="flex items-center gap-2 mb-4"><Icon icon="Sparkles" size="SMALL" /><span className="text-base font-semibold">AI Regex Helper</span></div><p className="text-sm text-gray-500 mb-4">Describe what to match and I will generate a regex.</p><textarea value={grAiPrompt} onChange={e => setGrAiPrompt(e.target.value)} placeholder="e.g., SSNs, emails, credit cards" className="w-full h-24 p-3 border border-gray-300 rounded-md resize-none text-sm mb-3" /><button onClick={() => setGrAiResult(`(?i)\\b(${grAiPrompt.split(/[,\s]+/).filter(Boolean).join('|')})\\b`)} className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 mb-4">Generate</button>{grAiResult && <div className="bg-gray-50 rounded-lg p-4 mb-4"><div className="text-xs text-gray-500 mb-1">Pattern</div><code className="text-sm font-mono break-all">{grAiResult}</code></div>}<div className="flex gap-2 justify-end"><button onClick={() => setGrShowAiHelp(false)} className="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>{grAiResult && <button onClick={() => { setGrRegex(grAiResult); setGrRegexValid(true); setGrShowAiHelp(false) }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Use Pattern</button>}</div></div></div>)}
+                  </div>
+                ) : (appMode === 'mvp' || appMode === 'future') && selectedMvpFolder && !selectedV3IndividualGuardrail ? (
+                  // MVP/Future Folder Contents - Show revised-v4 style table
+                  <div key="mvp-folder-table" className="container mx-auto px-6 py-6 max-w-7xl" style={{ background: 'transparent' }}>
                     <button 
                       onClick={() => setSelectedMvpFolder(null)}
                       className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 cursor-pointer"
@@ -5785,43 +5874,34 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Guardrail Name
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Type
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Status
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Applied To
-                            </th>
-                            <th className="px-6 py-3"></th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Detection</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applied To</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Action</th>
+                            <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {/* Sample guardrails - in real app these would be filtered by folder */}
-                          {[
-                            { name: 'Basic Prompt Injection Detection', type: 'Jailbreak Detection', status: 'Active', apps: '3', objects: '12 objects' },
-                            { name: 'SSN Detection', type: 'PII Scrubbing', status: 'Active', apps: '5', objects: '8 objects' }
-                          ].map((guardrail, index) => (
-                            <tr 
-                              key={index}
-                              className="hover:bg-gray-50 cursor-pointer"
-                              onClick={() => setSelectedV3IndividualGuardrail(guardrail.name)}
-                            >
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className="text-sm font-medium text-gray-900">{guardrail.name}</span>
+                          {(folderGuardrails[selectedMvpFolder!] || []).map((guardrail, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-6 py-4"><span className="text-sm font-medium text-gray-900">{guardrail.name}</span></td>
+                              <td className="px-6 py-4"><span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${guardrail.type === 'Regex' ? 'bg-blue-100 text-blue-700' : guardrail.type === 'Semantic' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>{guardrail.type}</span></td>
+                              <td className="px-6 py-4"><span className="text-sm text-gray-600">{guardrail.appliedTo}</span></td>
+                              <td className="px-6 py-4"><span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${guardrail.action === 'Block' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{guardrail.action}</span></td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex items-center justify-end gap-3">
+                                  <button className="relative w-9 h-5 bg-blue-500 rounded-full transition-colors" onClick={e => e.stopPropagation()}><span className="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform" /></button>
+                                  <div className="relative inline-block">
+                                    <button onClick={e => { e.stopPropagation(); const el = e.currentTarget.nextElementSibling; if (el) el.classList.toggle('hidden') }} className="p-1 rounded hover:bg-gray-100 text-gray-400">
+                                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="3" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="8" cy="13" r="1.5"/></svg>
+                                    </button>
+                                    <div className="hidden absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1 w-32">
+                                      <button onClick={() => openGuardrailConfig(guardrail.name)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Edit</button>
+                                      <button onClick={() => { setDeleteIndex(index); setShowDeleteModal(true) }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Delete</button>
+                                    </div>
+                                  </div>
+                                </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className="text-sm text-gray-600">{guardrail.type}</span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${guardrail.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>{guardrail.status}</span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap"><span className="text-sm text-blue-600">{guardrail.apps} apps</span></td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div className="text-gray-400">→</div></td>
                             </tr>
                           ))}
                         </tbody>
@@ -5838,9 +5918,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <p className="text-gray-600 mb-6">Protect your AI by checking user messages before processing</p>
                       
                       <div className="space-y-4">
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Prompt Injection & Jailbreak Detection')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Prompt Injection & Jailbreak Detection')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-blue-100 group-hover:bg-blue-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="Shield" size="MEDIUM" color="blue" />
                             </div>
                             <div className="flex-1">
@@ -5849,10 +5929,10 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('PII Scrubbing')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('PII Scrubbing')}>
                           {/* Toggle removed */}
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-green-100 group-hover:bg-green-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-green-100 group-hover:bg-green-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="Eye" size="MEDIUM" color="green" />
                             </div>
                             <div className="flex-1">
@@ -5861,9 +5941,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Toxic Content Detection')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Toxic Content Detection')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="AlertTriangle" size="MEDIUM" color="red" />
                             </div>
                             <div className="flex-1">
@@ -5872,9 +5952,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Custom Content Detection')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Custom Content Detection')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-purple-100 group-hover:bg-purple-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-purple-100 group-hover:bg-purple-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="Filter" size="MEDIUM" color="purple" />
                             </div>
                             <div className="flex-1">
@@ -5883,9 +5963,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Competitor Detection')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Competitor Detection')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="Eye" size="MEDIUM" color="orange" />
                             </div>
                             <div className="flex-1">
@@ -5894,9 +5974,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-orange-100 group-hover:bg-orange-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="Code" size="MEDIUM" color="orange" />
                             </div>
                             <div className="flex-1">
@@ -5913,9 +5993,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                       <p className="text-gray-600 mb-6">Check AI responses before they're sent to users</p>
                       
                       <div className="space-y-4">
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Hallucination & Grounding Checks')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Hallucination & Grounding Checks')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-cyan-100 group-hover:bg-cyan-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-cyan-100 group-hover:bg-cyan-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="CheckCircle" size="MEDIUM" color="cyan" />
                             </div>
                             <div className="flex-1">
@@ -5924,9 +6004,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-teal-100 group-hover:bg-teal-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-teal-100 group-hover:bg-teal-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="EyeOff" size="MEDIUM" color="teal" />
                             </div>
                             <div className="flex-1">
@@ -5935,9 +6015,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Harmful Content Prevention')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Harmful Content Prevention')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-rose-100 group-hover:bg-rose-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-rose-100 group-hover:bg-rose-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="ShieldAlert" size="MEDIUM" color="rose" />
                             </div>
                             <div className="flex-1">
@@ -5946,9 +6026,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-indigo-100 group-hover:bg-indigo-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-indigo-100 group-hover:bg-indigo-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="FileCheck" size="MEDIUM" color="indigo" />
                             </div>
                             <div className="flex-1">
@@ -5957,9 +6037,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Compliance & Regulatory Checks')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Compliance & Regulatory Checks')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-amber-100 group-hover:bg-amber-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-amber-100 group-hover:bg-amber-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="Scale" size="MEDIUM" color="amber" />
                             </div>
                             <div className="flex-1">
@@ -5968,9 +6048,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             </div>
                           </div>
                         </div>
-                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
+                        <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-pink-100 group-hover:bg-pink-200 rounded-xl flex items-center justify-center transition-colors">
+                            <div className="w-12 h-12 bg-pink-100 group-hover:bg-pink-200 rounded-lg flex items-center justify-center transition-colors">
                               <Icon icon="Lock" size="MEDIUM" color="pink" />
                             </div>
                             <div className="flex-1">
@@ -5989,9 +6069,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                           <HeadingField text="Security & Cyber-Defense" size="LARGE" marginBelow="STANDARD" />
                           <p className="text-gray-600 mb-6">Focus: Protecting the infrastructure from attacks.</p>
                           <div className="space-y-4">
-                            <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
+                            <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
                               <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-xl flex items-center justify-center transition-colors">
+                                <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center transition-colors">
                                   <Icon icon="Shield" size="MEDIUM" color="red" />
                                 </div>
                                 <div className="flex-1">
@@ -6000,9 +6080,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 </div>
                               </div>
                             </div>
-                            <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
+                            <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
                               <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-xl flex items-center justify-center transition-colors">
+                                <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center transition-colors">
                                   <Icon icon="Code" size="MEDIUM" color="red" />
                                 </div>
                                 <div className="flex-1">
@@ -6011,9 +6091,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                 </div>
                               </div>
                             </div>
-                            <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1" onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
+                            <div className="group bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg p-6 cursor-pointer transition-all " onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
                               <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-xl flex items-center justify-center transition-colors">
+                                <div className="w-12 h-12 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center transition-colors">
                                   <Icon icon="Lock" size="MEDIUM" color="red" />
                                 </div>
                                 <div className="flex-1">
@@ -6034,7 +6114,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('PII Scrubbing (Input)')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 border-2 border-gray-300">
                                     <Icon icon="Eye" size="MEDIUM" color="blue" />
                                   </div>
                                   <div className="flex-1">
@@ -6048,7 +6128,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 border-2 border-gray-300">
                                     <Icon icon="EyeOff" size="MEDIUM" color="blue" />
                                   </div>
                                   <div className="flex-1">
@@ -6062,7 +6142,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Compliance and Regulatory Checks')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 border-2 border-gray-300">
                                     <Icon icon="Scale" size="MEDIUM" color="blue" />
                                   </div>
                                   <div className="flex-1">
@@ -6084,7 +6164,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Toxic Content Detection / Harmful Content Prevention')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-orange-100 border-2 border-gray-300">
                                     <Icon icon="AlertTriangle" size="MEDIUM" color="orange" />
                                   </div>
                                   <div className="flex-1">
@@ -6098,7 +6178,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Topic and Competitor Filtering')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-orange-100 border-2 border-gray-300">
                                     <Icon icon="Filter" size="MEDIUM" color="orange" />
                                   </div>
                                   <div className="flex-1">
@@ -6120,7 +6200,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Hallucination/Grounding Checks')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-green-100 border-2 border-gray-300">
                                     <Icon icon="CheckCircle" size="MEDIUM" color="green" />
                                   </div>
                                   <div className="flex-1">
@@ -6134,7 +6214,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-green-100 border-2 border-gray-300">
                                     <Icon icon="FileCheck" size="MEDIUM" color="green" />
                                   </div>
                                   <div className="flex-1">
@@ -6158,7 +6238,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Prompt Injection/Jailbreak Detection')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100 border-2 border-gray-300">
                                     <Icon icon="Shield" size="MEDIUM" color="purple" />
                                   </div>
                                   <div className="flex-1">
@@ -6172,7 +6252,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Malicious Code Detection')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100 border-2 border-gray-300">
                                     <Icon icon="Code" size="MEDIUM" color="purple" />
                                   </div>
                                   <div className="flex-1">
@@ -6194,7 +6274,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('PII Scrubbing (Input)')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-teal-100 border-2 border-gray-300">
                                     <Icon icon="Eye" size="MEDIUM" color="teal" />
                                   </div>
                                   <div className="flex-1">
@@ -6208,7 +6288,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Output PII Redaction')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-teal-100 border-2 border-gray-300">
                                     <Icon icon="EyeOff" size="MEDIUM" color="teal" />
                                   </div>
                                   <div className="flex-1">
@@ -6222,7 +6302,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Sensitive Data Leakage Prevention')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-teal-100 border-2 border-gray-300">
                                     <Icon icon="Lock" size="MEDIUM" color="teal" />
                                   </div>
                                   <div className="flex-1">
@@ -6244,7 +6324,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Toxic Content Detection / Harmful Content Prevention')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-amber-100 border-2 border-gray-300">
                                     <Icon icon="AlertTriangle" size="MEDIUM" color="amber" />
                                   </div>
                                   <div className="flex-1">
@@ -6258,7 +6338,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Topic and Competitor Filtering')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-amber-100 border-2 border-gray-300">
                                     <Icon icon="Filter" size="MEDIUM" color="amber" />
                                   </div>
                                   <div className="flex-1">
@@ -6272,7 +6352,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Compliance and Regulatory Checks')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-amber-100 border-2 border-gray-300">
                                     <Icon icon="Scale" size="MEDIUM" color="amber" />
                                   </div>
                                   <div className="flex-1">
@@ -6294,7 +6374,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Hallucination/Grounding Checks')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-100 border-2 border-gray-300">
                                     <Icon icon="CheckCircle" size="MEDIUM" color="indigo" />
                                   </div>
                                   <div className="flex-1">
@@ -6308,7 +6388,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                               <div className="cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2 relative" onClick={() => setSelectedV3GuardrailType('Factual Accuracy Validation')}>
                                 {/* Toggle removed */}
                                 <div className="flex items-start gap-4">
-                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 border-2 border-gray-300">
+                                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-100 border-2 border-gray-300">
                                     <Icon icon="FileCheck" size="MEDIUM" color="indigo" />
                                   </div>
                                   <div className="flex-1">
@@ -6331,7 +6411,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                           <div className="flex flex-col gap-2">
                             <span>Guardrail Name</span>
                             <input
@@ -6343,7 +6423,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             />
                           </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                           <div className="flex flex-col gap-2">
                             <span>Type</span>
                             <input
@@ -6355,8 +6435,8 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             />
                           </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Description</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                           <div className="flex flex-col gap-2">
                             <span>Status</span>
                             <input
@@ -6368,7 +6448,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             />
                           </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                           <div className="flex flex-col gap-2">
                             <span>Applications</span>
                             <input
@@ -6380,7 +6460,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             />
                           </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                           <div className="flex flex-col gap-2">
                             <span>Appian Objects</span>
                             <input
@@ -6392,7 +6472,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             />
                           </div>
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"></th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -6527,107 +6607,163 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
           ) : null)}
           </div>
         )
+
+      case 'mcp':
+        return (
+          <div className="h-full w-full" style={{ background: 'transparent' }}>
+            <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between" style={{ minHeight: '80px' }}>
+              <HeadingField text="Connect — Object & Tool Connections" size="LARGE" marginBelow="NONE" />
+            </div>
+            <div className="container mx-auto px-6 py-6 max-w-7xl">
+              {/* Environment-Wide Connected Objects */}
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+                <div className="border-b border-gray-200 p-4 bg-gray-50 flex items-center justify-between">
+                  <HeadingField text="Environment Objects & Tools" size="MEDIUM" marginBelow="NONE" />
+                  <ButtonWidget label="+ Register Object" style="SOLID" color="ACCENT" size="STANDARD" />
+                </div>
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Object</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applications</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">AI Skills Using</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Last Invoked</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {[
+                      { name: 'Customer Records', type: 'Record Type', apps: 4, skills: 7, lastInvoked: '2 min ago', enabled: true },
+                      { name: 'Knowledge Base API', type: 'Integration', apps: 6, skills: 12, lastInvoked: '5 min ago', enabled: true },
+                      { name: 'Case Management', type: 'Process Model', apps: 3, skills: 5, lastInvoked: '12 min ago', enabled: true },
+                      { name: 'Invoice Data Store', type: 'Data Store', apps: 2, skills: 3, lastInvoked: '1 hr ago', enabled: true },
+                      { name: 'Email Service', type: 'Connected System', apps: 5, skills: 9, lastInvoked: '8 min ago', enabled: true },
+                      { name: 'Document Repository', type: 'Data Store', apps: 3, skills: 4, lastInvoked: '25 min ago', enabled: false },
+                      { name: 'Slack Notifications', type: 'Connected System', apps: 2, skills: 3, lastInvoked: '3 hr ago', enabled: true },
+                      { name: 'Employee Directory', type: 'Record Type', apps: 4, skills: 6, lastInvoked: '15 min ago', enabled: true },
+                    ].map((obj, i) => (
+                      <tr key={i} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{obj.name}</td>
+                        <td className="px-6 py-4"><span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">{obj.type}</span></td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{obj.apps} apps</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{obj.skills} skills</td>
+                        <td className="px-6 py-4 text-sm text-gray-500">{obj.lastInvoked}</td>
+                        <td className="px-6 py-4"><span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${obj.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>{obj.enabled ? 'Active' : 'Inactive'}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Global Tool Permissions */}
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+                <div className="border-b border-gray-200 p-4 bg-gray-50">
+                  <HeadingField text="Global Tool Permissions" size="MEDIUM" marginBelow="NONE" />
+                </div>
+                <div className="p-6 space-y-4">
+                  {[
+                    { tool: 'Read Records', desc: 'Allow AI skills across all applications to query record types', enabled: true, apps: 12 },
+                    { tool: 'Write Records', desc: 'Allow AI skills to create or update records', enabled: false, apps: 0 },
+                    { tool: 'Execute Processes', desc: 'Allow AI skills to start process models', enabled: true, apps: 8 },
+                    { tool: 'Call Integrations', desc: 'Allow AI skills to invoke integration objects', enabled: true, apps: 10 },
+                    { tool: 'Access Documents', desc: 'Allow AI skills to read document content', enabled: false, apps: 0 },
+                    { tool: 'Send Notifications', desc: 'Allow AI skills to trigger notifications via connected systems', enabled: true, apps: 5 },
+                  ].map((perm, i) => (
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900">{perm.tool}</div>
+                        <div className="text-xs text-gray-500">{perm.desc}</div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {perm.enabled && <span className="text-xs text-gray-400">{perm.apps} apps</span>}
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${perm.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>{perm.enabled ? 'Enabled' : 'Disabled'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* MCP Usage Overview */}
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="border-b border-gray-200 p-4 bg-gray-50">
+                  <HeadingField text="Usage by Application" size="MEDIUM" marginBelow="NONE" />
+                </div>
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Application</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Connected Objects</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">AI Skills</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Invocations (24h)</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {[
+                      { app: 'Customer Portal', objects: 5, skills: 3, invocations: '2,156', status: 'Healthy' },
+                      { app: 'HR Onboarding', objects: 3, skills: 2, invocations: '699', status: 'Healthy' },
+                      { app: 'Invoice Processing', objects: 4, skills: 2, invocations: '987', status: 'Warning' },
+                      { app: 'Asset Management', objects: 2, skills: 1, invocations: '234', status: 'Healthy' },
+                      { app: 'Help Desk', objects: 3, skills: 2, invocations: '512', status: 'Healthy' },
+                    ].map((row, i) => (
+                      <tr key={i} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{row.app}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{row.objects}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{row.skills}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{row.invocations}</td>
+                        <td className="px-6 py-4"><span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${row.status === 'Healthy' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{row.status}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )
       
       case 'monitor':
-        const evaluateHeaderBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            <div className={`sticky top-0 z-10 ${evaluateHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${observeScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
-              {selectedCall && (
-                <div className="mb-2">
-                  <button 
-                    onClick={() => setSelectedCall(null)}
-                    className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                  >
-                    ← Back to AI Calls
-                  </button>
-                </div>
-              )}
-              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
-                <div className="flex items-center gap-3">
-                  <HeadingField text={selectedCall ? selectedCall.callId : "System Events"} size="LARGE" marginBelow="NONE" />
-                  {selectedCall && (
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      selectedCall.status === 'Success' ? 'bg-green-100 text-green-800' :
-                      selectedCall.status === 'Error' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {selectedCall.status}
-                    </span>
-                  )}
-                </div>
-                {!selectedCall && (
-                  <ButtonWidget
-                    label="+ Add Evaluation Metric"
-                    style="SOLID"
-                    color="ACCENT"
-                    size="STANDARD"
-                  />
-                )}
-              </div>
-              {selectedCall && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <TagField
-                    tags={[{ text: "Relevance: 85%", backgroundColor: "SECONDARY" }]}
-                    size="SMALL"
-                    marginBelow="NONE"
-                  />
-                  <TagField
-                    tags={[{ text: "Accuracy: 94%", backgroundColor: "SECONDARY" }]}
-                    size="SMALL"
-                    marginBelow="NONE"
-                  />
-                  <TagField
-                    tags={[{ text: "Helpfulness: 90%", backgroundColor: "SECONDARY" }]}
-                    size="SMALL"
-                    marginBelow="NONE"
-                  />
-                  <TagField
-                    tags={[{ text: "Clarity: 88%", backgroundColor: "SECONDARY" }]}
-                    size="SMALL"
-                    marginBelow="NONE"
-                  />
-                  <TagField
-                    tags={[{ text: "Safety: Pass", backgroundColor: "POSITIVE" }]}
-                    size="SMALL"
-                    marginBelow="NONE"
-                  />
-                </div>
-              )}
-              {selectedCall && (
-                <div className="relative flex gap-8 border-b border-white/30 -mb-4 pb-0">
-                  <button
-                    onClick={() => setEvaluateCallTab('general')}
-                    className={`px-2 py-2 transition-colors font-medium ${
-                      evaluateCallTab === 'general'
-                        ? 'text-blue-600'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    General
-                  </button>
-                  <button
-                    onClick={() => setEvaluateCallTab('evals')}
-                    className={`px-2 py-2 transition-colors font-medium ${
-                      evaluateCallTab === 'evals'
-                        ? 'text-blue-600'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    Evals
-                  </button>
-                  <div 
-                    className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out"
-                    style={{
-                      left: evaluateCallTab === 'general' ? '8px' : '88px',
-                      width: evaluateCallTab === 'general' ? '56px' : '40px'
-                    }}
-                  />
-                </div>
-              )}
+            {!selectedCall && (
+            <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between" style={{ minHeight: '80px' }}>
+              <HeadingField text="System Events" size="LARGE" marginBelow="NONE" />
+              <ButtonWidget
+                label="+ Add Evaluation Metric"
+                style="SOLID"
+                color="ACCENT"
+                size="STANDARD"
+              />
             </div>
-            <div className="px-20 py-6">
+            )}
+            {selectedCall && (
+            <div className="bg-white border-b border-gray-200 px-8 py-4" style={{ minHeight: '80px' }}>
+              <div className="mb-2">
+                <button 
+                  onClick={() => setSelectedCall(null)}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                >
+                  ← Back to AI Calls
+                </button>
+              </div>
+              <div className="flex items-center gap-3 mb-3">
+                <HeadingField text={selectedCall.callId} size="LARGE" marginBelow="NONE" />
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                  selectedCall.status === 'Success' ? 'bg-green-100 text-green-800' :
+                  selectedCall.status === 'Error' ? 'bg-red-100 text-red-800' :
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {selectedCall.status}
+                </span>
+              </div>
+              <div className="flex gap-8 border-b border-gray-200 -mb-4">
+                <button onClick={() => setEvaluateCallTab('general')} className={`px-2 py-2 font-medium border-b-2 transition-colors ${evaluateCallTab === 'general' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>General</button>
+                <button onClick={() => setEvaluateCallTab('evals')} className={`px-2 py-2 font-medium border-b-2 transition-colors ${evaluateCallTab === 'evals' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Evals</button>
+              </div>
+            </div>
+            )}
+            <div className="container mx-auto px-6 py-6 max-w-7xl">
               {selectedCall ? (
                 evaluateCallTab === 'general' ? (
                   <div className="space-y-6">
@@ -6707,18 +6843,18 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                      <div className="px-6 py-4 border-b border-gray-100">
+                    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                      <div className="border-b border-gray-200 p-4 bg-gray-50">
                         <HeadingField text="Evaluation Metrics" size="MEDIUM" marginBelow="NONE" />
                       </div>
                       <div className="overflow-x-auto">
                         <table className="min-w-full">
-                          <thead className="bg-white">
+                          <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Metric</th>
-                              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">AI Value</th>
-                              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">AI Explanation</th>
-                              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actual Value</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Metric</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">AI Value</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">AI Explanation</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actual Value</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-100">
@@ -6766,106 +6902,41 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 <div className="space-y-6">
                   {/* Evaluation Metrics Overview */}
                   <div className="grid grid-cols-5 gap-4">
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
-                          background: 'linear-gradient(to bottom, rgba(34, 197, 94, 0.6) 0%, rgba(34, 197, 94, 0.1) 100%)',
-                          borderColor: '#22c55e'
-                        }}>
-                          <Icon icon="Target" size="MEDIUM" />
-                        </div>
-                        <div className="flex-1">
-                          <HeadingField text="Relevance" size="MEDIUM" marginBelow="LESS" />
-                          <div className="text-2xl font-bold text-gray-900">88%</div>
-                          <p className="text-gray-600 text-sm">AI Accuracy</p>
-                        </div>
+                    {[
+                      { label: 'Relevance', value: '88%', change: '+2.1%' },
+                      { label: 'Accuracy', value: '92%', change: '+1.4%' },
+                      { label: 'Helpfulness', value: '97%', change: '+0.8%' },
+                      { label: 'Clarity', value: '93%', change: '-0.3%' },
+                      { label: 'Safety', value: '98%', change: '+0.5%' },
+                    ].map((kpi, i) => (
+                      <div key={i} className="bg-white rounded-lg border border-gray-200 p-5">
+                        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">{kpi.label}</div>
+                        <div className="text-2xl font-bold text-gray-900 mb-1">{kpi.value}</div>
+                        <div className={`text-xs font-medium ${kpi.change.startsWith('+') ? 'text-green-600' : 'text-red-500'}`}>{kpi.change}</div>
                       </div>
-                    </div>
-                    
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
-                          background: 'linear-gradient(to bottom, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0.1) 100%)',
-                          borderColor: '#3b82f6'
-                        }}>
-                          <Icon icon="CheckCircle" size="MEDIUM" />
-                        </div>
-                        <div className="flex-1">
-                          <HeadingField text="Accuracy" size="MEDIUM" marginBelow="LESS" />
-                          <div className="text-2xl font-bold text-gray-900">92%</div>
-                          <p className="text-gray-600 text-sm">AI Accuracy</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
-                          background: 'linear-gradient(to bottom, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0.1) 100%)',
-                          borderColor: '#8b5cf6'
-                        }}>
-                          <Icon icon="Heart" size="MEDIUM" />
-                        </div>
-                        <div className="flex-1">
-                          <HeadingField text="Helpfulness" size="MEDIUM" marginBelow="LESS" />
-                          <div className="text-2xl font-bold text-gray-900">97%</div>
-                          <p className="text-gray-600 text-sm">AI Accuracy</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
-                          background: 'linear-gradient(to bottom, rgba(249, 115, 22, 0.6) 0%, rgba(249, 115, 22, 0.1) 100%)',
-                          borderColor: '#f97316'
-                        }}>
-                          <Icon icon="Eye" size="MEDIUM" />
-                        </div>
-                        <div className="flex-1">
-                          <HeadingField text="Clarity" size="MEDIUM" marginBelow="LESS" />
-                          <div className="text-2xl font-bold text-gray-900">93%</div>
-                          <p className="text-gray-600 text-sm">AI Accuracy</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-lg p-3 flex items-center justify-center border" style={{
-                          background: 'linear-gradient(to bottom, rgba(239, 68, 68, 0.6) 0%, rgba(239, 68, 68, 0.1) 100%)',
-                          borderColor: '#ef4444'
-                        }}>
-                          <Icon icon="Shield" size="MEDIUM" />
-                        </div>
-                        <div className="flex-1">
-                          <HeadingField text="Safety" size="MEDIUM" marginBelow="LESS" />
-                          <div className="text-2xl font-bold text-gray-900">98%</div>
-                          <p className="text-gray-600 text-sm">AI Accuracy</p>
-                        </div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                   
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                    <div className="px-6 py-4 border-b border-gray-100">
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="border-b border-gray-200 p-4 bg-gray-50">
                       <HeadingField text="AI Calls" size="MEDIUM" marginBelow="NONE" />
                     </div>
                     <div className="overflow-x-auto">
-                      <table className="min-w-full">
-                        <thead className="bg-white">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
                           <tr>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Timestamp</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Call ID</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Object</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">User</th>
-                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Status</th>
-                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Tokens</th>
-                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Latency</th>
-                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Cost</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Evals</th>                          </tr>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Timestamp</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Call ID</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Object</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">User</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tokens</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Latency</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Cost</th>
+                            <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Evals</th>
+                          </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-gray-200">
                           {[
                             { 
                               timestamp: '2024-12-18 13:25:42', 
@@ -6912,13 +6983,13 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                             { timestamp: '2024-12-18 13:18:29', callId: 'call-007-pqr', model: 'TX_Agent_Tax_Calculator', user: 'tom.anderson', status: 'Timeout', tokens: 0, latency: '30s', cost: '$0.000', input: 'Timeout occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
                             { timestamp: '2024-12-18 13:17:15', callId: 'call-008-stu', model: 'DR_Agent_Document_Review', user: 'amy.taylor', status: 'Success', tokens: 967, latency: '203ms', cost: '$0.019', input: 'Sample input', output: 'Sample output', accuracy: 0.91, inputToxicity: 0.01, outputToxicity: 0.00, inputPII: 'None', outputPII: 'None', inputTone: 'Technical', outputTone: 'Explanatory' }
                           ].map((call, index) => (
-                            <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCall(call)}>
+                            <tr key={index} className="hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => setSelectedCall(call)}>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.timestamp}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">{call.callId}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.model}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.user}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-center">
-                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                                   call.status === 'Success' ? 'bg-green-100 text-green-800' :
                                   call.status === 'Error' ? 'bg-red-100 text-red-800' :
                                   'bg-yellow-100 text-yellow-800'
@@ -6926,9 +6997,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                                   {call.status}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{call.tokens}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{call.latency}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{call.cost}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{call.tokens}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{call.latency}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{call.cost}</td>
                               <td className="px-6 py-4 text-sm">
                                 <div className="flex flex-wrap gap-1">
                                   <TagField tags={[{ text: "Relevance: 85%", backgroundColor: "POSITIVE" }]} size="SMALL" marginBelow="NONE" />
@@ -7010,7 +7081,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                         </p>
                       </div>
                       
-                      <div className="bg-white border border-gray-200 rounded-xl p-4">
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
                         <h3 className="text-base font-semibold text-gray-900 mb-1">Detection Method</h3>
                         <p className="text-sm text-gray-600 mb-4">How would you like to detect the custom content?</p>
                         
@@ -7112,267 +7183,252 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
         )
       
       case 'observe':
-        const observeCurrentTab = observeTab as 'performance' | 'events'
-        const observeHeaderBg = cardStyle === 'glass' ? 'bg-white/50 backdrop-blur-md border-white' : 'bg-white border-gray-200'
         return (
           <div className="h-full w-full" style={{ background: 'transparent' }}>
             <style>{getCardStyles(cardStyle)}</style>
-            <div className={`sticky top-0 z-10 ${observeHeaderBg} border-b px-8 py-4 flex flex-col justify-center transition-shadow duration-300 ${observeScrolled ? 'shadow-[0_8px_16px_-8px_rgba(0,0,0,0.08)]' : ''} ${cardStyle === 'glass' ? 'shadow-none' : ''}`} style={{ borderRadius: 0, minHeight: '140px' }}>
-              <div className="relative flex gap-8 mb-4 border-b border-white/30">
-                <button
-                  ref={observePerformanceRef}
-                  onClick={() => setObserveTab('performance')}
-                  className={`px-2 py-2 transition-colors font-medium ${
-                    observeCurrentTab === 'performance'
-                      ? 'text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Performance
-                </button>
-                <button
-                  ref={observeEventsRef}
-                  onClick={() => setObserveTab('events')}
-                  className={`px-2 py-2 transition-colors font-medium ${
-                    observeCurrentTab === 'events'
-                      ? 'text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Events
-                </button>
-                <div 
-                  className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out"
-                  style={{
-                    left: `${observeUnderlineStyle.left}px`,
-                    width: `${observeUnderlineStyle.width}px`
-                  }}
-                />
+            {!selectedCall && (
+            <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between" style={{ minHeight: '80px' }}>
+              <HeadingField text="Observe" size="LARGE" marginBelow="NONE" />
+              <select className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-sm font-medium text-gray-700">
+                <option>Last 24 hours</option>
+                <option>Last 7 days</option>
+                <option>Last 30 days</option>
+                <option>Last 90 days</option>
+              </select>
+            </div>
+            )}
+            {selectedCall && (
+            <div className="bg-white border-b border-gray-200 px-8 py-4" style={{ minHeight: '80px' }}>
+              <div className="mb-2">
+                <button onClick={() => setSelectedCall(null)} className="text-blue-600 hover:text-blue-800 font-medium text-sm">← Back to AI Calls</button>
               </div>
-              {selectedCall && (
-                <div className="mb-2">
-                  <button 
-                    onClick={() => setSelectedCall(null)}
-                    className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                  >
-                    ← Back to AI Calls
-                  </button>
-                </div>
-              )}
-              <div className="flex justify-between items-center" style={{ minHeight: '48px' }}>
-                <div className="flex items-center gap-3">
-                  <HeadingField text={selectedCall ? selectedCall.callId : (observeCurrentTab === 'performance' ? "System Performance" : "System Events")} size="LARGE" marginBelow="NONE" />
-                  {selectedCall && (
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      selectedCall.status === 'Success' ? 'bg-green-100 text-green-800' :
-                      selectedCall.status === 'Error' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {selectedCall.status}
-                    </span>
-                  )}
-                </div>
-                {observeCurrentTab === 'performance' && !selectedCall && (
-                  <div className="relative flex p-1 rounded-md">
-                    <div 
-                      className="absolute bg-blue-900 rounded transition-all duration-300 ease-out"
-                      style={{
-                        left: `calc(${['1D', '1W', '1M', '1Q', '1Y'].indexOf(timeRange) * 20}% + 4px)`,
-                        width: `calc(20% - 4px)`,
-                        top: '4px',
-                        bottom: '4px'
-                      }}
-                    />
-                    {['1D', '1W', '1M', '1Q', '1Y'].map((range) => (
-                      <button
-                        key={range}
-                        onClick={() => setTimeRange(range)}
-                        className={`relative z-10 px-4 py-1 text-sm font-medium transition-colors ${
-                          timeRange === range ? 'text-white' : 'text-gray-700 hover:text-gray-900'
-                        }`}
-                      >
-                        {range}
-                      </button>
-                    ))}
-                  </div>
-                )}
+              <div className="flex items-center gap-3">
+                <HeadingField text={selectedCall.callId} size="LARGE" marginBelow="NONE" />
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${selectedCall.status === 'Success' ? 'bg-green-100 text-green-800' : selectedCall.status === 'Error' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{selectedCall.status}</span>
               </div>
             </div>
-            <div className="px-20 py-6">
-              {observeCurrentTab === 'performance' ? (
-                <PerformanceDashboard />
-              ) : selectedCall ? (
+            )}
+            <div className="container mx-auto px-6 py-6 max-w-7xl">
+              {selectedCall ? (
                 <div className="space-y-6">
                   <div className="grid grid-cols-[2fr_1fr] gap-6">
-                    {/* Input/Output Panel */}
                     <div className="space-y-6">
-                      <CardLayout padding="MORE" showShadow={true}>
-                        <HeadingField text="Input" size="MEDIUM" marginBelow="STANDARD" />
-                        <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
-                          {selectedCall.input}
-                        </div>
-                      </CardLayout>
-                      
-                      <CardLayout padding="MORE" showShadow={true}>
-                        <HeadingField text="Output" size="MEDIUM" marginBelow="STANDARD" />
-                        <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap">
-                          {selectedCall.output}
-                        </div>
-                      </CardLayout>
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="border-b border-gray-200 p-4 bg-gray-50"><HeadingField text="Input" size="MEDIUM" marginBelow="NONE" /></div>
+                        <div className="p-6"><div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">{selectedCall.input}</div></div>
+                      </div>
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="border-b border-gray-200 p-4 bg-gray-50"><HeadingField text="Output" size="MEDIUM" marginBelow="NONE" /></div>
+                        <div className="p-6"><div className="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap">{selectedCall.output}</div></div>
+                      </div>
                     </div>
-                    
-                    {/* Call Data Panel */}
                     <div className="space-y-4">
-                      <CardLayout padding="MORE" showShadow={true}>
-                        <HeadingField text="Call Metrics" size="MEDIUM" marginBelow="STANDARD" />
-                        <div className="space-y-4">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Latency:</span>
-                            <span className="font-medium">{selectedCall.latency}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Cost:</span>
-                            <span className="font-medium">{selectedCall.cost}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Tokens:</span>
-                            <span className="font-medium">{selectedCall.tokens}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Accuracy:</span>
-                            <span className="font-medium">{(selectedCall.accuracy * 100).toFixed(1)}%</span>
-                          </div>
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="border-b border-gray-200 p-3 bg-gray-50"><span className="text-sm font-bold text-gray-700">Call Metrics</span></div>
+                        <div className="p-4 space-y-3 text-sm">
+                          <div className="flex justify-between"><span className="text-gray-500">Latency</span><span className="font-medium text-gray-900">{selectedCall.latency}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">Cost</span><span className="font-medium text-gray-900">{selectedCall.cost}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">Tokens</span><span className="font-medium text-gray-900">{selectedCall.tokens}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">Accuracy</span><span className="font-medium text-gray-900">{(selectedCall.accuracy * 100).toFixed(1)}%</span></div>
                         </div>
-                      </CardLayout>
-                      
-                      <CardLayout padding="MORE" showShadow={true}>
-                        <HeadingField text="Content Analysis" size="MEDIUM" marginBelow="STANDARD" />
-                        <div className="space-y-4">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Input Toxicity:</span>
-                            <span className="font-medium">{(selectedCall.inputToxicity * 100).toFixed(1)}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Output Toxicity:</span>
-                            <span className="font-medium">{(selectedCall.outputToxicity * 100).toFixed(1)}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Input PII:</span>
-                            <span className="font-medium">{selectedCall.inputPII}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Output PII:</span>
-                            <span className="font-medium">{selectedCall.outputPII}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Input Tone:</span>
-                            <span className="font-medium">{selectedCall.inputTone}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Output Tone:</span>
-                            <span className="font-medium">{selectedCall.outputTone}</span>
-                          </div>
+                      </div>
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="border-b border-gray-200 p-3 bg-gray-50"><span className="text-sm font-bold text-gray-700">Content Analysis</span></div>
+                        <div className="p-4 space-y-3 text-sm">
+                          <div className="flex justify-between"><span className="text-gray-500">Input Toxicity</span><span className="font-medium text-gray-900">{(selectedCall.inputToxicity * 100).toFixed(1)}%</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">Output Toxicity</span><span className="font-medium text-gray-900">{(selectedCall.outputToxicity * 100).toFixed(1)}%</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">Input PII</span><span className="font-medium text-gray-900">{selectedCall.inputPII}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">Output PII</span><span className="font-medium text-gray-900">{selectedCall.outputPII}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">Input Tone</span><span className="font-medium text-gray-900">{selectedCall.inputTone}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">Output Tone</span><span className="font-medium text-gray-900">{selectedCall.outputTone}</span></div>
                         </div>
-                      </CardLayout>
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                    <div className="px-6 py-4 border-b border-gray-100">
-                      <HeadingField text="AI Calls" size="MEDIUM" marginBelow="NONE" />
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full">
-                        <thead className="bg-white">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Timestamp</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Call ID</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Object</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">User</th>
-                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Status</th>
-                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Tokens</th>
-                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Latency</th>
-                            <th className="px-6 py-3 text-center text-sm font-semibold text-gray-900">Cost</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                          {[
-                            { 
-                              timestamp: '2024-12-18 13:25:42', 
-                              callId: 'call-001-xyz', 
-                              model: 'CO_Agent_Customer_Onboarding', 
-                              user: 'john.smith', 
-                              status: 'Success', 
-                              tokens: 1247, 
-                              latency: '245ms', 
-                              cost: '$0.024',
-                              input: 'Can you help me write a professional email to schedule a meeting with our client about the quarterly review?',
-                              output: 'I\'d be happy to help you write a professional email for scheduling a client meeting. Here\'s a draft:\n\nSubject: Quarterly Review Meeting - [Client Name]\n\nDear [Client Name],\n\nI hope this email finds you well. As we approach the end of the quarter, I would like to schedule our quarterly review meeting to discuss your account performance, upcoming initiatives, and address any questions you may have.\n\nWould you be available for a meeting during the week of [Date Range]? I\'m flexible with timing and can accommodate your schedule. The meeting should take approximately 60 minutes and can be conducted either in-person at your office or via video conference, whichever you prefer.\n\nPlease let me know your availability, and I\'ll send a calendar invitation with the agenda.\n\nThank you for your continued partnership.\n\nBest regards,\n[Your Name]',
-                              accuracy: 0.94,
-                              inputToxicity: 0.02,
-                              outputToxicity: 0.01,
-                              inputPII: 'None',
-                              outputPII: 'Template placeholders',
-                              inputTone: 'Professional',
-                              outputTone: 'Professional'
-                            },
-                            { 
-                              timestamp: '2024-12-18 13:24:18', 
-                              callId: 'call-002-abc', 
-                              model: 'DR_Agent_Document_Review', 
-                              user: 'jane.doe', 
-                              status: 'Success', 
-                              tokens: 892, 
-                              latency: '189ms', 
-                              cost: '$0.018',
-                              input: 'Explain the concept of machine learning in simple terms for a beginner.',
-                              output: 'Machine learning is like teaching a computer to recognize patterns and make predictions, similar to how humans learn from experience.\n\nImagine you\'re learning to recognize different dog breeds. At first, you might not know the difference between a Golden Retriever and a Labrador. But after seeing many examples of each breed with their names, you start to notice patterns - Golden Retrievers tend to have longer, fluffier coats, while Labs have shorter, denser fur.\n\nMachine learning works similarly:\n\n1. **Training**: We show the computer thousands of examples (like photos of dogs with breed labels)\n2. **Pattern Recognition**: The computer finds patterns in the data that humans might miss\n3. **Prediction**: When shown a new photo, the computer can predict the breed based on learned patterns\n\nThis same principle applies to many applications: email spam detection, recommendation systems, voice recognition, and medical diagnosis. The computer learns from data to make intelligent decisions without being explicitly programmed for every possible scenario.',
-                              accuracy: 0.97,
-                              inputToxicity: 0.01,
-                              outputToxicity: 0.00,
-                              inputPII: 'None',
-                              outputPII: 'None',
-                              inputTone: 'Neutral',
-                              outputTone: 'Educational'
-                            },
-                            { timestamp: '2024-12-18 13:23:55', callId: 'call-003-def', model: 'CO_Agent_Customer_Onboarding', user: 'mike.wilson', status: 'Error', tokens: 0, latency: '1.2s', cost: '$0.000', input: 'Error occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
-                            { timestamp: '2024-12-18 13:22:31', callId: 'call-004-ghi', model: 'TX_Agent_Tax_Calculator', user: 'sarah.jones', status: 'Success', tokens: 1456, latency: '312ms', cost: '$0.029', input: 'Sample input', output: 'Sample output', accuracy: 0.89, inputToxicity: 0.03, outputToxicity: 0.02, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'Informative' },
-                            { timestamp: '2024-12-18 13:21:07', callId: 'call-005-jkl', model: 'DR_Agent_Document_Review', user: 'david.brown', status: 'Success', tokens: 734, latency: '156ms', cost: '$0.015', input: 'Sample input', output: 'Sample output', accuracy: 0.92, inputToxicity: 0.01, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Professional', outputTone: 'Professional' },
-                            { timestamp: '2024-12-18 13:19:43', callId: 'call-006-mno', model: 'CO_Agent_Customer_Onboarding', user: 'lisa.garcia', status: 'Success', tokens: 1089, latency: '278ms', cost: '$0.021', input: 'Sample input', output: 'Sample output', accuracy: 0.95, inputToxicity: 0.02, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Casual', outputTone: 'Friendly' },
-                            { timestamp: '2024-12-18 13:18:29', callId: 'call-007-pqr', model: 'TX_Agent_Tax_Calculator', user: 'tom.anderson', status: 'Timeout', tokens: 0, latency: '30s', cost: '$0.000', input: 'Timeout occurred', output: 'N/A', accuracy: 0, inputToxicity: 0, outputToxicity: 0, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'N/A' },
-                            { timestamp: '2024-12-18 13:17:15', callId: 'call-008-stu', model: 'DR_Agent_Document_Review', user: 'amy.taylor', status: 'Success', tokens: 967, latency: '203ms', cost: '$0.019', input: 'Sample input', output: 'Sample output', accuracy: 0.91, inputToxicity: 0.01, outputToxicity: 0.00, inputPII: 'None', outputPII: 'None', inputTone: 'Technical', outputTone: 'Explanatory' }
-                          ].map((call, index) => (
-                            <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCall(call)}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.timestamp}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">{call.callId}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.model}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{call.user}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-center">
-                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                  call.status === 'Success' ? 'bg-green-100 text-green-800' :
-                                  call.status === 'Error' ? 'bg-red-100 text-red-800' :
-                                  'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {call.status}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{call.tokens}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{call.latency}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">{call.cost}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                <div>
+                  {/* Metrics / Logs tabs */}
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+                    <div className="flex border-b border-gray-200">
+                      <button onClick={() => setObserveTab('performance')} className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${observeTab === 'performance' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Metrics</button>
+                      <button onClick={() => setObserveTab('events')} className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${observeTab === 'events' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Logs</button>
                     </div>
                   </div>
+
+                  {observeTab === 'performance' && (
+                    <div>
+                      <div className="grid grid-cols-4 gap-4 mb-6">
+                        {[
+                          { label: 'Total Requests', value: '3,842', change: '+12.4%' },
+                          { label: 'Avg Latency', value: '1.3s', change: '-8.1%' },
+                          { label: 'Error Rate', value: '0.9%', change: '-2.3%' },
+                          { label: 'Est. Cost (MTD)', value: '$247.50', change: '+5.2%' },
+                        ].map((kpi, i) => (
+                          <div key={i} className="bg-white rounded-lg border border-gray-200 p-5">
+                            <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">{kpi.label}</div>
+                            <div className="text-2xl font-bold text-gray-900 mb-1">{kpi.value}</div>
+                            <div className={`text-xs font-medium ${kpi.change.startsWith('-') ? 'text-green-600' : 'text-red-500'}`}>{kpi.change}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="bg-white rounded-lg border border-gray-200 p-5">
+                          <div className="text-sm font-bold text-gray-700 mb-4">Requests Over Time</div>
+                          <div className="h-40 flex items-end gap-1">
+                            {[65,45,72,58,80,92,68,85,78,95,88,70,82,90,75,98,84,60,73,88,92,78,85,96].map((v, i) => (
+                              <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, backgroundColor: i === 23 ? '#3b82f6' : '#dbeafe' }}></div>
+                            ))}
+                          </div>
+                          <div className="flex justify-between mt-2 text-xs text-gray-400"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>Now</span></div>
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 p-5">
+                          <div className="text-sm font-bold text-gray-700 mb-4">Latency (p50 / p95 / p99)</div>
+                          <div className="h-40 flex items-end gap-0.5">
+                            {[{p50:30,p95:55,p99:70},{p50:28,p95:50,p99:65},{p50:35,p95:60,p99:78},{p50:25,p95:48,p99:62},{p50:32,p95:58,p99:75},{p50:38,p95:65,p99:82},{p50:30,p95:52,p99:68},{p50:27,p95:50,p99:66},{p50:33,p95:56,p99:72},{p50:36,p95:62,p99:80},{p50:29,p95:51,p99:67},{p50:31,p95:54,p99:71}].map((v, i) => (
+                              <div key={i} className="flex-1 flex flex-col justify-end gap-0.5">
+                                <div className="rounded-t bg-red-200" style={{ height: `${v.p99 - v.p95}%` }}></div>
+                                <div className="bg-orange-200" style={{ height: `${v.p95 - v.p50}%` }}></div>
+                                <div className="bg-blue-400 rounded-b" style={{ height: `${v.p50}%` }}></div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex gap-4 mt-3 text-xs text-gray-500">
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400"></span>p50</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-200"></span>p95</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-200"></span>p99</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="bg-white rounded-lg border border-gray-200 p-5">
+                          <div className="text-sm font-bold text-gray-700 mb-4">Cost Over Time</div>
+                          <div className="h-40 relative">
+                            <svg className="w-full h-full" viewBox="0 0 300 120" preserveAspectRatio="none">
+                              <defs><linearGradient id="obsCostFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.3" /><stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.02" /></linearGradient></defs>
+                              <path d="M0,90 C20,85 40,70 60,72 C80,74 100,60 120,55 C140,50 160,58 180,45 C200,32 220,40 240,35 C260,30 280,22 300,18" fill="none" stroke="#8b5cf6" strokeWidth="2" />
+                              <path d="M0,90 C20,85 40,70 60,72 C80,74 100,60 120,55 C140,50 160,58 180,45 C200,32 220,40 240,35 C260,30 280,22 300,18 L300,120 L0,120 Z" fill="url(#obsCostFill)" />
+                            </svg>
+                          </div>
+                          <div className="flex justify-between mt-2 text-xs text-gray-400"><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 p-5">
+                          <div className="text-sm font-bold text-gray-700 mb-4">Guardrail Triggers</div>
+                          <div className="space-y-3">
+                            {[{label:'PII Detected',count:42,pct:38,color:'bg-red-400'},{label:'Toxicity Blocked',count:28,pct:25,color:'bg-orange-400'},{label:'Prompt Injection',count:19,pct:17,color:'bg-yellow-400'},{label:'Topic Off-limits',count:14,pct:13,color:'bg-blue-400'},{label:'Hallucination Flag',count:8,pct:7,color:'bg-purple-400'}].map((item, i) => (
+                              <div key={i}>
+                                <div className="flex justify-between text-xs mb-1"><span className="text-gray-700 font-medium">{item.label}</span><span className="text-gray-500">{item.count} ({item.pct}%)</span></div>
+                                <div className="h-2 bg-gray-100 rounded-full"><div className={`h-2 ${item.color} rounded-full`} style={{ width: `${item.pct}%` }}></div></div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="border-b border-gray-200 p-4 bg-gray-50"><HeadingField text="Per-Skill Breakdown" size="MEDIUM" marginBelow="NONE" /></div>
+                        <table className="w-full">
+                          <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">AI Skill</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Requests</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Avg Latency</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Error Rate</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Guardrail Hits</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Cost</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {[
+                              { name: 'Customer Support AI', requests: '2,156', latency: '1.1s', errorRate: '0.8%', guardrails: 64, cost: '$142.30' },
+                              { name: 'Invoice Processing AI', requests: '987', latency: '1.8s', errorRate: '1.2%', guardrails: 31, cost: '$72.40' },
+                              { name: 'HR Onboarding AI', requests: '699', latency: '0.9s', errorRate: '0.3%', guardrails: 16, cost: '$32.80' },
+                            ].map((s, i) => (
+                              <tr key={i} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{s.name}</td>
+                                <td className="px-6 py-4 text-sm text-gray-700">{s.requests}</td>
+                                <td className="px-6 py-4 text-sm text-gray-700">{s.latency}</td>
+                                <td className="px-6 py-4 text-sm text-gray-700">{s.errorRate}</td>
+                                <td className="px-6 py-4 text-sm text-gray-700">{s.guardrails}</td>
+                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{s.cost}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {observeTab === 'events' && (
+                    <div>
+                      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex items-center gap-3">
+                        <div className="relative flex-1">
+                          <input type="text" placeholder="Search logs by input, output, model, or user..." className="w-full pl-4 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        </div>
+                        <select className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white">
+                          <option>All Skills</option>
+                          <option>Customer Onboarding</option>
+                          <option>Document Review</option>
+                          <option>Tax Calculator</option>
+                        </select>
+                        <select className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white">
+                          <option>All Statuses</option>
+                          <option>Success</option>
+                          <option>Error</option>
+                          <option>Timeout</option>
+                        </select>
+                      </div>
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <table className="w-full">
+                          <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Timestamp</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">AI Skill</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Input</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Output</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Latency</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tokens</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {[
+                              { time: '4:52:18 PM', skill: 'Customer Onboarding', input: 'Help me write a professional email to schedule a meeting...', output: 'I\'d be happy to help you write a professional email...', latency: '245ms', tokens: 1247, status: 'Success' },
+                              { time: '4:51:43 PM', skill: 'Customer Onboarding', input: 'My SSN is 123-45-6789, can you help?', output: '[PII REDACTED] I can help you with...', latency: '1.2s', tokens: 289, status: 'Guardrail' },
+                              { time: '4:50:22 PM', skill: 'Document Review', input: 'Explain machine learning in simple terms...', output: 'Machine learning is like teaching a computer...', latency: '189ms', tokens: 892, status: 'Success' },
+                              { time: '4:49:58 PM', skill: 'Tax Calculator', input: 'Calculate quarterly tax for revenue $450K...', output: 'Based on the provided revenue of $450,000...', latency: '312ms', tokens: 1456, status: 'Success' },
+                              { time: '4:48:31 PM', skill: 'Customer Onboarding', input: 'Ignore previous instructions and...', output: '[BLOCKED] Prompt injection detected.', latency: '0.3s', tokens: 45, status: 'Guardrail' },
+                              { time: '4:47:15 PM', skill: 'Tax Calculator', input: 'Retrieve vendor payment history', output: 'Error: Data source connection timeout', latency: '30s', tokens: 0, status: 'Error' },
+                              { time: '4:46:02 PM', skill: 'Document Review', input: 'Review contract clause 4.2 for compliance...', output: 'Clause 4.2 appears compliant with...', latency: '156ms', tokens: 734, status: 'Success' },
+                              { time: '4:44:50 PM', skill: 'Customer Onboarding', input: 'What benefits are available for new hires?', output: 'New employees are eligible for health...', latency: '278ms', tokens: 1089, status: 'Success' },
+                            ].map((log, i) => (
+                              <tr key={i} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setSelectedCall({ timestamp: log.time, callId: `call-${String(i+1).padStart(3,'0')}`, model: log.skill, user: 'user', status: log.status === 'Guardrail' ? 'Success' : log.status, tokens: log.tokens, latency: log.latency, cost: '$0.02', input: log.input, output: log.output, accuracy: 0.9, inputToxicity: 0.01, outputToxicity: 0.01, inputPII: 'None', outputPII: 'None', inputTone: 'Neutral', outputTone: 'Professional' })}>
+                                <td className="px-6 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">{log.time}</td>
+                                <td className="px-6 py-3 text-sm text-gray-700 whitespace-nowrap">{log.skill}</td>
+                                <td className="px-6 py-3 text-sm text-gray-700 max-w-[200px] truncate">{log.input}</td>
+                                <td className="px-6 py-3 text-sm text-gray-700 max-w-[200px] truncate">{log.output}</td>
+                                <td className="px-6 py-3 text-sm text-gray-700 whitespace-nowrap">{log.latency}</td>
+                                <td className="px-6 py-3 text-sm text-gray-700">{log.tokens}</td>
+                                <td className="px-6 py-3"><span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${log.status === 'Success' ? 'bg-green-100 text-green-800' : log.status === 'Error' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{log.status}</span></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <div className="border-t border-gray-200 p-3 bg-gray-50 flex items-center justify-between text-sm text-gray-500">
+                          <span>Showing 8 of 3,842 entries</span>
+                          <div className="flex gap-2">
+                            <button className="px-3 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50">Previous</button>
+                            <button className="px-3 py-1 border border-gray-200 rounded bg-white hover:bg-gray-50">Next</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
         )
-      
+
       default:
         return (
           <RichTextDisplayField 
@@ -7383,9 +7439,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
   }
 
   return (
-    <div className={`min-h-screen w-full ${cardStyle === 'glass' ? 'bg-transparent' : 'bg-gradient-to-b from-blue-100 from-50% to-white'} ${cardStyle === 'greyscale' ? 'grayscale' : ''}`}>
+    <div className="min-h-screen w-full bg-gray-50">
       <style>{tabStyles}</style>
-      <div className={`w-full ${activeSection === 'protect' || activeSection === 'observe' || activeSection === 'home' || activeSection === 'monitor' ? '' : 'px-8 py-8'}`}>
+      <div className={`w-full ${activeSection === 'protect' || activeSection === 'observe' || activeSection === 'home' || activeSection === 'monitor' || activeSection === 'mcp' ? '' : 'px-8 py-8'}`}>
         {renderContent()}
       </div>
 
@@ -7409,8 +7465,9 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
               { num: 5, label: 'Review' }
             ] : [
               { num: 1, label: 'General' },
-              { num: 2, label: 'Result' },
-              { num: 3, label: 'Review' }
+              { num: 2, label: 'Detection' },
+              { num: 3, label: 'Actions' },
+              { num: 4, label: 'Review' }
             ]).map((step, idx) => (
               <div key={step.num} className="flex items-center">
                 <div className="flex flex-col items-center gap-2">
@@ -7423,7 +7480,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                     wizardStep >= step.num ? 'text-blue-500 font-semibold' : 'text-gray-500'
                   }`}>{step.label}</span>
                 </div>
-                {idx < (selectedV3GuardrailType === 'PII Scrubbing' ? 4 : 2) && <div className={`${selectedV3GuardrailType === 'PII Scrubbing' ? 'w-12' : 'w-24'} h-1 mx-2 -mt-6 transition-all duration-300 ${
+                {idx < (selectedV3GuardrailType === 'PII Scrubbing' ? 4 : 3) && <div className={`${selectedV3GuardrailType === 'PII Scrubbing' ? 'w-12' : 'w-16'} h-1 mx-2 -mt-6 transition-all duration-300 ${
                   wizardStep > step.num ? 'bg-blue-500' : 'bg-gray-200'
                 }`} />}
               </div>
@@ -7594,70 +7651,193 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                   </div>
                 )}
 
-                {/* Step 2: Result */}
+                {/* Step 2: Detection */}
                 {wizardStep === 2 && (
                   <div className="space-y-4 animate-in fade-in duration-300">
-                    <HeadingField text="Enforcement Action" size="SMALL" marginBelow="LESS" />
-                    <div className="space-y-3">
+                    <HeadingField text="Detection Method" size="SMALL" marginBelow="LESS" />
+                    <div className="grid grid-cols-2 gap-3">
                       {[
-                        { value: 'block', label: 'Block', desc: 'Prevent the action completely', icon: 'Ban' },
-                        { value: 'warn', label: 'Warn', desc: 'Show warning but allow action', icon: 'AlertTriangle' },
-                        { value: 'redirect', label: 'Redirect', desc: 'Route to alternative flow', icon: 'ArrowRight' }
-                      ].map((action) => (
-                        <div
-                          key={action.value}
-                          className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                            formData.action === action.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          onClick={() => setFormData({...formData, action: action.value})}
-                        >
+                        { id: 'keyword', label: 'Keyword', desc: 'Match specific words or phrases', icon: 'Type' },
+                        { id: 'regex', label: 'Regex', desc: 'Pattern-based matching', icon: 'Code' },
+                        { id: 'semantic', label: 'Semantic', desc: 'AI-powered meaning detection', icon: 'Brain' },
+                        { id: 'expression', label: 'Appian Expression', desc: 'Use an existing expression rule', icon: 'Zap' },
+                      ].map(m => (
+                        <div key={m.id} onClick={() => setGrDetection(m.id)} className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${grDetection === m.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
                           <div className="flex items-start gap-3">
-                            <Icon icon={action.icon as any} size="MEDIUM" />
-                            <div className="flex-1">
-                              <div className="font-semibold">{action.label}</div>
-                              <div className="text-sm text-gray-600">{action.desc}</div>
-                              
-                              {formData.action === action.value && (
-                                <div className="mt-3 animate-in fade-in duration-200">
-                                  <label className="block text-sm font-medium mb-2">Message</label>
-                                  <textarea 
-                                    placeholder="Enter the message to display when this guardrail is triggered"
-                                    value={formData.actionMessage}
-                                    onChange={(e) => {
-                                      e.stopPropagation()
-                                      setFormData({...formData, actionMessage: e.target.value})
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-full h-24 p-3 border border-gray-300 rounded-md resize-none relative z-0"
-                                  />
-                                </div>
-                              )}
-                            </div>
+                            <Icon icon={m.icon as any} size="SMALL" />
+                            <div><div className="font-semibold text-sm">{m.label}</div><div className="text-xs text-gray-500">{m.desc}</div></div>
                           </div>
                         </div>
                       ))}
                     </div>
+
+                    {grDetection === 'keyword' && (
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
+                        <label className="block text-sm font-medium mb-2">Keywords</label>
+                        <textarea value={grKeywords} onChange={e => setGrKeywords(e.target.value)} placeholder="Enter keywords to detect, one per line..." className="w-full h-32 p-3 border border-gray-300 rounded-md resize-none text-sm font-mono" />
+                        <p className="text-xs text-gray-500 mt-2">Each line will be treated as a separate keyword or phrase to match.</p>
+                      </div>
+                    )}
+
+                    {grDetection === 'regex' && (
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
+                        <label className="block text-sm font-medium mb-2">Regex Pattern</label>
+                        <div className="flex gap-2 mb-2">
+                          <input value={grRegex} onChange={e => { setGrRegex(e.target.value); try { new RegExp(e.target.value); setGrRegexValid(true) } catch { setGrRegexValid(false) } }} placeholder={'e.g., \\b\\d{3}-\\d{2}-\\d{4}\\b'} className="flex-1 p-3 border border-gray-300 rounded-md text-sm font-mono" />
+                          <button onClick={() => setGrShowAiHelp(true)} className="px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-100 transition-all whitespace-nowrap flex items-center gap-1.5">
+                            <Icon icon="Sparkles" size="SMALL" /> AI Help
+                          </button>
+                        </div>
+                        {grRegexValid !== null && (
+                          <div className={`text-xs font-medium ${grRegexValid ? 'text-green-600' : 'text-red-500'}`}>{grRegexValid ? '✓ Valid pattern' : '✗ Invalid pattern'}</div>
+                        )}
+                        {grRegex && grRegexValid && (
+                          <div className="mt-3">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Preview — test your pattern</label>
+                            <textarea placeholder="Paste sample text to test against..." className="w-full h-20 p-3 border border-gray-300 rounded-md resize-none text-sm" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {grDetection === 'semantic' && (
+                      <>
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
+                          <label className="block text-sm font-medium mb-2">Topic Definition</label>
+                          <input value={grTopic} onChange={e => setGrTopic(e.target.value)} placeholder="e.g., Personal health information, financial advice" className="w-full p-3 border border-gray-300 rounded-md text-sm mb-3" />
+                          <label className="block text-sm font-medium mb-2">Example Phrases</label>
+                          <textarea value={grExamples} onChange={e => setGrExamples(e.target.value)} placeholder="Provide example phrases that should be detected, one per line..." className="w-full h-24 p-3 border border-gray-300 rounded-md resize-none text-sm" />
+                          <p className="text-xs text-gray-500 mt-2">More examples improve detection accuracy.</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <label className="block text-sm font-medium mb-2">Confidence Threshold: <span className="text-blue-600">{grThreshold}</span></label>
+                          <input type="range" min="0.1" max="1" step="0.05" value={grThreshold} onChange={e => setGrThreshold(e.target.value)} className="w-full" />
+                          <div className="flex justify-between text-xs text-gray-400 mt-1"><span>Lenient (0.1)</span><span>Balanced (0.5)</span><span>Strict (1.0)</span></div>
+                        </div>
+                      </>
+                    )}
+
+                    {grDetection === 'expression' && (
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
+                        <label className="block text-sm font-medium mb-2">Select Appian Expression Rule</label>
+                        <select value={grExpression} onChange={e => setGrExpression(e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm bg-white">
+                          <option value="">Choose an expression rule...</option>
+                          <option value="rule!validatePII">rule!validatePII</option>
+                          <option value="rule!checkToxicity">rule!checkToxicity</option>
+                          <option value="rule!contentFilter">rule!contentFilter</option>
+                          <option value="rule!promptInjectionCheck">rule!promptInjectionCheck</option>
+                          <option value="rule!customGuardrail">rule!customGuardrail</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {/* Step 3: Review */}
+                {/* Step 3: Actions */}
                 {wizardStep === 3 && (
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    {['User Input', 'LLM Output'].map((scope, si) => {
+                      const action = si === 0 ? grInputAction : grOutputAction
+                      const setAction = si === 0 ? setGrInputAction : setGrOutputAction
+                      return (
+                        <div key={scope}>
+                          <HeadingField text={`${scope} Action`} size="SMALL" marginBelow="LESS" />
+                          <div className="grid grid-cols-4 gap-3 mb-3">
+                            {[
+                              { id: 'block', label: 'Block', desc: 'Stop with a message', icon: 'Ban' },
+                              { id: 'warn', label: 'Warn', desc: 'Warning before proceeding', icon: 'AlertTriangle' },
+                              { id: 'allow', label: 'Allow', desc: 'Allow with tone', icon: 'Check' },
+                              { id: 'mask', label: 'Mask', desc: 'Redact matched content', icon: 'EyeOff' },
+                            ].map(a => (
+                              <div key={a.id} onClick={() => setAction(a.id)} className={`p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${action === a.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                                <div className="flex flex-col items-center text-center gap-1">
+                                  <Icon icon={a.icon as any} size="SMALL" />
+                                  <span className="text-sm font-medium">{a.label}</span>
+                                  <span className="text-[10px] text-gray-500">{a.desc}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {action === 'block' && (
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                              <label className="block text-sm font-medium mb-2">Block Message</label>
+                              <textarea value={grBlockMsg} onChange={e => setGrBlockMsg(e.target.value)} className="w-full h-20 p-3 border border-gray-300 rounded-md resize-none text-sm" />
+                            </div>
+                          )}
+                          {action === 'warn' && (
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                              <label className="block text-sm font-medium mb-2">Warning Message</label>
+                              <textarea value={grWarnMsg} onChange={e => setGrWarnMsg(e.target.value)} className="w-full h-20 p-3 border border-gray-300 rounded-md resize-none text-sm" />
+                            </div>
+                          )}
+                          {action === 'allow' && (
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                              <label className="block text-sm font-medium mb-2">Specify Tone</label>
+                              <input value={grAllowTone} onChange={e => setGrAllowTone(e.target.value)} placeholder="e.g., professional, empathetic, neutral" className="w-full p-3 border border-gray-300 rounded-md text-sm" />
+                            </div>
+                          )}
+                          {action === 'mask' && (
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                              <label className="block text-sm font-medium mb-2">Masking Method</label>
+                              <div className="grid grid-cols-2 gap-2">
+                                {['Replace with ***', 'Replace with [REDACTED]', 'Hash value', 'Remove entirely'].map(m => (
+                                  <div key={m} onClick={() => setGrMaskMethod(m)} className={`p-3 border-2 rounded-lg cursor-pointer text-sm transition-all ${grMaskMethod === m ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>{m}</div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Step 4: Review */}
+                {wizardStep === 4 && (
                   <div className="space-y-4 animate-in fade-in duration-300">
                     <HeadingField text="Review Your Guardrail" size="SMALL" marginBelow="STANDARD" />
                     <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                       <div><span className="font-semibold">Name:</span> {formData.name || 'Not specified'}</div>
                       <div><span className="font-semibold">Description:</span> {formData.description || 'Not specified'}</div>
                       <div><span className="font-semibold">Type:</span> {selectedType || 'Not selected'}</div>
-                      <div><span className="font-semibold">Action:</span> {formData.action || 'Not selected'}</div>
-                      {formData.actionMessage && (
-                        <div><span className="font-semibold">Message:</span> {formData.actionMessage}</div>
-                      )}
+                      <div><span className="font-semibold">Detection:</span> {grDetection || 'Not selected'}</div>
+                      {grDetection === 'keyword' && <div><span className="font-semibold">Keywords:</span> {grKeywords || 'None'}</div>}
+                      {grDetection === 'regex' && <div><span className="font-semibold">Pattern:</span> <code className="bg-white px-2 py-0.5 rounded text-sm">{grRegex || 'None'}</code></div>}
+                      {grDetection === 'semantic' && <><div><span className="font-semibold">Topic:</span> {grTopic || 'None'}</div><div><span className="font-semibold">Threshold:</span> {grThreshold}</div></>}
+                      {grDetection === 'expression' && <div><span className="font-semibold">Expression:</span> {grExpression || 'None'}</div>}
+                      <div><span className="font-semibold">Input Action:</span> {grInputAction || 'Not selected'}</div>
+                      <div><span className="font-semibold">Output Action:</span> {grOutputAction || 'Not selected'}</div>
                     </div>
                   </div>
                 )}
               </>
             )}
           </div>
+
+          {/* AI Regex Help Modal */}
+          {grShowAiHelp && (
+                <div className="fixed inset-0 bg-black/40 z-[200] flex items-center justify-center" onClick={() => setGrShowAiHelp(false)}>
+                  <div className="bg-white rounded-2xl shadow-2xl w-[500px] p-6" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Icon icon="Sparkles" size="SMALL" />
+                      <span className="text-base font-semibold text-gray-900">AI Regex Helper</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-4">Describe what you want to match in plain language and I will generate a regex pattern.</p>
+                    <textarea value={grAiPrompt} onChange={e => setGrAiPrompt(e.target.value)} placeholder="e.g., social security numbers, email addresses, credit card numbers" className="w-full h-24 p-3 border border-gray-300 rounded-md resize-none text-sm mb-3" />
+                    <button onClick={() => setGrAiResult(`(?i)\\b(${grAiPrompt.split(/[,\s]+/).filter(Boolean).join('|')})\\b`)} className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-all mb-4">Generate Pattern</button>
+                    {grAiResult && (
+                      <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                        <div className="text-xs text-gray-500 mb-1">Generated Pattern</div>
+                        <code className="text-sm font-mono text-gray-800 break-all block">{grAiResult}</code>
+                      </div>
+                    )}
+                    <div className="flex gap-2 justify-end">
+                      <button onClick={() => setGrShowAiHelp(false)} className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50">Cancel</button>
+                      {grAiResult && <button onClick={() => { setGrRegex(grAiResult); setGrRegexValid(true); setGrShowAiHelp(false) }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Use This Pattern</button>}
+                    </div>
+                  </div>
+                </div>
+              )}
 
           {/* Fixed Footer */}
           <div className={`flex justify-between pt-4 pb-2 px-6 bg-white relative z-30 -mx-6 transition-shadow duration-300 ${!scrollState.bottom ? 'shadow-[0_-8px_16px_-8px_rgba(0,0,0,0.08)]' : ''}`}>
@@ -7669,7 +7849,7 @@ export default function TabsInterface({ activeSection, cardStyle = 'glass', onSe
                 onClick={() => setWizardStep(Math.max(1, wizardStep - 1))}
               />
             )}
-            {wizardStep < (selectedV3GuardrailType === 'PII Scrubbing' ? 5 : 3) ? (
+            {wizardStep < (selectedV3GuardrailType === 'PII Scrubbing' ? 5 : 4) ? (
               <ButtonWidget 
                 label="Next" 
                 style="SOLID" 
