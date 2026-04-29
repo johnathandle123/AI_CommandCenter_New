@@ -8,6 +8,7 @@ export interface Version {
 }
 
 const VERSIONS: Version[] = [
+  { id: 'v5-4-29-2026', label: 'V5', date: '4/29/2026' },
   { id: 'v4-4-27-2026', label: 'V4', date: '4/27/2026' },
   { id: 'v3-4-23-2026', label: 'V3', date: '4/23/2026' },
   { id: 'v2-4-13-2026', label: 'V2', date: '4/13/2026' },

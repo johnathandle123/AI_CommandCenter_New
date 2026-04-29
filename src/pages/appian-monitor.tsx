@@ -1,9 +1,10 @@
 import { HeadingField } from '@pglevy/sailwind'
-import { Search, Grid3X3, Paintbrush, Settings, Brain, Monitor, Database, Flag, FileText, Info, HelpCircle, Activity, AlertTriangle, XCircle, Clock, RefreshCw, Bot, BarChart3, Globe, Layers, PanelLeftClose, PanelLeftOpen, Sparkles, CheckCircle, Zap, ExternalLink as LinkIcon, ChevronDown, Download, Home, List, SlidersHorizontal, Lightbulb } from 'lucide-react'
+import { Search, Grid3X3, Paintbrush, Settings, Brain, Monitor, Database, Flag, FileText, Info, HelpCircle, Activity, AlertTriangle, XCircle, Clock, RefreshCw, Bot, BarChart3, Globe, Layers, PanelLeftClose, PanelLeftOpen, Sparkles, CheckCircle, Zap, ExternalLink as LinkIcon, ChevronDown, Download, Home, List, SlidersHorizontal, Lightbulb, ChevronRight } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'wouter'
+import CustomDashboard from './custom-dashboard'
 import { useWaffleOption, AppiaFab } from '../components/appia-shared'
-import VersionSwitcher from '../components/VersionSwitcher'
+import VersionSwitcher, { useAppVersion } from '../components/VersionSwitcher'
 
 const allWaffleApps = [
   { name: 'Appina', icon: Sparkles, color: 'bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400', path: '/appian-ai', options: ['option5'] as const },
@@ -424,23 +425,27 @@ function ProcessActivity() {
 }
 
 function ProcessModelMetrics() {
+  const [page, setPage] = useState(1)
+  const perPage = 15
+  const prefixes = ['CO','INV','HR','HD','AT','DR','EX','VN','PO','CL','FN','RP','WF','AP','SC']
+  const names = ['Onboarding','Process','Review','Ticket','Transfer','Document','Approval','Vendor','Purchase','Claims','Finance','Report','Workflow','Application','Security']
+  const allModels = Array.from({ length: 82 }, (_, i) => {
+    const s = i < 5 ? 'high' : i < 20 ? 'medium' : 'low'
+    return { name: `${prefixes[i % 15]}_${names[i % 15]}_v${(i % 4) + 1}`, status: s, totalMem: (Math.floor(Math.random() * 1200000) + 10000).toLocaleString(), avgMem: (Math.floor(Math.random() * 15000) + 500).toLocaleString(), instances: Math.floor(Math.random() * 200) + 5, completed: `${Math.floor(Math.random() * 30) + 65}%`, cleanup: i % 7 === 0 ? 'Never' : `${[7,14,30,60,90][i % 5]}` }
+  })
+  const totalPages = Math.ceil(allModels.length / perPage)
+  const paginated = allModels.slice((page - 1) * perPage, page * perPage)
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between">
         <div className="relative w-80"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search process models..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
-        <div className="relative"><details className="inline-block"><summary className="p-2 border border-gray-200 rounded-lg text-gray-400 hover:text-gray-600 cursor-pointer list-none"><SlidersHorizontal size={14} /></summary><div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4 space-y-3"><div><label className="block text-xs font-medium text-gray-700 mb-1">Status</label><div className="space-y-1">{['Healthy','Warning','Critical'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div><div><label className="block text-xs font-medium text-gray-700 mb-1">Clean-up Policy</label><div className="space-y-1">{['Has policy','No policy'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div></div></details></div>
+        <div className="relative"><details className="inline-block"><summary className="p-2 border border-gray-200 rounded-lg text-gray-400 hover:text-gray-600 cursor-pointer list-none"><SlidersHorizontal size={14} /></summary><div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4 space-y-3"><div><label className="block text-xs font-medium text-gray-700 mb-1">Status</label><div className="space-y-1">{['Healthy','Warning','Critical'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div></div></details></div>
       </div>
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <table className="w-full">
           <thead className="bg-white border-b border-gray-200"><tr><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Process Model</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Total Memory (AMU)</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Avg Instance (AMU)</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Instances</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Completed</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Clean-up Days</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th></tr></thead>
           <tbody className="divide-y divide-gray-200">
-            {[
-              { name: 'CO_Onboarding_v3', status: 'high', totalMem: '1,245,000', avgMem: '12,450', instances: 100, completed: '78%', cleanup: '30' },
-              { name: 'INV_Process_v2', status: 'medium', totalMem: '456,000', avgMem: '9,120', instances: 50, completed: '92%', cleanup: '14' },
-              { name: 'HR_Review_v1', status: 'low', totalMem: '45,000', avgMem: '2,250', instances: 20, completed: '95%', cleanup: '7' },
-              { name: 'HD_Ticket_v4', status: 'low', totalMem: '78,000', avgMem: '3,900', instances: 20, completed: '88%', cleanup: '30' },
-              { name: 'AT_Transfer_v1', status: 'medium', totalMem: '234,000', avgMem: '7,800', instances: 30, completed: '67%', cleanup: 'Never' },
-            ].map((pm, i) => (
+            {paginated.map((pm, i) => (
               <tr key={i} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 text-sm font-medium text-blue-600 cursor-pointer hover:underline">{pm.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">{pm.totalMem}</td>
@@ -453,15 +458,36 @@ function ProcessModelMetrics() {
             ))}
           </tbody>
         </table>
+        <div className="p-3 border-t border-gray-200 flex items-center justify-between text-sm">
+          <span className="text-gray-500">Showing {(page-1)*perPage+1}–{Math.min(page*perPage, allModels.length)} of {allModels.length}</span>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, page - 3), page + 2).map(p => (
+              <button key={p} onClick={() => setPage(p)} className={`px-3 py-1 rounded-md ${p === page ? 'bg-blue-600 text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{p}</button>
+            ))}
+            <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
 function RecordResponseTimes() {
+  const [page, setPage] = useState(1)
+  const perPage = 15
+  const records = ['Customer','Invoice','Employee','Case','Asset','Vendor','Order','Product','Claim','Policy','Account','Contact','Lead','Opportunity','Task']
+  const views = ['Record List','Detail View','Summary View','Edit Form','Dashboard View','Report View']
+  const allRecords = Array.from({ length: 95 }, (_, i) => {
+    const maxT = +(Math.random() * 9 + 0.3).toFixed(1)
+    const avgT = +(maxT * (0.3 + Math.random() * 0.4)).toFixed(1)
+    return { name: `${records[i % 15]} ${views[i % 6]}`, category: i % 3 === 0 ? 'List' : 'View', health: maxT > 5 ? 'high' : maxT > 2 ? 'medium' : 'low', maxTime: String(maxT), avgTime: String(avgT) }
+  })
+  const totalPages = Math.ceil(allRecords.length / perPage)
+  const paginated = allRecords.slice((page - 1) * perPage, page * perPage)
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between">
         <div className="relative w-80"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search record views..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
         <div className="relative"><details className="inline-block"><summary className="p-2 border border-gray-200 rounded-lg text-gray-400 hover:text-gray-600 cursor-pointer list-none"><SlidersHorizontal size={14} /></summary><div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4 space-y-3"><div><label className="block text-xs font-medium text-gray-700 mb-1">Category</label><div className="space-y-1">{['List','View'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div><div><label className="block text-xs font-medium text-gray-700 mb-1">Status</label><div className="space-y-1">{['Healthy','Warning','Critical'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div></div></details></div>
       </div>
@@ -469,13 +495,7 @@ function RecordResponseTimes() {
         <table className="w-full">
           <thead className="bg-white border-b border-gray-200"><tr><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Record UI</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Category</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Max Time (s)</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Avg Time (s)</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th></tr></thead>
           <tbody className="divide-y divide-gray-200">
-            {[
-              { name: 'Customer Record List', category: 'List', health: 'low', maxTime: '1.2', avgTime: '0.4' },
-              { name: 'Invoice Detail View', category: 'View', health: 'medium', maxTime: '3.8', avgTime: '1.9' },
-              { name: 'Employee Record List', category: 'List', health: 'low', maxTime: '0.8', avgTime: '0.3' },
-              { name: 'Case Summary View', category: 'View', health: 'high', maxTime: '8.5', avgTime: '4.2' },
-              { name: 'Asset Inventory List', category: 'List', health: 'low', maxTime: '1.5', avgTime: '0.6' },
-            ].map((r, i) => (
+            {paginated.map((r, i) => (
               <tr key={i} className="hover:bg-gray-50 cursor-pointer transition-colors">
                 <td className="px-6 py-4 text-sm font-medium text-blue-600 hover:underline">{r.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-700">{r.category}</td>
@@ -486,6 +506,16 @@ function RecordResponseTimes() {
             ))}
           </tbody>
         </table>
+        <div className="p-3 border-t border-gray-200 flex items-center justify-between text-sm">
+          <span className="text-gray-500">Showing {(page-1)*perPage+1}–{Math.min(page*perPage, allRecords.length)} of {allRecords.length}</span>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, page - 3), page + 2).map(p => (
+              <button key={p} onClick={() => setPage(p)} className={`px-3 py-1 rounded-md ${p === page ? 'bg-blue-600 text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{p}</button>
+            ))}
+            <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -599,8 +629,8 @@ function RPAContent() {
   const [rpaTab, setRpaTab] = useState('robots')
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="bg-white border-b border-gray-200 px-8" style={{ minHeight: '80px' }}>
-        <div className="flex items-center" style={{ minHeight: '48px' }}>
+      <div className="bg-white border-b border-gray-200 px-8">
+        <div className="flex items-center pt-5 pb-2">
           <HeadingField text="RPA" size="LARGE" marginBelow="NONE" />
         </div>
         <div className="flex gap-0">
@@ -1017,53 +1047,53 @@ function InsightsChat({ view, setView }: { view: 'insights' | 'chat' | 'rules'; 
                                           </div>
                                         )}
 
-                                        {/* Remediation steps */}
+                                        {/* Remediation + metadata + actions in blue box */}
                                         {!isResolved && (
-                                          <div className="mt-3">
-                                            <div className="text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5"><Lightbulb size={12} className="text-amber-500" />How to fix this:</div>
-                                            <div className="space-y-3">
-                                              {insight.remediation.split('\n').map((step, si) => {
-                                                const num = step.split('.')[0]
-                                                const rest = step.slice(step.indexOf('.') + 2)
-                                                const [title, ...taskParts] = rest.split('|')
-                                                const task = taskParts.join('|').trim()
-                                                const renderWithLinks = (text: string) => text.split(/(docs\.appian\.com\/[^\s)]+)/g).map((p, pi) => p.startsWith('docs.appian.com') ? <a key={pi} href={`https://${p}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">docs ↗</a> : p)
-                                                return (
-                                                  <div key={si} className="flex gap-2 text-xs">
-                                                    <span className="text-gray-400 flex-shrink-0 font-mono mt-0.5">{num}.</span>
-                                                    <div>
-                                                      <div className="font-semibold text-gray-800">{title.trim()}</div>
-                                                      {task && <div className="text-gray-500 mt-0.5">{renderWithLinks(task)}</div>}
+                                          <div className="mt-3 bg-blue-50 border border-blue-100 rounded-lg p-4 space-y-3">
+                                            <div>
+                                              <div className="text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5"><Lightbulb size={12} className="text-amber-500" />How to fix this:</div>
+                                              <div className="space-y-3">
+                                                {insight.remediation.split('\n').map((step, si) => {
+                                                  const num = step.split('.')[0]
+                                                  const rest = step.slice(step.indexOf('.') + 2)
+                                                  const [title, ...taskParts] = rest.split('|')
+                                                  const task = taskParts.join('|').trim()
+                                                  const renderWithLinks = (text: string) => text.split(/(docs\.appian\.com\/[^\s)]+)/g).map((p, pi) => p.startsWith('docs.appian.com') ? <a key={pi} href={`https://${p}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">docs ↗</a> : p)
+                                                  return (
+                                                    <div key={si} className="flex gap-2 text-xs">
+                                                      <span className="text-gray-400 flex-shrink-0 font-mono mt-0.5">{num}.</span>
+                                                      <div>
+                                                        <div className="font-semibold text-gray-800">{title.trim()}</div>
+                                                        {task && <div className="text-gray-500 mt-0.5">{renderWithLinks(task)}</div>}
+                                                      </div>
                                                     </div>
-                                                  </div>
-                                                )
-                                              })}
+                                                  )
+                                                })}
+                                              </div>
                                             </div>
-                                          </div>
-                                        )}
 
-                                        {/* Metadata row */}
-                                        <div className="mt-3 flex items-center gap-3 flex-wrap text-[10px] text-gray-400">
-                                          <span>Source: {insight.source}</span>
-                                          <span>·</span>
-                                          <span>Confidence: <span className={insight.confidence === 'High' ? 'text-green-600' : insight.confidence === 'Medium' ? 'text-amber-600' : 'text-gray-500'}>{insight.confidence}</span></span>
-                                          <span>·</span>
-                                          <span>First seen: {insight.firstSeen}</span>
-                                          <span>·</span>
-                                          <span>{insight.category}</span>
-                                        </div>
+                                            <div className="flex items-center gap-3 flex-wrap text-[10px] text-gray-400">
+                                              <span>Source: {insight.source}</span>
+                                              <span>·</span>
+                                              <span>Confidence: <span className={insight.confidence === 'High' ? 'text-green-600' : insight.confidence === 'Medium' ? 'text-amber-600' : 'text-gray-500'}>{insight.confidence}</span></span>
+                                              <span>·</span>
+                                              <span>First seen: {insight.firstSeen}</span>
+                                              <span>·</span>
+                                              <span>{insight.category}</span>
+                                            </div>
 
-                                        {/* Actions */}
-                                        {!isResolved && !isResolving && (
-                                          <div className="flex items-center gap-2 flex-wrap mt-3">
-                                            {insight.navTarget && (
-                                              <button onClick={(e) => { e.stopPropagation(); handleResolve(insight.id) }} className="btn-manual">
-                                                <LinkIcon size={12} />Resolve Manually
-                                              </button>
+                                            {!isResolving && (
+                                              <div className="flex items-center gap-2 flex-wrap">
+                                                {insight.navTarget && (
+                                                  <button onClick={(e) => { e.stopPropagation(); handleResolve(insight.id) }} className="btn-manual">
+                                                    <LinkIcon size={12} />Resolve Manually
+                                                  </button>
+                                                )}
+                                                <button onClick={(e) => { e.stopPropagation(); handleAgentResolve(insight.id) }} className="btn-gradient-text">
+                                                  <Zap size={12} />Send to Composer
+                                                </button>
+                                              </div>
                                             )}
-                                            <button onClick={(e) => { e.stopPropagation(); handleAgentResolve(insight.id) }} className="btn-gradient-text">
-                                              <Zap size={12} />Send to Composer
-                                            </button>
                                           </div>
                                         )}
                                         {isResolving && (
@@ -1273,6 +1303,7 @@ function InsightsChat({ view, setView }: { view: 'insights' | 'chat' | 'rules'; 
 const navItems = [
   { id: 'ops-ai', label: 'Operations AI', icon: Sparkles },
   { id: 'home', label: 'Home', icon: Home },
+  { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
   { id: 'processes', label: 'Process Activity', icon: Layers },
   { id: 'process-metrics', label: 'Process Model Metrics', icon: BarChart3 },
   { id: 'record-response', label: 'Record Response Times', icon: Clock },
@@ -1286,12 +1317,21 @@ const navItems = [
 // Keep these available for future use
 void HealthDashboard; void ProcessInstancesContent
 
-function AIContent() {
-  const [aiTab, setAiTab] = useState<'observe' | 'evaluate'>('observe')
+function AIContent({ isV5 = false }: { isV5?: boolean }) {
+  const [aiTab, setAiTab] = useState<'observe' | 'evaluate'>(isV5 ? 'evaluate' : 'observe')
+  if (isV5) {
+    return (
+      <div className="flex-1 overflow-auto">
+        <div className="container mx-auto px-6 py-6 max-w-7xl">
+          <EvaluateContent />
+        </div>
+      </div>
+    )
+  }
   return (
     <div>
-      <div className="bg-white border-b border-gray-200 px-8" style={{ minHeight: '80px' }}>
-        <div className="flex items-center" style={{ minHeight: '48px' }}>
+      <div className="bg-white border-b border-gray-200 px-8">
+        <div className="flex items-center pt-5 pb-2">
           <HeadingField text="AI" size="LARGE" marginBelow="NONE" />
         </div>
         <div className="flex gap-0">
@@ -1643,28 +1683,37 @@ function LogSearchContent() {
   const [logsPage, setLogsPage] = useState(0)
   const [regexMode, setRegexMode] = useState(false)
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
-  const allLogs = [
-    { ts: '11:31:42.891', level: 'ERROR' as const, source: 'ProcessExecution', msg: 'Timeout waiting for subprocess "Assign Agent" in PI-204888 after 30000ms', trace: 'com.appian.process.engine.TimeoutException' },
-    { ts: '11:31:40.123', level: 'WARN' as const, source: 'RecordSync', msg: 'Sync for Employee record type failed: connection refused to Salesforce endpoint', trace: '' },
-    { ts: '11:31:38.456', level: 'INFO' as const, source: 'WebAPI', msg: 'POST /suite/webapi/invoice-submit completed in 245ms (200 OK)', trace: '' },
-    { ts: '11:31:35.789', level: 'ERROR' as const, source: 'ProcessExecution', msg: 'Expression evaluation error in "Validate Amount" node: division by zero in PI-204883', trace: 'com.appian.expressions.EvalException' },
-    { ts: '11:31:32.012', level: 'INFO' as const, source: 'ProcessExecution', msg: 'Process instance PI-204890 (Invoice Processing) completed successfully', trace: '' },
-    { ts: '11:31:28.345', level: 'WARN' as const, source: 'Security', msg: 'Failed login attempt for user "admin.test" from IP 10.0.4.52 (3rd attempt)', trace: '' },
-    { ts: '11:31:25.678', level: 'INFO' as const, source: 'AISkill', msg: 'Invoice Processing AI skill invocation completed: 980 input tokens, 240 output tokens, 1.6s latency', trace: '' },
-    { ts: '11:31:22.901', level: 'DEBUG' as const, source: 'QueryPerf', msg: 'Slow query detected: Customer record query took 2.4s (threshold: 2s)', trace: '' },
-    { ts: '11:31:20.234', level: 'INFO' as const, source: 'Portal', msg: 'Portal "Customer Self-Service" health check passed (response: 52ms)', trace: '' },
-    { ts: '11:31:18.567', level: 'ERROR' as const, source: 'Integration', msg: 'Connected system "SAP_Finance" returned HTTP 503: service unavailable', trace: 'com.appian.integration.HttpException' },
-    { ts: '11:31:15.890', level: 'INFO' as const, source: 'ProcessExecution', msg: 'Process instance PI-204891 started by maria.chen (Customer Onboarding)', trace: '' },
-    { ts: '11:31:12.123', level: 'WARN' as const, source: 'Memory', msg: 'JVM heap usage at 78% (6.2GB / 8GB) — approaching warning threshold', trace: '' },
-    { ts: '11:31:09.456', level: 'INFO' as const, source: 'WebAPI', msg: 'GET /suite/webapi/customer-lookup completed in 89ms (200 OK)', trace: '' },
-    { ts: '11:31:06.789', level: 'ERROR' as const, source: 'RecordSync', msg: 'Record sync for "Order" type exceeded max retry count (3). Last error: socket timeout', trace: 'com.appian.data.sync.SyncException' },
-    { ts: '11:31:03.012', level: 'WARN' as const, source: 'AISkill', msg: 'AI skill "Document Classifier" response latency 4.2s exceeds 3s SLA threshold', trace: '' },
-    { ts: '11:31:00.345', level: 'INFO' as const, source: 'Security', msg: 'User john.smith authenticated via SSO (SAML 2.0)', trace: '' },
-    { ts: '11:30:57.678', level: 'DEBUG' as const, source: 'Integration', msg: 'Outbound call to https://api.salesforce.com/v58 — 312ms, 200 OK', trace: '' },
-    { ts: '11:30:54.901', level: 'WARN' as const, source: 'ProcessExecution', msg: 'Process model "Expense Approval" has 847 active instances — approaching 1000 limit', trace: '' },
-    { ts: '11:30:51.234', level: 'INFO' as const, source: 'Portal', msg: 'Portal "Vendor Registration" received 23 submissions in last 5 minutes', trace: '' },
-    { ts: '11:30:48.567', level: 'ERROR' as const, source: 'Security', msg: 'Unauthorized API access attempt: invalid token for /suite/webapi/admin-data from IP 10.0.9.14', trace: 'com.appian.security.AuthException' },
+  const logTemplates = [
+    { level: 'ERROR' as const, source: 'ProcessExecution', msg: 'Timeout waiting for subprocess in PI-{id} after 30000ms', trace: 'com.appian.process.engine.TimeoutException' },
+    { level: 'WARN' as const, source: 'RecordSync', msg: 'Sync for {record} record type failed: connection refused', trace: '' },
+    { level: 'INFO' as const, source: 'WebAPI', msg: '{method} /suite/webapi/{endpoint} completed in {ms}ms (200 OK)', trace: '' },
+    { level: 'ERROR' as const, source: 'ProcessExecution', msg: 'Expression evaluation error in "{node}" node: {error} in PI-{id}', trace: 'com.appian.expressions.EvalException' },
+    { level: 'INFO' as const, source: 'ProcessExecution', msg: 'Process instance PI-{id} ({process}) completed successfully', trace: '' },
+    { level: 'WARN' as const, source: 'Security', msg: 'Failed login attempt for user "{user}" from IP 10.0.{ip}', trace: '' },
+    { level: 'INFO' as const, source: 'AISkill', msg: '{skill} AI skill invocation completed: {tokens} tokens, {latency}s latency', trace: '' },
+    { level: 'DEBUG' as const, source: 'QueryPerf', msg: 'Slow query detected: {record} record query took {time}s (threshold: 2s)', trace: '' },
+    { level: 'INFO' as const, source: 'Portal', msg: 'Portal "{portal}" health check passed (response: {ms}ms)', trace: '' },
+    { level: 'ERROR' as const, source: 'Integration', msg: 'Connected system "{system}" returned HTTP {code}: {error}', trace: 'com.appian.integration.HttpException' },
+    { level: 'INFO' as const, source: 'ProcessExecution', msg: 'Process instance PI-{id} started by {user} ({process})', trace: '' },
+    { level: 'WARN' as const, source: 'Memory', msg: 'JVM heap usage at {pct}% ({used}GB / 8GB)', trace: '' },
+    { level: 'INFO' as const, source: 'Security', msg: 'User {user} authenticated via SSO (SAML 2.0)', trace: '' },
+    { level: 'DEBUG' as const, source: 'Integration', msg: 'Outbound call to {url} — {ms}ms, 200 OK', trace: '' },
+    { level: 'WARN' as const, source: 'AISkill', msg: 'AI skill "{skill}" response latency {time}s exceeds 3s SLA threshold', trace: '' },
   ]
+  const recs = ['Customer','Invoice','Employee','Case','Asset','Order','Vendor','Product']
+  const procs = ['Customer Onboarding','Invoice Processing','HR Review','Help Desk','Expense Approval','Document Review']
+  const usrs = ['john.smith','jane.doe','mike.wilson','sarah.jones','david.brown','lisa.garcia','tom.anderson','maria.chen']
+  const allLogs = Array.from({ length: 250 }, (_, i) => {
+    const t = logTemplates[i % logTemplates.length]
+    const h = 11, m = 31 - Math.floor(i * 0.12), s = 59 - ((i * 7) % 60), ms = ((i * 137) % 1000)
+    return {
+      ts: `${h}:${String(Math.abs(m) % 60).padStart(2,'0')}:${String(Math.abs(s) % 60).padStart(2,'0')}.${String(ms).padStart(3,'0')}`,
+      level: t.level,
+      source: t.source,
+      msg: t.msg.replace('{id}', String(204900 - i)).replace('{record}', recs[i % 8]).replace('{method}', i % 2 ? 'GET' : 'POST').replace('{endpoint}', ['customer-lookup','invoice-submit','employee-search','case-update'][i % 4]).replace('{ms}', String(50 + (i * 13) % 400)).replace('{node}', ['Validate Amount','Assign Agent','Check Status','Send Email'][i % 4]).replace('{error}', ['division by zero','null pointer','type mismatch'][i % 3]).replace('{process}', procs[i % 6]).replace('{user}', usrs[i % 8]).replace('{ip}', `${(i % 10) + 1}.${(i * 3) % 255}`).replace('{skill}', ['Invoice Processing','Document Classifier','Customer Support'][i % 3]).replace('{tokens}', String(200 + i * 7)).replace('{latency}', String((1 + (i % 5) * 0.4).toFixed(1))).replace('{time}', String((2 + (i % 4) * 0.8).toFixed(1))).replace('{portal}', ['Customer Self-Service','Vendor Registration','Partner Portal'][i % 3]).replace('{system}', ['SAP_Finance','Salesforce_CRM','DocuSign'][i % 3]).replace('{code}', ['503','502','504'][i % 3]).replace('{pct}', String(70 + i % 15)).replace('{used}', String((5.5 + (i % 20) * 0.1).toFixed(1))).replace('{url}', ['https://api.salesforce.com/v58','https://sap.corp/api','https://api.docusign.com'][i % 3]),
+      trace: t.trace,
+    }
+  })
 
   const matchesSearch = (log: typeof allLogs[0]) => {
     if (!logSearch) return true
@@ -1858,9 +1907,12 @@ function ProcessInstancesContent() {
 }
 
 export default function AppianMonitor() {
+  const [appVersion] = useAppVersion()
+  const isV5 = appVersion.startsWith('v5')
   const [showWaffleMenu, setShowWaffleMenu] = useState(false)
   const [navCollapsed, setNavCollapsed] = useState(false)
   const [activeItem, setActiveItem] = useState('ops-ai')
+  const filteredNavItems = isV5 ? navItems.filter(n => n.id !== 'home') : navItems
   const [showFilterPanel, setShowFilterPanel] = useState(false)
   const [filterApp, setFilterApp] = useState('All')
   const [filterEnv, setFilterEnv] = useState('Production')
@@ -1890,7 +1942,6 @@ export default function AppianMonitor() {
   const [waffleSiteSearch, setWaffleSiteSearch] = useState('')
 
   const waffleApps = allWaffleApps.filter(app => !app.options || app.options.includes(waffleOption))
-  const filteredNavItems = navItems
   const allSites = [
     'Admin Console', 'AI Command Center', 'Appian Designer', 'Operations Console',
     'Appian RPA', 'Cloud Database', 'Connected Systems', 'Data Fabric',
@@ -2029,7 +2080,7 @@ export default function AppianMonitor() {
             </div>
           )}
           {/* Normal header for all other views */}
-          {!(activeItem === 'ops-ai' && opsAiView === 'rules') && activeItem !== 'ai' && activeItem !== 'rpa' && (() => {
+          {!(activeItem === 'ops-ai' && opsAiView === 'rules') && !(activeItem === 'ai' && !isV5) && activeItem !== 'rpa' && activeItem !== 'dashboard' && (() => {
           return (
           <div className="bg-white border-b border-gray-200 px-8 flex-shrink-0 flex items-center" style={{ minHeight: '80px' }}>
             <div className="flex items-center justify-between w-full">
@@ -2166,16 +2217,19 @@ export default function AppianMonitor() {
             </div>
           </div>
           )})()}
-          {activeItem === 'ai' ? (
-            <AIContent />
+          {activeItem === 'ai' && !isV5 ? (
+            <AIContent isV5={isV5} />
           ) : activeItem === 'rpa' ? (
             <RPAContent />
+          ) : activeItem === 'dashboard' ? (
+            <div className="flex-1 overflow-auto"><CustomDashboard embedded /></div>
           ) : activeItem === 'ops-ai' ? (
             <InsightsChat view={opsAiView} setView={setOpsAiView} />
           ) : (
           <div className="flex-1 overflow-auto">
           <div className="container mx-auto px-6 py-6 max-w-7xl">
             {activeItem === 'home' && <HomeContent editing={homeEditing} />}
+            {activeItem === 'ai' && isV5 && <EvaluateContent />}
             {activeItem === 'processes' && <ProcessActivity />}
             {activeItem === 'process-metrics' && <ProcessModelMetrics />}
             {activeItem === 'record-response' && <RecordResponseTimes />}
@@ -2217,7 +2271,7 @@ export function MonitorPanel({ hideNav = false }: { hideNav?: boolean }) {
         ) : (
         <div className="flex-1 overflow-auto">
         <div className="container mx-auto px-6 py-6 max-w-7xl">
-          {activeItem === 'ai' && <AIContent />}
+          {activeItem === 'ai' && <AIContent isV5={false} />}
           {activeItem === 'home' && <HomeContent editing={false} />}
           {activeItem === 'processes' && <ProcessActivity />}
           {activeItem === 'process-metrics' && <ProcessModelMetrics />}

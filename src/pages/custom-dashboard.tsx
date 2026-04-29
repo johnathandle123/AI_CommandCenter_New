@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react'
 import { Responsive, WidthProvider } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
-import { Plus, Settings, Trash2, GripVertical, BarChart3, TrendingUp, PieChart, Hash, Table, Activity, ChevronRight, ChevronDown, Search, X, Upload, Database, Globe, FileText, Layers, GitBranch, Link2, FolderOpen, Check } from 'lucide-react'
+import { HeadingField } from '@pglevy/sailwind'
+import { Plus, Settings, Trash2, GripVertical, BarChart3, TrendingUp, PieChart, Hash, Table, Activity, ChevronRight, ChevronDown, Search, X, Upload, Database, Globe, FileText, GitBranch, Check } from 'lucide-react'
 import { Link } from 'wouter'
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
@@ -28,9 +29,8 @@ const appianObjects = [
   { type: 'Records', icon: <Database size={14} />, items: ['Customer','Invoice','Employee','Case','Asset','Vendor','Order','Product'] },
   { type: 'Process Models', icon: <GitBranch size={14} />, items: ['CO_Onboarding_v3','INV_Process_v2','HR_Review_v1','HD_Ticket_v4','EX_Approval_v1'] },
   { type: 'Reports', icon: <FileText size={14} />, items: ['Monthly Revenue','Active Cases','Employee Headcount','SLA Compliance','Cost Analysis'] },
-  { type: 'Interfaces', icon: <Layers size={14} />, items: ['Customer Dashboard','Invoice Detail','HR Portal','Vendor Registration','Claims Intake'] },
-  { type: 'Integrations', icon: <Link2 size={14} />, items: ['SAP_Finance','Salesforce_CRM','DocuSign','Twilio_SMS','AWS_S3'] },
-  { type: 'Data Stores', icon: <FolderOpen size={14} />, items: ['Primary DB','Analytics Warehouse','Archive Store','Staging DB'] },
+  { type: 'AI Usage', icon: <Activity size={14} />, items: ['AI Calls Summary','AI Cost by Skill','Guardrail Triggers','Model Latency','Token Usage'] },
+  { type: 'MCP', icon: <Globe size={14} />, items: ['Tool Call Volume','Server Status','Error Rate by Server','Response Times','Available Tools'] },
 ]
 
 const fieldsBySource: Record<string, string[]> = {
@@ -38,66 +38,147 @@ const fieldsBySource: Record<string, string[]> = {
   Invoice: ['Total Amount','Pending Count','Overdue','Avg Processing Time','By Status','Monthly Trend'],
   Employee: ['Headcount','New Hires','Turnover Rate','By Department','Avg Tenure','Open Positions'],
   Case: ['Open Cases','Resolved Today','Avg Resolution Time','By Priority','SLA Compliance','Backlog'],
+  'AI Calls Summary': ['Total Calls','By Skill','By Status','Avg Latency','Error Rate','Cost MTD'],
+  'AI Cost by Skill': ['Monthly Trend','By Skill','Top 5 Costliest','Cost per Request','Budget vs Actual'],
+  'Guardrail Triggers': ['Total Triggers','By Type','PII Detections','Toxicity Blocks','Trend'],
+  'Tool Call Volume': ['Total Calls','By Server','By Tool','Trend','Peak Hours'],
+  'Server Status': ['Connected Count','Error Rate','Avg Response Time','By Server','Uptime'],
   default: ['Count','Sum','Average','Min','Max','Trend','Distribution','Top 10'],
 }
 
-const defaultCards: CardConfig[] = [
-  { id: 'c1', title: 'Active Cases', chartType: 'kpi', dataSource: 'Case', dataField: 'Open Cases', color: '#3b82f6' },
-  { id: 'c2', title: 'Monthly Revenue', chartType: 'line', dataSource: 'Invoice', dataField: 'Monthly Trend', color: '#10b981' },
-  { id: 'c3', title: 'Cases by Priority', chartType: 'bar', dataSource: 'Case', dataField: 'By Priority', color: '#8b5cf6' },
-  { id: 'c4', title: 'Employee Distribution', chartType: 'pie', dataSource: 'Employee', dataField: 'By Department', color: '#f59e0b' },
-  { id: 'c5', title: 'Invoice Status', chartType: 'table', dataSource: 'Invoice', dataField: 'By Status', color: '#ec4899' },
-  { id: 'c6', title: 'SLA Compliance', chartType: 'kpi', dataSource: 'Case', dataField: 'SLA Compliance', color: '#06b6d4' },
+const homeCards: CardConfig[] = [
+  // Health Summary row (4 cards)
+  { id: 'h1', title: 'Process Activity', chartType: 'kpi', dataSource: 'Case', dataField: 'Open Cases', color: '#3b82f6' },
+  { id: 'h2', title: 'Record Response Times', chartType: 'kpi', dataSource: 'Case', dataField: 'Avg Resolution Time', color: '#f59e0b' },
+  { id: 'h3', title: 'Security Warnings', chartType: 'kpi', dataSource: 'Server Status', dataField: 'Error Rate', color: '#ef4444' },
+  { id: 'h4', title: 'Test Health', chartType: 'kpi', dataSource: 'Server Status', dataField: 'Uptime', color: '#10b981' },
+  // Key Metrics row (3 KPIs)
+  { id: 'h5', title: 'Requests/sec', chartType: 'kpi', dataSource: 'Server Status', dataField: 'Avg Response Time', color: '#3b82f6' },
+  { id: 'h6', title: 'Avg Latency', chartType: 'kpi', dataSource: 'AI Calls Summary', dataField: 'Avg Latency', color: '#f59e0b' },
+  { id: 'h7', title: 'Error Rate', chartType: 'kpi', dataSource: 'AI Calls Summary', dataField: 'Error Rate', color: '#ef4444' },
+  // Throughput & Latency (2 wide charts)
+  { id: 'h8', title: 'Throughput (req/s)', chartType: 'line', dataSource: 'Server Status', dataField: 'Avg Response Time', color: '#3b82f6' },
+  { id: 'h9', title: 'Latency (p50 / p95 / p99)', chartType: 'line', dataSource: 'AI Calls Summary', dataField: 'Avg Latency', color: '#f59e0b' },
+  // Errors & Active Sessions (2 wide)
+  { id: 'h10', title: 'Error Rate Over Time', chartType: 'line', dataSource: 'AI Calls Summary', dataField: 'Error Rate', color: '#ef4444' },
+  { id: 'h11', title: 'Active Sessions', chartType: 'line', dataSource: 'Server Status', dataField: 'Connected Count', color: '#8b5cf6' },
+  // Appian Runtime (4 cards)
+  { id: 'h12', title: 'CPU Usage', chartType: 'line', dataSource: 'Server Status', dataField: 'Avg Response Time', color: '#8b5cf6' },
+  { id: 'h13', title: 'JVM Heap', chartType: 'line', dataSource: 'Server Status', dataField: 'Uptime', color: '#06b6d4' },
+  { id: 'h14', title: 'Thread Pool', chartType: 'line', dataSource: 'Server Status', dataField: 'Connected Count', color: '#10b981' },
+  { id: 'h15', title: 'GC Pauses', chartType: 'line', dataSource: 'Server Status', dataField: 'Error Rate', color: '#ec4899' },
+  // Infrastructure (3 cards)
+  { id: 'h16', title: 'Disk I/O', chartType: 'line', dataSource: 'Server Status', dataField: 'Avg Response Time', color: '#f97316' },
+  { id: 'h17', title: 'Network Throughput', chartType: 'line', dataSource: 'Server Status', dataField: 'Connected Count', color: '#6366f1' },
+  { id: 'h18', title: 'DB Connections', chartType: 'bar', dataSource: 'Server Status', dataField: 'Connected Count', color: '#06b6d4' },
+  // Service Throughput & Top Endpoints (2 wide)
+  { id: 'h19', title: 'Service Throughput', chartType: 'bar', dataSource: 'Tool Call Volume', dataField: 'By Server', color: '#f97316' },
+  { id: 'h20', title: 'Top Endpoints', chartType: 'table', dataSource: 'Tool Call Volume', dataField: 'By Tool', color: '#6366f1' },
 ]
+const homeLayouts = { lg: [
+  { i: 'h1', x: 0, y: 0, w: 3, h: 2, minW: 2, minH: 2 }, { i: 'h2', x: 3, y: 0, w: 3, h: 2, minW: 2, minH: 2 }, { i: 'h3', x: 6, y: 0, w: 3, h: 2, minW: 2, minH: 2 }, { i: 'h4', x: 9, y: 0, w: 3, h: 2, minW: 2, minH: 2 },
+  { i: 'h5', x: 0, y: 2, w: 4, h: 2, minW: 2, minH: 2 }, { i: 'h6', x: 4, y: 2, w: 4, h: 2, minW: 2, minH: 2 }, { i: 'h7', x: 8, y: 2, w: 4, h: 2, minW: 2, minH: 2 },
+  { i: 'h8', x: 0, y: 4, w: 6, h: 3, minW: 2, minH: 2 }, { i: 'h9', x: 6, y: 4, w: 6, h: 3, minW: 2, minH: 2 },
+  { i: 'h10', x: 0, y: 7, w: 6, h: 3, minW: 2, minH: 2 }, { i: 'h11', x: 6, y: 7, w: 6, h: 3, minW: 2, minH: 2 },
+  { i: 'h12', x: 0, y: 10, w: 3, h: 3, minW: 2, minH: 2 }, { i: 'h13', x: 3, y: 10, w: 3, h: 3, minW: 2, minH: 2 }, { i: 'h14', x: 6, y: 10, w: 3, h: 3, minW: 2, minH: 2 }, { i: 'h15', x: 9, y: 10, w: 3, h: 3, minW: 2, minH: 2 },
+  { i: 'h16', x: 0, y: 13, w: 4, h: 3, minW: 2, minH: 2 }, { i: 'h17', x: 4, y: 13, w: 4, h: 3, minW: 2, minH: 2 }, { i: 'h18', x: 8, y: 13, w: 4, h: 3, minW: 2, minH: 2 },
+  { i: 'h19', x: 0, y: 16, w: 6, h: 3, minW: 2, minH: 2 }, { i: 'h20', x: 6, y: 16, w: 6, h: 3, minW: 2, minH: 2 },
+]}
 
-const defaultLayouts = {
-  lg: [
-    { i: 'c1', x: 0, y: 0, w: 3, h: 2 }, { i: 'c2', x: 3, y: 0, w: 5, h: 4 },
-    { i: 'c3', x: 8, y: 0, w: 4, h: 4 }, { i: 'c4', x: 0, y: 2, w: 3, h: 4 },
-    { i: 'c5', x: 3, y: 4, w: 5, h: 4 }, { i: 'c6', x: 8, y: 4, w: 4, h: 2 },
-  ]
-}
+// AI Usage dashboard - mirrors AI > Observe tab
+const aiCards: CardConfig[] = [
+  // KPI row (4 cards)
+  { id: 'a1', title: 'Total Requests', chartType: 'kpi', dataSource: 'AI Calls Summary', dataField: 'Total Calls', color: '#3b82f6' },
+  { id: 'a2', title: 'Avg Latency', chartType: 'kpi', dataSource: 'AI Calls Summary', dataField: 'Avg Latency', color: '#f59e0b' },
+  { id: 'a3', title: 'Error Rate', chartType: 'kpi', dataSource: 'AI Calls Summary', dataField: 'Error Rate', color: '#ef4444' },
+  { id: 'a4', title: 'Est. Cost (MTD)', chartType: 'kpi', dataSource: 'AI Cost by Skill', dataField: 'Budget vs Actual', color: '#8b5cf6' },
+  // Charts row (2 wide)
+  { id: 'a5', title: 'Requests Over Time', chartType: 'bar', dataSource: 'AI Calls Summary', dataField: 'Total Calls', color: '#3b82f6' },
+  { id: 'a6', title: 'Latency (p50 / p95 / p99)', chartType: 'line', dataSource: 'AI Calls Summary', dataField: 'Avg Latency', color: '#f59e0b' },
+  // Cost & Guardrails (2 wide)
+  { id: 'a7', title: 'Cost Over Time', chartType: 'line', dataSource: 'AI Cost by Skill', dataField: 'Monthly Trend', color: '#8b5cf6' },
+  { id: 'a8', title: 'Guardrail Triggers', chartType: 'bar', dataSource: 'Guardrail Triggers', dataField: 'By Type', color: '#ef4444' },
+  // Per-Skill Breakdown (full width table)
+  { id: 'a9', title: 'Per-Skill Breakdown', chartType: 'table', dataSource: 'AI Calls Summary', dataField: 'By Skill', color: '#3b82f6' },
+  // MCP Server (4 KPIs)
+  { id: 'a10', title: 'MCP Tool Calls', chartType: 'kpi', dataSource: 'Tool Call Volume', dataField: 'Total Calls', color: '#3b82f6' },
+  { id: 'a11', title: 'MCP Avg Response', chartType: 'kpi', dataSource: 'Server Status', dataField: 'Avg Response Time', color: '#f59e0b' },
+  { id: 'a12', title: 'MCP Error Rate', chartType: 'kpi', dataSource: 'Server Status', dataField: 'Error Rate', color: '#ef4444' },
+  { id: 'a13', title: 'MCP Available Tools', chartType: 'kpi', dataSource: 'Tool Call Volume', dataField: 'By Tool', color: '#10b981' },
+]
+const aiLayouts = { lg: [
+  { i: 'a1', x: 0, y: 0, w: 3, h: 2, minW: 2, minH: 2 }, { i: 'a2', x: 3, y: 0, w: 3, h: 2, minW: 2, minH: 2 }, { i: 'a3', x: 6, y: 0, w: 3, h: 2, minW: 2, minH: 2 }, { i: 'a4', x: 9, y: 0, w: 3, h: 2, minW: 2, minH: 2 },
+  { i: 'a5', x: 0, y: 2, w: 6, h: 3, minW: 2, minH: 2 }, { i: 'a6', x: 6, y: 2, w: 6, h: 3, minW: 2, minH: 2 },
+  { i: 'a7', x: 0, y: 5, w: 6, h: 3, minW: 2, minH: 2 }, { i: 'a8', x: 6, y: 5, w: 6, h: 3, minW: 2, minH: 2 },
+  { i: 'a9', x: 0, y: 8, w: 12, h: 3, minW: 2, minH: 2 },
+  { i: 'a10', x: 0, y: 11, w: 3, h: 2, minW: 2, minH: 2 }, { i: 'a11', x: 3, y: 11, w: 3, h: 2, minW: 2, minH: 2 }, { i: 'a12', x: 6, y: 11, w: 3, h: 2, minW: 2, minH: 2 }, { i: 'a13', x: 9, y: 11, w: 3, h: 2, minW: 2, minH: 2 },
+]}
+
 
 // ── Chart Renderers ──
 
 function BarChartWidget({ color }: { color: string }) {
-  const bars = [65, 45, 80, 55, 90, 70, 85]
+  const data = [{l:'Mon',v:65},{l:'Tue',v:45},{l:'Wed',v:80},{l:'Thu',v:55},{l:'Fri',v:90},{l:'Sat',v:70},{l:'Sun',v:85}]
   return (
-    <div className="flex items-end gap-1 h-full px-2 pb-1">
-      {bars.map((v, i) => <div key={i} className="flex-1 rounded-t transition-all hover:opacity-80" style={{ height: `${v}%`, backgroundColor: i === 4 ? color : `${color}40` }} />)}
+    <div className="flex flex-col h-full">
+      <div className="flex items-end gap-1 flex-1 px-2 pb-1">
+        {data.map((d, i) => <div key={i} className="flex-1 flex flex-col items-center gap-0.5"><span className="text-[8px] text-gray-500">{d.v}</span><div className="w-full rounded-t transition-all hover:opacity-80" style={{ height: `${d.v}%`, backgroundColor: i === 4 ? color : `${color}40` }} /></div>)}
+      </div>
+      <div className="flex justify-between px-2 text-[8px] text-gray-400">{data.map(d => <span key={d.l}>{d.l}</span>)}</div>
     </div>
   )
 }
 
 function LineChartWidget({ color }: { color: string }) {
   const points = [30, 45, 35, 60, 50, 75, 65, 80, 70, 90, 85, 95]
-  const max = 100, h = 100
-  const path = points.map((p, i) => `${(i / (points.length - 1)) * 100},${h - (p / max) * h}`).join(' ')
+  const max = 100, h = 100, w = 100
+  const coords = points.map((p, i) => ({ x: (i / (points.length - 1)) * w, y: h - (p / max) * h }))
+  // Smooth cubic bezier path
+  const path = coords.reduce((acc, pt, i) => {
+    if (i === 0) return `M${pt.x},${pt.y}`
+    const prev = coords[i - 1]
+    const cpx1 = prev.x + (pt.x - prev.x) * 0.4
+    const cpx2 = pt.x - (pt.x - prev.x) * 0.4
+    return `${acc} C${cpx1},${prev.y} ${cpx2},${pt.y} ${pt.x},${pt.y}`
+  }, '')
+  const gradId = `lg-${color.replace('#', '')}-${Math.random().toString(36).slice(2, 6)}`
   return (
-    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <defs><linearGradient id={`lg-${color}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.3" /><stop offset="100%" stopColor={color} stopOpacity="0.02" /></linearGradient></defs>
-      <polyline points={path} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
-      <polygon points={`0,${h} ${path} 100,${h}`} fill={`url(#lg-${color})`} />
-    </svg>
+    <div className="flex flex-col h-full">
+      <div className="flex flex-1 min-h-0">
+        <div className="flex flex-col justify-between text-[8px] text-gray-400 pr-1 py-1"><span>100</span><span>50</span><span>0</span></div>
+        <div className="flex-1 min-w-0">
+          <svg className="w-full h-full" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+            <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.25" /><stop offset="100%" stopColor={color} stopOpacity="0.02" /></linearGradient></defs>
+            <path d={`${path} L${w},${h} L0,${h} Z`} fill={`url(#${gradId})`} />
+            <path d={path} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            {coords.map((pt, i) => i === coords.length - 1 ? <circle key={i} cx={pt.x} cy={pt.y} r="3" fill={color} vectorEffect="non-scaling-stroke" /> : null)}
+          </svg>
+        </div>
+      </div>
+      <div className="flex justify-between text-[8px] text-gray-400 pl-6"><span>12AM</span><span>6AM</span><span>12PM</span><span>6PM</span><span>Now</span></div>
+    </div>
   )
 }
 
 function PieChartWidget({ color }: { color: string }) {
-  const segments = [35, 25, 20, 12, 8]
+  const segments = [{l:'Group A',v:35},{l:'Group B',v:25},{l:'Group C',v:20},{l:'Group D',v:12},{l:'Other',v:8}]
   const colors = [color, `${color}cc`, `${color}99`, `${color}66`, `${color}33`]
   let cumulative = 0
   return (
-    <svg className="w-full h-full" viewBox="0 0 100 100">
-      {segments.map((seg, i) => {
-        const start = cumulative * 3.6, end = (cumulative + seg) * 3.6
-        cumulative += seg
-        const r = 40, cx = 50, cy = 50
-        const x1 = cx + r * Math.cos((start - 90) * Math.PI / 180), y1 = cy + r * Math.sin((start - 90) * Math.PI / 180)
-        const x2 = cx + r * Math.cos((end - 90) * Math.PI / 180), y2 = cy + r * Math.sin((end - 90) * Math.PI / 180)
-        const large = seg > 50 ? 1 : 0
-        return <path key={i} d={`M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`} fill={colors[i]} className="hover:opacity-80 transition-opacity" />
-      })}
-    </svg>
+    <div className="flex items-center h-full gap-2">
+      <svg className="w-1/2 h-full" viewBox="0 0 100 100">
+        {segments.map((seg, i) => {
+          const start = cumulative * 3.6, end = (cumulative + seg.v) * 3.6
+          cumulative += seg.v
+          const r = 40, cx = 50, cy = 50
+          const x1 = cx + r * Math.cos((start - 90) * Math.PI / 180), y1 = cy + r * Math.sin((start - 90) * Math.PI / 180)
+          const x2 = cx + r * Math.cos((end - 90) * Math.PI / 180), y2 = cy + r * Math.sin((end - 90) * Math.PI / 180)
+          const large = seg.v > 50 ? 1 : 0
+          return <path key={i} d={`M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`} fill={colors[i]} className="hover:opacity-80 transition-opacity" />
+        })}
+      </svg>
+      <div className="space-y-1 text-[9px]">{segments.map((s, i) => <div key={i} className="flex items-center gap-1"><span className="w-2 h-2 rounded-full flex-shrink-0" style={{backgroundColor:colors[i]}} /><span className="text-gray-600">{s.l}</span><span className="text-gray-400 ml-auto">{s.v}%</span></div>)}</div>
+    </div>
   )
 }
 
@@ -154,10 +235,9 @@ function renderChart(card: CardConfig) {
 
 // ── Data Source Picker ──
 
-function DataSourcePicker({ value, field, onSelect }: { value: string; field: string; onSelect: (source: string, field: string) => void }) {
+function DataSourcePicker({ value, field, sourceType, onSelect }: { value: string; field: string; sourceType: 'appian' | 'external'; onSelect: (source: string, field: string) => void }) {
   const [search, setSearch] = useState('')
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['Records']))
-  const [tab, setTab] = useState<'appian' | 'external'>('appian')
   const [selectedSource, setSelectedSource] = useState(value)
   const [selectedField, setSelectedField] = useState(field)
 
@@ -166,14 +246,9 @@ function DataSourcePicker({ value, field, onSelect }: { value: string; field: st
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-1 p-0.5 bg-gray-100 rounded-lg">
-        <button onClick={() => setTab('appian')} className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${tab === 'appian' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Appian Data</button>
-        <button onClick={() => setTab('external')} className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${tab === 'external' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>External</button>
-      </div>
-
-      {tab === 'appian' && (
+      {sourceType === 'appian' && (
         <>
-          <div className="relative"><Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" /><input type="text" placeholder="Search objects..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+          <div className="relative"><Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" /><input type="text" placeholder="Search data sources..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
           <div className="border border-gray-200 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
             {appianObjects.filter(g => !search || g.items.some(i => i.toLowerCase().includes(search.toLowerCase()))).map(group => (
               <div key={group.type}>
@@ -203,7 +278,7 @@ function DataSourcePicker({ value, field, onSelect }: { value: string; field: st
         </>
       )}
 
-      {tab === 'external' && (
+      {sourceType === 'external' && (
         <div className="space-y-2">
           {[
             { name: 'REST API', desc: 'Connect to any API endpoint', icon: <Globe size={14} /> },
@@ -226,6 +301,7 @@ function DataSourcePicker({ value, field, onSelect }: { value: string; field: st
 
 function CardEditPanel({ card, onSave, onClose }: { card: CardConfig; onSave: (c: CardConfig) => void; onClose: () => void }) {
   const [config, setConfig] = useState(card)
+  const [sourceType, setSourceType] = useState<'appian' | 'external'>('appian')
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-[480px] max-h-[85vh] flex flex-col">
@@ -239,14 +315,15 @@ function CardEditPanel({ card, onSave, onClose }: { card: CardConfig; onSave: (c
             <input type="text" value={config.title} onChange={e => setConfig({ ...config, title: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Chart Type</label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['bar','line','pie','kpi','table','heatmap'] as ChartType[]).map(t => (
-                <button key={t} onClick={() => setConfig({ ...config, chartType: t })} className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-medium transition-colors ${config.chartType === t ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}>
-                  {chartIcons[t]}{t.charAt(0).toUpperCase() + t.slice(1)}
-                </button>
-              ))}
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">Data Source Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => setSourceType('appian')} className={`flex items-center gap-2 px-3 py-2.5 border rounded-lg text-xs font-medium transition-colors ${sourceType === 'appian' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}><Database size={14} />Appian Data</button>
+              <button onClick={() => setSourceType('external')} className={`flex items-center gap-2 px-3 py-2.5 border rounded-lg text-xs font-medium transition-colors ${sourceType === 'external' ? 'border-blue-400 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}><Globe size={14} />External Source</button>
             </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">Data Source</label>
+            <DataSourcePicker value={config.dataSource} field={config.dataField} sourceType={sourceType} onSelect={(s, f) => setConfig({ ...config, dataSource: s, dataField: f })} />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1.5">Color</label>
@@ -257,8 +334,35 @@ function CardEditPanel({ card, onSave, onClose }: { card: CardConfig; onSave: (c
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Data Source</label>
-            <DataSourcePicker value={config.dataSource} field={config.dataField} onSelect={(s, f) => setConfig({ ...config, dataSource: s, dataField: f })} />
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">Chart Type</label>
+            {(() => {
+              const fieldLower = (config.dataField || '').toLowerCase()
+              const recommended: ChartType[] =
+                /count|total|rate|compliance|headcount|avg|average/.test(fieldLower) ? ['kpi','bar'] :
+                /trend|monthly|over time/.test(fieldLower) ? ['line','bar'] :
+                /by (region|status|department|priority)|distribution/.test(fieldLower) ? ['pie','bar'] :
+                /top|backlog|open|list/.test(fieldLower) ? ['table','bar'] :
+                /min|max/.test(fieldLower) ? ['heatmap','kpi'] :
+                []
+              return (
+                <>
+                  {recommended.length > 0 && <p className="text-[10px] text-blue-600 mb-2">✦ Recommended for "{config.dataField}" based on data type</p>}
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['bar','line','pie','kpi','table','heatmap'] as ChartType[]).sort((a, b) => {
+                      const ai = recommended.indexOf(a), bi = recommended.indexOf(b)
+                      if (ai !== -1 && bi === -1) return -1
+                      if (ai === -1 && bi !== -1) return 1
+                      return 0
+                    }).map(t => (
+                      <button key={t} onClick={() => setConfig({ ...config, chartType: t })} className={`relative flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-medium transition-colors ${config.chartType === t ? 'border-blue-400 bg-blue-50 text-blue-700' : recommended.includes(t) ? 'border-blue-200 bg-blue-50/30 text-gray-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}>
+                        {chartIcons[t]}{t.charAt(0).toUpperCase() + t.slice(1)}
+                        {recommended.indexOf(t) === 0 && <span className="absolute -top-1.5 -right-1.5 px-1 py-0 bg-blue-600 text-white text-[8px] rounded-full font-bold">Best</span>}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )
+            })()}
           </div>
         </div>
         <div className="flex justify-end gap-2 px-5 py-4 border-t border-gray-200 flex-shrink-0">
@@ -270,21 +374,181 @@ function CardEditPanel({ card, onSave, onClose }: { card: CardConfig; onSave: (c
   )
 }
 
+// ── Dashboard Tab Bar ──
+
+type TabBarProps = { tabs: any[]; activeTab: string; setActiveTab: (id: string) => void; editingTabName: string | null; setEditingTabName: (id: string | null) => void; renameTab: (id: string, name: string) => void; addTab: () => void; deleteTab: (id: string) => void; addCard: () => void }
+
+function DashTabs({ tabs, activeTab, setActiveTab, editingTabName, setEditingTabName, renameTab, addTab, deleteTab, addCard }: TabBarProps) {
+  return (
+    <div className="bg-white border-b border-gray-200 px-8">
+      <div className="flex items-center justify-between pt-5 pb-2">
+        <HeadingField text="Dashboard" size="LARGE" marginBelow="NONE" />
+      </div>
+      <div className="flex gap-0">
+        {tabs.map(tab => (
+          <div key={tab.id} className="relative group">
+            {editingTabName === tab.id ? (
+              <input autoFocus defaultValue={tab.name} onBlur={e => renameTab(tab.id, e.target.value)} onKeyDown={e => { if (e.key === 'Enter') renameTab(tab.id, (e.target as HTMLInputElement).value) }} className="px-4 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 bg-transparent focus:outline-none w-32" />
+            ) : (
+              <button onClick={() => setActiveTab(tab.id)} onDoubleClick={() => setEditingTabName(tab.id)} className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                <span className={tabs.length > 1 ? "group-hover:opacity-60 transition-opacity" : ""}>{tab.name}</span>{tabs.length > 1 && <span onClick={e => { e.stopPropagation(); deleteTab(tab.id) }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity text-xs cursor-pointer">×</span>}
+              </button>
+            )}
+          </div>
+        ))}
+        <button onClick={addTab} className="px-3 py-3 text-sm text-gray-400 hover:text-gray-600 border-b-2 border-transparent"><Plus size={14} /></button>
+      </div>
+    </div>
+  )
+}
+
+function DashHeader({ tabs, activeTab, setActiveTab, editingTabName, setEditingTabName, renameTab, addTab, deleteTab, addCard }: TabBarProps) {
+  return (
+    <div className="bg-white border-b border-gray-200 px-8">
+      <div className="flex items-center justify-between pt-5 pb-2">
+        <div><Link href="/" className="text-xs text-blue-600 hover:underline mb-0.5 inline-block">← Back</Link><h1 className="text-xl font-semibold text-gray-900">Dashboard</h1></div>
+      </div>
+      <div className="flex gap-0">
+        {tabs.map(tab => (
+          <div key={tab.id} className="relative group">
+            {editingTabName === tab.id ? (
+              <input autoFocus defaultValue={tab.name} onBlur={e => renameTab(tab.id, e.target.value)} onKeyDown={e => { if (e.key === 'Enter') renameTab(tab.id, (e.target as HTMLInputElement).value) }} className="px-4 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 bg-transparent focus:outline-none w-32" />
+            ) : (
+              <button onClick={() => setActiveTab(tab.id)} onDoubleClick={() => setEditingTabName(tab.id)} className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                <span className={tabs.length > 1 ? "group-hover:opacity-60 transition-opacity" : ""}>{tab.name}</span>{tabs.length > 1 && <span onClick={e => { e.stopPropagation(); deleteTab(tab.id) }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity text-xs cursor-pointer">×</span>}
+              </button>
+            )}
+          </div>
+        ))}
+        <button onClick={addTab} className="px-3 py-3 text-sm text-gray-400 hover:text-gray-600 border-b-2 border-transparent"><Plus size={14} /></button>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Dashboard ──
 
-export default function CustomDashboard() {
-  const [cards, setCards] = useState<CardConfig[]>(defaultCards)
-  const [layouts, setLayouts] = useState(defaultLayouts)
+export default function CustomDashboard({ embedded = false }: { embedded?: boolean }) {
+  type DashboardTab = { id: string; name: string; cards: CardConfig[]; layouts: any }
+  const [tabs, setTabs] = useState<DashboardTab[]>([
+    { id: 't1', name: 'Overview', cards: homeCards, layouts: homeLayouts },
+    { id: 't2', name: 'AI Usage', cards: aiCards, layouts: aiLayouts },
+  ])
+  const [activeTab, setActiveTab] = useState('t1')
+  const [editingTabName, setEditingTabName] = useState<string | null>(null)
+  const currentTab = tabs.find(t => t.id === activeTab) || tabs[0]
+  const cards = currentTab.cards
+  const layouts = currentTab.layouts
+  const setCards = (fn: (prev: CardConfig[]) => CardConfig[]) => setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, cards: fn(t.cards) } : t))
+  const setLayouts = (fn: any) => setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, layouts: typeof fn === 'function' ? fn(t.layouts) : fn } : t))
   const [editingCard, setEditingCard] = useState<CardConfig | null>(null)
-  const [showEmpty] = useState(false)
 
-  const onLayoutChange = useCallback((_: any, allLayouts: any) => { setLayouts(allLayouts) }, [])
+  const compactLayout = (items: any[]) => {
+    if (!items.length) return items
+    const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x)
+    
+    // Pack items into rows, each row sums to exactly 12
+    const rows: any[][] = [[]]
+    let rowWidth = 0
+    
+    for (const item of sorted) {
+      const w = Math.max(item.minW || 2, Math.min(item.w, 12))
+      if (rowWidth + w <= 12) {
+        rows[rows.length - 1].push({ ...item, w })
+        rowWidth += w
+      } else {
+        rows.push([{ ...item, w }])
+        rowWidth = w
+      }
+    }
+    
+    // Redistribute each row to fill exactly 12 columns
+    const result: any[] = []
+    let y = 0
+    for (const row of rows) {
+      if (!row.length) continue
+      const totalW = row.reduce((s, i) => s + i.w, 0)
+      const maxH = Math.max(...row.map(i => i.h))
+      
+      // Distribute extra space proportionally
+      let remaining = 12 - totalW
+      const distributed = row.map(item => {
+        const extra = Math.floor(remaining / row.length)
+        remaining -= extra
+        return { ...item, w: item.w + extra }
+      })
+      // Give leftover to last item
+      if (remaining > 0) {
+        distributed[distributed.length - 1].w += remaining
+      }
+      
+      let x = 0
+      for (const item of distributed) {
+        result.push({ ...item, x, y, h: maxH })
+        x += item.w
+      }
+      y += maxH
+    }
+    
+    return result
+  }
+
+  const snapWidth = (w: number) => {
+    if (w <= 2) return 2
+    if (w <= 3) return 3
+    if (w <= 5) return 4
+    if (w <= 7) return 6
+    if (w <= 10) return 8
+    return 12
+  }
+
+  const onLayoutChange = useCallback((_: any, allLayouts: any) => {
+    const snapped = { ...allLayouts }
+    if (snapped.lg) {
+      snapped.lg = compactLayout(snapped.lg.map((item: any) => ({ ...item, w: snapWidth(item.w), minW: 2, minH: 2 })))
+    }
+    setLayouts(() => snapped)
+  }, [activeTab])
+
+  const onResize = useCallback((_layout: any, _oldItem: any, newItem: any) => {
+    newItem.w = snapWidth(newItem.w)
+    if (newItem.h < 2) newItem.h = 2
+  }, [])
+
+  const addTab = () => {
+    const id = `t${Date.now()}`
+    setTabs(prev => [...prev, { id, name: `Dashboard ${prev.length + 1}`, cards: [], layouts: { lg: [] } }])
+    setActiveTab(id)
+  }
+
+  const deleteTab = (id: string) => {
+    if (tabs.length <= 1) return
+    setTabs(prev => prev.filter(t => t.id !== id))
+    if (activeTab === id) setActiveTab(tabs[0].id)
+  }
+
+  const renameTab = (id: string, name: string) => {
+    setTabs(prev => prev.map(t => t.id === id ? { ...t, name } : t))
+    setEditingTabName(null)
+  }
 
   const addCard = () => {
     const id = `c${Date.now()}`
     const newCard: CardConfig = { id, title: 'New Card', chartType: 'bar', dataSource: '', dataField: '', color: chartColors[cards.length % chartColors.length] }
     setCards(prev => [...prev, newCard])
-    setLayouts((prev: any) => ({ ...prev, lg: [...(prev.lg || []), { i: id, x: 0, y: Infinity, w: 4, h: 4 }] }))
+    // Find first open slot by scanning rows
+    const lg = layouts.lg || []
+    let placed = false
+    for (let y = 0; !placed; y += 3) {
+      for (let x = 0; x <= 8; x += 4) {
+        const occupied = lg.some((item: any) => item.x < x + 4 && item.x + item.w > x && item.y < y + 3 && item.y + item.h > y)
+        if (!occupied) {
+          setLayouts((prev: any) => ({ ...prev, lg: [...(prev.lg || []), { i: id, x, y, w: 4, h: 3, minW: 2, minH: 2 }] }))
+          placed = true
+          break
+        }
+      }
+    }
     setEditingCard(newCard)
   }
 
@@ -297,55 +561,145 @@ export default function CustomDashboard() {
     setCards(prev => prev.map(c => c.id === updated.id ? updated : c))
   }
 
-  if (showEmpty || cards.length === 0) {
+  const [onboardStep, setOnboardStep] = useState<'idle' | 'pick-cards'>('idle')
+  const [selectedRole, setSelectedRole] = useState<string | null>(null)
+  const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set())
+
+  const roleTemplates: Record<string, CardConfig[]> = {
+    'System Admin': [
+      { id: 'ta1', title: 'Thread Usage', chartType: 'kpi', dataSource: 'Server Status', dataField: 'Avg Response Time', color: '#3b82f6' },
+      { id: 'ta2', title: 'Error Rate Trend', chartType: 'line', dataSource: 'AI Calls Summary', dataField: 'Error Rate', color: '#ef4444' },
+      { id: 'ta3', title: 'Process Errors', chartType: 'bar', dataSource: 'Case', dataField: 'By Priority', color: '#f59e0b' },
+      { id: 'ta4', title: 'Sync Status', chartType: 'table', dataSource: 'Employee', dataField: 'By Status', color: '#10b981' },
+      { id: 'ta5', title: 'JVM Heap', chartType: 'kpi', dataSource: 'Server Status', dataField: 'Uptime', color: '#8b5cf6' },
+      { id: 'ta6', title: 'Integration Health', chartType: 'heatmap', dataSource: 'Tool Call Volume', dataField: 'By Server', color: '#06b6d4' },
+    ],
+    'Analyst': [
+      { id: 'tb1', title: 'Active Cases', chartType: 'kpi', dataSource: 'Case', dataField: 'Open Cases', color: '#3b82f6' },
+      { id: 'tb2', title: 'Revenue Trend', chartType: 'line', dataSource: 'Invoice', dataField: 'Monthly Trend', color: '#10b981' },
+      { id: 'tb3', title: 'Cases by Priority', chartType: 'pie', dataSource: 'Case', dataField: 'By Priority', color: '#8b5cf6' },
+      { id: 'tb4', title: 'SLA Compliance', chartType: 'kpi', dataSource: 'Case', dataField: 'SLA Compliance', color: '#06b6d4' },
+      { id: 'tb5', title: 'Invoice Status', chartType: 'bar', dataSource: 'Invoice', dataField: 'By Status', color: '#f59e0b' },
+      { id: 'tb6', title: 'Customer Growth', chartType: 'line', dataSource: 'Customer', dataField: 'New This Month', color: '#ec4899' },
+    ],
+    'Developer': [
+      { id: 'tc1', title: 'AI Cost MTD', chartType: 'kpi', dataSource: 'AI Cost by Skill', dataField: 'Budget vs Actual', color: '#3b82f6' },
+      { id: 'tc2', title: 'Guardrail Triggers', chartType: 'bar', dataSource: 'Guardrail Triggers', dataField: 'By Type', color: '#ef4444' },
+      { id: 'tc3', title: 'MCP Tool Calls', chartType: 'line', dataSource: 'Tool Call Volume', dataField: 'Trend', color: '#8b5cf6' },
+      { id: 'tc4', title: 'AI Calls by Skill', chartType: 'pie', dataSource: 'AI Calls Summary', dataField: 'By Skill', color: '#f59e0b' },
+      { id: 'tc5', title: 'Model Latency', chartType: 'line', dataSource: 'AI Calls Summary', dataField: 'Avg Latency', color: '#10b981' },
+      { id: 'tc6', title: 'Token Usage', chartType: 'kpi', dataSource: 'AI Calls Summary', dataField: 'Total Calls', color: '#06b6d4' },
+    ],
+  }
+
+  const startTemplate = (role: string) => {
+    setSelectedRole(role)
+    const tmplCards = roleTemplates[role] || []
+    setSelectedCardIds(new Set(tmplCards.map(c => c.id)))
+    setOnboardStep('pick-cards')
+  }
+
+  const applyTemplate = () => {
+    if (!selectedRole) return
+    const tmplCards = (roleTemplates[selectedRole] || []).filter(c => selectedCardIds.has(c.id))
+    const lg = tmplCards.map((c, i) => ({ i: c.id, x: (i % 3) * 4, y: Math.floor(i / 3) * 3, w: 4, h: 3, minW: 2, minH: 2 }))
+    setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, cards: tmplCards, layouts: { lg } } : t))
+    setOnboardStep('idle')
+  }
+
+  const toggleCard = (id: string) => setSelectedCardIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+
+  if (cards.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="border-b border-gray-200 bg-white px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div><Link href="/" className="text-xs text-blue-600 hover:underline mb-1 inline-block">← Back</Link><h1 className="text-xl font-semibold text-gray-900">Dashboard</h1></div>
-          </div>
-        </div>
-        <div className="flex flex-col items-center justify-center py-32">
+      <div className={embedded ? '' : 'min-h-screen bg-gray-50'}>
+        {!embedded && <DashHeader tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} />}
+        {embedded && <DashTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} />}
+        <div className="flex flex-col items-center justify-center py-24">
           <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4"><BarChart3 size={28} className="text-gray-400" /></div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">Build your dashboard</h2>
-          <p className="text-sm text-gray-500 mb-6 text-center max-w-sm">Add cards to visualize your Appian data. Drag to rearrange, resize by pulling edges, and connect any data source.</p>
-          <button onClick={addCard} className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"><Plus size={16} />Add your first card</button>
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">Get started with a template</h2>
+          <p className="text-sm text-gray-500 mb-6 text-center max-w-sm">Choose a template based on your role, or start from scratch.</p>
+          <div className="flex gap-3 mb-4">
+            {[
+              { role: 'System Admin', icon: <Settings size={16} className="text-blue-500" />, desc: 'Server health, errors, sync' },
+              { role: 'Analyst', icon: <TrendingUp size={16} className="text-green-500" />, desc: 'KPIs, trends, SLA' },
+              { role: 'Developer', icon: <Activity size={16} className="text-purple-500" />, desc: 'AI, MCP, guardrails' },
+            ].map(r => (
+              <button key={r.role} onClick={() => startTemplate(r.role)} className="w-44 text-left p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/30 transition-colors">
+                <div className="mb-2">{r.icon}</div>
+                <div className="text-sm font-medium text-gray-900">{r.role}</div>
+                <p className="text-xs text-gray-500 mt-0.5">{r.desc}</p>
+              </button>
+            ))}
+          </div>
+          <button onClick={addCard} className="text-sm text-gray-500 hover:text-blue-600">or start from scratch</button>
         </div>
+
+        {/* Card selection modal */}
+        {onboardStep === 'pick-cards' && selectedRole && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl w-[520px] h-[600px] flex flex-col">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
+                <h3 className="text-lg font-semibold text-gray-900">Choose your cards</h3>
+                <button onClick={() => setOnboardStep('idle')} className="p-1 hover:bg-gray-100 rounded"><X size={16} className="text-gray-400" /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-2">
+                <p className="text-sm text-gray-500 mb-3">Deselect any cards you don't need. You can always add more later.</p>
+                {(roleTemplates[selectedRole] || []).map(card => (
+                  <label key={card.id} className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${selectedCardIds.has(card.id) ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:bg-gray-50 opacity-60'}`}>
+                    <input type="checkbox" checked={selectedCardIds.has(card.id)} onChange={() => toggleCard(card.id)} className="rounded border-gray-300 text-blue-600" />
+                    <div className="flex items-center gap-2 flex-1">
+                      <div style={{ color: card.color }}>{chartIcons[card.chartType]}</div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{card.title}</div>
+                        <div className="text-xs text-gray-500">{card.dataSource} · {card.dataField}</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-gray-400 capitalize">{card.chartType}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="flex justify-between px-6 py-4 border-t border-gray-200 flex-shrink-0">
+                <button onClick={() => setOnboardStep('idle')} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">← Back</button>
+                <button onClick={applyTemplate} disabled={selectedCardIds.size === 0} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">Create Dashboard ({selectedCardIds.size} cards)</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="border-b border-gray-200 bg-white px-8 flex items-center" style={{ minHeight: '64px' }}>
-        <div className="flex items-center justify-between w-full">
-          <div><Link href="/" className="text-xs text-blue-600 hover:underline mb-0.5 inline-block">← Back</Link><h1 className="text-xl font-semibold text-gray-900">Dashboard</h1></div>
+    <div className={embedded ? '' : 'min-h-screen bg-gray-50'}>
+      {!embedded && <DashHeader tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} />}
+      {embedded && <DashTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} />}
+
+      <div className="container mx-auto px-6 py-6 max-w-7xl">
+        <div className="flex justify-end mb-4">
           <button onClick={addCard} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"><Plus size={14} />Add Card</button>
         </div>
-      </div>
-
-      <div className="px-6 py-4">
         <ResponsiveGridLayout
           className="layout"
           layouts={layouts}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-          rowHeight={60}
+          cols={{ lg: 12, md: 12, sm: 12, xs: 4, xxs: 4 }}
+          rowHeight={80}
           onLayoutChange={onLayoutChange}
+          onResize={onResize}
           draggableHandle=".drag-handle"
           isResizable={true}
           isDraggable={true}
           compactType="vertical"
+          preventCollision={false}
           margin={[12, 12]}
           useCSSTransforms={true}
         >
           {cards.map(card => (
             <div key={card.id} className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
               <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="drag-handle cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-100 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"><GripVertical size={14} /></div>
+                <div className="flex items-center min-w-0">
+                  <div className="drag-handle cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-100 text-gray-400 w-0 opacity-0 group-hover:w-5 group-hover:opacity-100 transition-all overflow-hidden"><GripVertical size={14} /></div>
                   <span className="text-xs font-semibold text-gray-800 truncate">{card.title}</span>
-                  <span className="text-[9px] text-gray-400">{card.dataSource}{card.dataField ? ` · ${card.dataField}` : ''}</span>
                 </div>
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => setEditingCard(card)} className="p-1 rounded hover:bg-gray-100 text-gray-400"><Settings size={12} /></button>
