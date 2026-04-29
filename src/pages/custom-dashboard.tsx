@@ -1,12 +1,9 @@
-import { useState, useCallback } from 'react'
-import { Responsive, WidthProvider } from 'react-grid-layout'
-import 'react-grid-layout/css/styles.css'
-import 'react-resizable/css/styles.css'
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { buildRows, repack, detectDropZone, applyDrop, getPositions, type LayoutCard, type DropZone } from '../components/dashboard-engine'
 import { HeadingField } from '@pglevy/sailwind'
 import { Plus, Settings, Trash2, GripVertical, BarChart3, TrendingUp, PieChart, Hash, Table, Activity, ChevronRight, ChevronDown, Search, X, Upload, Database, Globe, FileText, GitBranch, Check } from 'lucide-react'
 import { Link } from 'wouter'
 
-const ResponsiveGridLayout = WidthProvider(Responsive)
 
 type ChartType = 'bar' | 'line' | 'pie' | 'kpi' | 'table' | 'heatmap'
 type CardConfig = {
@@ -428,134 +425,70 @@ function DashHeader({ tabs, activeTab, setActiveTab, editingTabName, setEditingT
 // ── Main Dashboard ──
 
 export default function CustomDashboard({ embedded = false }: { embedded?: boolean }) {
-  type DashboardTab = { id: string; name: string; cards: CardConfig[]; layouts: any }
+  type DashboardTab = { id: string; name: string; cards: CardConfig[]; layout: LayoutCard[] }
+
+  const toLayoutCards = (lgItems: any[]): LayoutCard[] => lgItems.map((item: any, i: number) => ({ id: item.i, row: Math.floor(item.y / 3), col: i, w: item.w, h: item.h || 2 }))
+
   const [tabs, setTabs] = useState<DashboardTab[]>([
-    { id: 't1', name: 'Overview', cards: homeCards, layouts: homeLayouts },
-    { id: 't2', name: 'AI Usage', cards: aiCards, layouts: aiLayouts },
+    { id: 't1', name: 'Overview', cards: homeCards, layout: toLayoutCards(homeLayouts.lg) },
+    { id: 't2', name: 'AI Usage', cards: aiCards, layout: toLayoutCards(aiLayouts.lg) },
   ])
   const [activeTab, setActiveTab] = useState('t1')
   const [editingTabName, setEditingTabName] = useState<string | null>(null)
   const currentTab = tabs.find(t => t.id === activeTab) || tabs[0]
   const cards = currentTab.cards
-  const layouts = currentTab.layouts
+  const layout = currentTab.layout
   const setCards = (fn: (prev: CardConfig[]) => CardConfig[]) => setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, cards: fn(t.cards) } : t))
-  const setLayouts = (fn: any) => setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, layouts: typeof fn === 'function' ? fn(t.layouts) : fn } : t))
+  const setLayout = (fn: (prev: LayoutCard[]) => LayoutCard[]) => setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, layout: fn(t.layout) } : t))
   const [editingCard, setEditingCard] = useState<CardConfig | null>(null)
 
-  const compactLayout = (items: any[]) => {
-    if (!items.length) return items
-    // Sort by position to maintain relative order
-    const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x)
-    
-    // Greedy bin-packing: fill each row to 12, pulling cards from the queue
-    const result: any[] = []
-    const queue = [...sorted]
-    let y = 0
-    
-    while (queue.length > 0) {
-      let rowWidth = 0
-      const row: any[] = []
-      let maxH = 2
-      
-      // Try to fit as many cards as possible in this row
-      let i = 0
-      while (i < queue.length) {
-        const item = queue[i]
-        if (rowWidth + item.w <= 12) {
-          row.push(item)
-          rowWidth += item.w
-          maxH = Math.max(maxH, item.h)
-          queue.splice(i, 1)
-        } else {
-          i++
-        }
-        if (rowWidth >= 12) break
-      }
-      
-      // If no card fit (shouldn't happen with minW=2), force the first one
-      if (row.length === 0 && queue.length > 0) {
-        const item = queue.shift()!
-        row.push({ ...item, w: 12 })
-        maxH = item.h
-      }
-      
-      // Distribute remaining space in the row
-      const totalW = row.reduce((s, item) => s + item.w, 0)
-      let remaining = 12 - totalW
-      const distributed = row.map(item => {
-        const extra = row.length > 0 ? Math.floor(remaining / row.length) : 0
-        remaining -= extra
-        return { ...item, w: item.w + extra }
-      })
-      if (remaining > 0 && distributed.length > 0) {
-        distributed[distributed.length - 1].w += remaining
-      }
-      
-      // Place cards in the row
-      let x = 0
-      for (const item of distributed) {
-        result.push({ ...item, x, y, h: maxH })
-        x += item.w
-      }
-      y += maxH
+  // ── Custom Layout Engine ──
+  const ROW_HEIGHT = 80
+  const GAP = 12
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
+  const [currentZone, setCurrentZone] = useState<DropZone | null>(null)
+  const zoneRef = useRef<DropZone | null>(null)
+
+  const rows = buildRows(layout)
+  const { positions, totalHeight } = getPositions(rows, ROW_HEIGHT, GAP)
+
+  const handleDragStart = useCallback((id: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    setDraggedId(id)
+    const rect = gridRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const frozenRows = buildRows(layout)
+
+    const onMove = (ev: MouseEvent) => {
+      const mx = (ev.clientX - rect.left) / rect.width
+      const my = ev.clientY - rect.top
+      setDragPos({ x: ev.clientX - e.clientX, y: ev.clientY - e.clientY })
+      const zone = detectDropZone(frozenRows, id, mx, my, ROW_HEIGHT, GAP)
+      setCurrentZone(zone)
+      zoneRef.current = zone
     }
-    
-    return result
-  }
-
-  const snapWidth = (w: number) => {
-    if (w <= 2) return 2
-    if (w <= 3) return 3
-    if (w <= 5) return 4
-    if (w <= 7) return 6
-    if (w <= 10) return 8
-    return 12
-  }
-
-  const [isDragging, setIsDragging] = useState(false)
-
-  const onLayoutChange = useCallback((_: any, allLayouts: any) => {
-    if (isDragging) return // Don't compact during drag
-    const snapped = { ...allLayouts }
-    if (snapped.lg) {
-      snapped.lg = compactLayout(snapped.lg.map((item: any) => ({ ...item, w: snapWidth(item.w), minW: 2, minH: 2 })))
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      const zone = zoneRef.current
+      if (zone) {
+        setLayout(() => applyDrop(frozenRows, id, zone))
+      }
+      setDraggedId(null)
+      setDragPos(null)
+      setCurrentZone(null)
+      zoneRef.current = null
     }
-    setLayouts(() => snapped)
-  }, [activeTab, isDragging])
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }, [layout])
 
-  const onDragStart = useCallback(() => setIsDragging(true), [])
-  const onDragStop = useCallback((_layout: any, _oldItem: any, _newItem: any, _placeholder: any, _e: any, _el: any) => {
-    setIsDragging(false)
-    // Force compaction after drop
-    setLayouts((prev: any) => {
-      const snapped = { ...prev }
-      if (snapped.lg) {
-        snapped.lg = compactLayout(snapped.lg.map((item: any) => ({ ...item, w: snapWidth(item.w), minW: 2, minH: 2 })))
-      }
-      return snapped
-    })
-  }, [])
-
-  const onResizeStop = useCallback((_layout: any, _oldItem: any, newItem: any) => {
-    newItem.w = snapWidth(newItem.w)
-    if (newItem.h < 2) newItem.h = 2
-    setLayouts((prev: any) => {
-      const snapped = { ...prev }
-      if (snapped.lg) {
-        snapped.lg = compactLayout(snapped.lg.map((item: any) => ({ ...item, w: snapWidth(item.w), minW: 2, minH: 2 })))
-      }
-      return snapped
-    })
-  }, [])
-
-  const onResize = useCallback((_layout: any, _oldItem: any, newItem: any) => {
-    newItem.w = snapWidth(newItem.w)
-    if (newItem.h < 2) newItem.h = 2
-  }, [])
 
   const addTab = () => {
     const id = `t${Date.now()}`
-    setTabs(prev => [...prev, { id, name: `Dashboard ${prev.length + 1}`, cards: [], layouts: { lg: [] } }])
+    setTabs(prev => [...prev, { id, name: `Dashboard ${prev.length + 1}`, cards: [], layout: [] }])
     setActiveTab(id)
   }
 
@@ -574,25 +507,16 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
     const id = `c${Date.now()}`
     const newCard: CardConfig = { id, title: 'New Card', chartType: 'bar', dataSource: '', dataField: '', color: chartColors[cards.length % chartColors.length] }
     setCards(prev => [...prev, newCard])
-    // Find first open slot by scanning rows
-    const lg = layouts.lg || []
-    let placed = false
-    for (let y = 0; !placed; y += 3) {
-      for (let x = 0; x <= 8; x += 4) {
-        const occupied = lg.some((item: any) => item.x < x + 4 && item.x + item.w > x && item.y < y + 3 && item.y + item.h > y)
-        if (!occupied) {
-          setLayouts((prev: any) => ({ ...prev, lg: [...(prev.lg || []), { i: id, x, y, w: 4, h: 3, minW: 2, minH: 2 }] }))
-          placed = true
-          break
-        }
-      }
-    }
+    setLayout(prev => {
+      const newLayout: LayoutCard = { id, row: 999, col: 0, w: 4, h: 2 }
+      return repack([...prev, newLayout])
+    })
     setEditingCard(newCard)
   }
 
   const deleteCard = (id: string) => {
     setCards(prev => prev.filter(c => c.id !== id))
-    setLayouts((prev: any) => ({ ...prev, lg: (prev.lg || []).filter((l: any) => l.i !== id) }))
+    setLayout(prev => repack(prev.filter(l => l.id !== id)))
   }
 
   const saveCard = (updated: CardConfig) => {
@@ -640,8 +564,8 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
   const applyTemplate = () => {
     if (!selectedRole) return
     const tmplCards = (roleTemplates[selectedRole] || []).filter(c => selectedCardIds.has(c.id))
-    const lg = tmplCards.map((c, i) => ({ i: c.id, x: (i % 3) * 4, y: Math.floor(i / 3) * 3, w: 4, h: 3, minW: 2, minH: 2 }))
-    setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, cards: tmplCards, layouts: { lg } } : t))
+    const layoutCards: LayoutCard[] = tmplCards.map((c, i) => ({ id: c.id, row: Math.floor(i / 3), col: i % 3, w: 4, h: 2 }))
+    setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, cards: tmplCards, layout: repack(layoutCards) } : t))
     setOnboardStep('idle')
   }
 
@@ -716,43 +640,78 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
         <div className="flex justify-end mb-4">
           <button onClick={addCard} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"><Plus size={14} />Add Card</button>
         </div>
-        <ResponsiveGridLayout
-          className="layout"
-          layouts={layouts}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 12, md: 12, sm: 12, xs: 4, xxs: 4 }}
-          rowHeight={80}
-          onLayoutChange={onLayoutChange}
-          onDragStart={onDragStart}
-          onDragStop={onDragStop}
-          onResize={onResize}
-          onResizeStop={onResizeStop}
-          draggableHandle=".drag-handle"
-          isResizable={true}
-          isDraggable={true}
-          compactType="vertical"
-          preventCollision={false}
-          margin={[12, 12]}
-          useCSSTransforms={true}
-        >
-          {cards.map(card => (
-            <div key={card.id} className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
-                <div className="flex items-center min-w-0">
-                  <div className="drag-handle cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-100 text-gray-400 w-0 opacity-0 group-hover:w-5 group-hover:opacity-100 transition-all overflow-hidden"><GripVertical size={14} /></div>
-                  <span className="text-xs font-semibold text-gray-800 truncate">{card.title}</span>
-                </div>
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => setEditingCard(card)} className="p-1 rounded hover:bg-gray-100 text-gray-400"><Settings size={12} /></button>
-                  <button onClick={() => deleteCard(card.id)} className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={12} /></button>
+        <div ref={gridRef} className="relative" style={{ minHeight: totalHeight || 200 }}>
+          {/* Drop zone: swap highlight */}
+          {draggedId && currentZone?.type === 'swap' && positions[currentZone.targetId] && (
+            <div className="pointer-events-none absolute z-20 transition-all duration-150" style={{
+              left: `${positions[currentZone.targetId].x * 100}%`,
+              top: positions[currentZone.targetId].y,
+              width: `${positions[currentZone.targetId].w * 100}%`,
+              height: positions[currentZone.targetId].h,
+              padding: `0 ${GAP / 2}px`,
+            }}><div className="w-full h-full border-2 border-blue-400 bg-blue-100/40 rounded-lg" /></div>
+          )}
+
+          {/* Drop zone: between cards (vertical bar) */}
+          {draggedId && currentZone?.type === 'between' && (() => {
+            const row = rows[currentZone.rowIndex]
+            if (!row) return null
+            let xFrac = 0
+            for (let i = 0; i < Math.min(currentZone.insertAt, row.cards.length); i++) {
+              if (row.cards[i].id !== draggedId) xFrac += row.cards[i].w / 12
+            }
+            let yOffset = 0
+            for (let i = 0; i < currentZone.rowIndex; i++) yOffset += rows[i].height * ROW_HEIGHT + GAP
+            return <div className="pointer-events-none absolute z-20" style={{ left: `calc(${xFrac * 100}% - 2px)`, top: yOffset + 4, height: row.height * ROW_HEIGHT - 8 }}><div className="w-1 h-full bg-blue-500 rounded-full" /></div>
+          })()}
+
+          {/* Drop zone: above/below row (horizontal bar) */}
+          {draggedId && (currentZone?.type === 'above-row' || currentZone?.type === 'below-row') && (() => {
+            let yPos = 0
+            for (let i = 0; i < currentZone.rowIndex; i++) yPos += rows[i].height * ROW_HEIGHT + GAP
+            if (currentZone.type === 'below-row') yPos += (rows[currentZone.rowIndex]?.height || 0) * ROW_HEIGHT + GAP / 2
+            else yPos -= GAP / 2
+            return <div className="pointer-events-none absolute z-20 left-2 right-2" style={{ top: yPos }}><div className="h-1 bg-blue-500 rounded-full" /></div>
+          })()}
+
+          {/* Cards */}
+          {cards.map(card => {
+            const pos = positions[card.id]
+            if (!pos) return null
+            const isDragged = draggedId === card.id
+            const isSwapTarget = currentZone?.type === 'swap' && currentZone.targetId === card.id
+            return (
+              <div
+                key={card.id}
+                className={`absolute transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${isDragged ? 'z-50 opacity-80 scale-[1.02] shadow-2xl' : ''}`}
+                style={{
+                  left: `${pos.x * 100}%`,
+                  top: pos.y,
+                  width: `${pos.w * 100}%`,
+                  height: pos.h,
+                  padding: `0 ${GAP / 2}px`,
+                  ...(isDragged && dragPos ? { transform: `translate(${dragPos.x}px, ${dragPos.y}px) scale(1.02)`, transition: 'none' } : {}),
+                }}
+              >
+                <div className={`h-full bg-white rounded-lg border shadow-sm hover:shadow-md transition-all overflow-hidden group ${isSwapTarget ? 'border-blue-400 ring-2 ring-blue-200 bg-blue-50/30' : 'border-gray-200'}`}>
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
+                    <div className="flex items-center min-w-0">
+                      <div onMouseDown={e => handleDragStart(card.id, e)} className="drag-handle cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-100 text-gray-400 w-0 opacity-0 group-hover:w-5 group-hover:opacity-100 transition-all overflow-hidden"><GripVertical size={14} /></div>
+                      <span className="text-xs font-semibold text-gray-800 truncate">{card.title}</span>
+                    </div>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setEditingCard(card)} className="p-1 rounded hover:bg-gray-100 text-gray-400"><Settings size={12} /></button>
+                      <button onClick={() => deleteCard(card.id)} className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={12} /></button>
+                    </div>
+                  </div>
+                  <div className="p-2" style={{ height: 'calc(100% - 37px)' }}>
+                    {renderChart(card)}
+                  </div>
                 </div>
               </div>
-              <div className="p-2 flex-1" style={{ height: 'calc(100% - 37px)' }}>
-                {renderChart(card)}
-              </div>
-            </div>
-          ))}
-        </ResponsiveGridLayout>
+            )
+          })}
+        </div>
       </div>
 
       {editingCard && <CardEditPanel card={editingCard} onSave={saveCard} onClose={() => setEditingCard(null)} />}
