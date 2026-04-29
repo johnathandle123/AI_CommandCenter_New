@@ -21,6 +21,7 @@ import AdminConsole from './pages/admin-console'
 import AppianMonitor from './pages/appian-monitor'
 import ProcessHQ from './pages/process-hq'
 import AppianAI from './pages/appian-ai'
+import CustomDashboard from './pages/custom-dashboard'
 
 function MainApp() {
   const [activeSection, setActiveSection] = useState('home')
@@ -269,6 +270,7 @@ function App() {
       <Route path="/admin-console" component={AdminConsole} />
       <Route path="/appian-ai" component={AppianAI} />
       <Route path="/appian-monitor" component={AppianMonitor} />
+      <Route path="/custom-dashboard" component={CustomDashboard} />
       <Route path="/process-hq" component={ProcessHQ} />
       <Route path="/dashboard" component={MainApp} />
       <Route path="/" component={Home} />
