@@ -436,3 +436,36 @@ button.border-transparent {
   border-color: #d1d5db;
   background: #f9fafb;
 }
+
+  /* Dashboard grid placeholder */
+  .react-grid-placeholder {
+    background: #3b82f6 !important;
+    opacity: 0.15 !important;
+    border-radius: 0.5rem !important;
+    border: 2px dashed #3b82f6 !important;
+    transition: all 0.15s ease !important;
+  }
+
+  .react-grid-item {
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), width 0.3s cubic-bezier(0.2, 0, 0, 1), height 0.3s cubic-bezier(0.2, 0, 0, 1) !important;
+  }
+
+  .react-grid-item.cssTransforms {
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), width 0.3s cubic-bezier(0.2, 0, 0, 1), height 0.3s cubic-bezier(0.2, 0, 0, 1) !important;
+  }
+
+  .react-grid-item.react-draggable-dragging {
+    opacity: 0.8;
+    z-index: 100;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+    border-radius: 0.5rem;
+    transition: none !important;
+  }
+
+  .react-grid-item.resizing {
+    transition: none !important;
+  }
+
+  .react-grid-item > .react-resizable-handle::after {
+    border-color: #9ca3af !important;
+  }

@@ -151,7 +151,6 @@ function LineChartWidget({ color }: { color: string }) {
             <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.25" /><stop offset="100%" stopColor={color} stopOpacity="0.02" /></linearGradient></defs>
             <path d={`${path} L${w},${h} L0,${h} Z`} fill={`url(#${gradId})`} />
             <path d={path} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-            {coords.map((pt, i) => i === coords.length - 1 ? <circle key={i} cx={pt.x} cy={pt.y} r="3" fill={color} vectorEffect="non-scaling-stroke" /> : null)}
           </svg>
         </div>
       </div>
@@ -445,43 +444,54 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
 
   const compactLayout = (items: any[]) => {
     if (!items.length) return items
+    // Sort by position to maintain relative order
     const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x)
     
-    // Pack items into rows, each row sums to exactly 12
-    const rows: any[][] = [[]]
-    let rowWidth = 0
-    
-    for (const item of sorted) {
-      const w = Math.max(item.minW || 2, Math.min(item.w, 12))
-      if (rowWidth + w <= 12) {
-        rows[rows.length - 1].push({ ...item, w })
-        rowWidth += w
-      } else {
-        rows.push([{ ...item, w }])
-        rowWidth = w
-      }
-    }
-    
-    // Redistribute each row to fill exactly 12 columns
+    // Greedy bin-packing: fill each row to 12, pulling cards from the queue
     const result: any[] = []
+    const queue = [...sorted]
     let y = 0
-    for (const row of rows) {
-      if (!row.length) continue
-      const totalW = row.reduce((s, i) => s + i.w, 0)
-      const maxH = Math.max(...row.map(i => i.h))
+    
+    while (queue.length > 0) {
+      let rowWidth = 0
+      const row: any[] = []
+      let maxH = 2
       
-      // Distribute extra space proportionally
+      // Try to fit as many cards as possible in this row
+      let i = 0
+      while (i < queue.length) {
+        const item = queue[i]
+        if (rowWidth + item.w <= 12) {
+          row.push(item)
+          rowWidth += item.w
+          maxH = Math.max(maxH, item.h)
+          queue.splice(i, 1)
+        } else {
+          i++
+        }
+        if (rowWidth >= 12) break
+      }
+      
+      // If no card fit (shouldn't happen with minW=2), force the first one
+      if (row.length === 0 && queue.length > 0) {
+        const item = queue.shift()!
+        row.push({ ...item, w: 12 })
+        maxH = item.h
+      }
+      
+      // Distribute remaining space in the row
+      const totalW = row.reduce((s, item) => s + item.w, 0)
       let remaining = 12 - totalW
       const distributed = row.map(item => {
-        const extra = Math.floor(remaining / row.length)
+        const extra = row.length > 0 ? Math.floor(remaining / row.length) : 0
         remaining -= extra
         return { ...item, w: item.w + extra }
       })
-      // Give leftover to last item
-      if (remaining > 0) {
+      if (remaining > 0 && distributed.length > 0) {
         distributed[distributed.length - 1].w += remaining
       }
       
+      // Place cards in the row
       let x = 0
       for (const item of distributed) {
         result.push({ ...item, x, y, h: maxH })
@@ -502,13 +512,41 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
     return 12
   }
 
+  const [isDragging, setIsDragging] = useState(false)
+
   const onLayoutChange = useCallback((_: any, allLayouts: any) => {
+    if (isDragging) return // Don't compact during drag
     const snapped = { ...allLayouts }
     if (snapped.lg) {
       snapped.lg = compactLayout(snapped.lg.map((item: any) => ({ ...item, w: snapWidth(item.w), minW: 2, minH: 2 })))
     }
     setLayouts(() => snapped)
-  }, [activeTab])
+  }, [activeTab, isDragging])
+
+  const onDragStart = useCallback(() => setIsDragging(true), [])
+  const onDragStop = useCallback((_layout: any, _oldItem: any, _newItem: any, _placeholder: any, _e: any, _el: any) => {
+    setIsDragging(false)
+    // Force compaction after drop
+    setLayouts((prev: any) => {
+      const snapped = { ...prev }
+      if (snapped.lg) {
+        snapped.lg = compactLayout(snapped.lg.map((item: any) => ({ ...item, w: snapWidth(item.w), minW: 2, minH: 2 })))
+      }
+      return snapped
+    })
+  }, [])
+
+  const onResizeStop = useCallback((_layout: any, _oldItem: any, newItem: any) => {
+    newItem.w = snapWidth(newItem.w)
+    if (newItem.h < 2) newItem.h = 2
+    setLayouts((prev: any) => {
+      const snapped = { ...prev }
+      if (snapped.lg) {
+        snapped.lg = compactLayout(snapped.lg.map((item: any) => ({ ...item, w: snapWidth(item.w), minW: 2, minH: 2 })))
+      }
+      return snapped
+    })
+  }, [])
 
   const onResize = useCallback((_layout: any, _oldItem: any, newItem: any) => {
     newItem.w = snapWidth(newItem.w)
@@ -685,7 +723,10 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
           cols={{ lg: 12, md: 12, sm: 12, xs: 4, xxs: 4 }}
           rowHeight={80}
           onLayoutChange={onLayoutChange}
+          onDragStart={onDragStart}
+          onDragStop={onDragStop}
           onResize={onResize}
+          onResizeStop={onResizeStop}
           draggableHandle=".drag-handle"
           isResizable={true}
           isDraggable={true}
