@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { buildRows, repack, detectDropZone, applyDrop, getPositions, type LayoutCard, type DropZone } from '../components/dashboard-engine'
 import { HeadingField } from '@pglevy/sailwind'
-import { Plus, Settings, Trash2, GripVertical, BarChart3, TrendingUp, PieChart, Hash, Table, Activity, ChevronRight, ChevronDown, Search, X, Upload, Database, Globe, FileText, GitBranch, Check } from 'lucide-react'
+import { Plus, Settings, Trash2, Sparkles, GripVertical, BarChart3, TrendingUp, PieChart, Hash, Table, Activity, ChevronRight, ChevronDown, Search, X, Upload, Database, Globe, FileText, GitBranch, Check, SlidersHorizontal, RefreshCw } from 'lucide-react'
 import { Link } from 'wouter'
 
 
@@ -114,8 +114,15 @@ const aiLayouts = { lg: [
 
 // ── Chart Renderers ──
 
-function BarChartWidget({ color }: { color: string }) {
-  const data = [{l:'Mon',v:65},{l:'Tue',v:45},{l:'Wed',v:80},{l:'Thu',v:55},{l:'Fri',v:90},{l:'Sat',v:70},{l:'Sun',v:85}]
+function BarChartWidget({ color, title }: { color: string; title?: string }) {
+  const datasets: Record<string, {l:string;v:number}[]> = {
+    'Guardrail Triggers': [{l:'PII',v:42},{l:'Toxic',v:28},{l:'Inject',v:19},{l:'Topic',v:14},{l:'Halluc',v:8}],
+    'Service Throughput': [{l:'Auth',v:92},{l:'API',v:78},{l:'Query',v:65},{l:'Sync',v:45},{l:'Export',v:30}],
+    'Thread Pool': [{l:'Active',v:85},{l:'Idle',v:45},{l:'Queued',v:25},{l:'Blocked',v:12},{l:'New',v:8}],
+    'Invoice Status': [{l:'Paid',v:89},{l:'Pending',v:42},{l:'Overdue',v:18},{l:'Draft',v:12},{l:'Void',v:5}],
+    default: [{l:'Mon',v:65},{l:'Tue',v:45},{l:'Wed',v:80},{l:'Thu',v:55},{l:'Fri',v:90},{l:'Sat',v:70},{l:'Sun',v:85}],
+  }
+  const data = datasets[title || ''] || datasets.default
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-end gap-1 flex-1 px-2 pb-1">
@@ -128,9 +135,9 @@ function BarChartWidget({ color }: { color: string }) {
 
 function LineChartWidget({ color }: { color: string }) {
   const points = [30, 45, 35, 60, 50, 75, 65, 80, 70, 90, 85, 95]
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null)
   const max = 100, h = 100, w = 100
   const coords = points.map((p, i) => ({ x: (i / (points.length - 1)) * w, y: h - (p / max) * h }))
-  // Smooth cubic bezier path
   const path = coords.reduce((acc, pt, i) => {
     if (i === 0) return `M${pt.x},${pt.y}`
     const prev = coords[i - 1]
@@ -143,12 +150,27 @@ function LineChartWidget({ color }: { color: string }) {
     <div className="flex flex-col h-full">
       <div className="flex flex-1 min-h-0">
         <div className="flex flex-col justify-between text-[8px] text-gray-400 pr-1 py-1"><span>100</span><span>50</span><span>0</span></div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 relative">
           <svg className="w-full h-full" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
             <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.25" /><stop offset="100%" stopColor={color} stopOpacity="0.02" /></linearGradient></defs>
             <path d={`${path} L${w},${h} L0,${h} Z`} fill={`url(#${gradId})`} />
             <path d={path} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            {/* Invisible hover zones */}
+            {coords.map((pt, i) => (
+              <rect key={i} x={pt.x - w / points.length / 2} y={0} width={w / points.length} height={h} fill="transparent"
+                onMouseEnter={() => setHoverIdx(i)} onMouseLeave={() => setHoverIdx(null)} style={{ cursor: 'crosshair' }} />
+            ))}
           </svg>
+          {/* Hover dot — rendered as HTML div to stay circular */}
+          {hoverIdx !== null && (
+            <div className="absolute w-2.5 h-2.5 rounded-full border-2 border-white pointer-events-none" style={{ backgroundColor: color, left: `${coords[hoverIdx].x}%`, top: `${coords[hoverIdx].y}%`, transform: 'translate(-50%, -50%)', boxShadow: '0 0 0 1px ' + color }} />
+          )}
+          {/* Tooltip */}
+          {hoverIdx !== null && (
+            <div className="absolute pointer-events-none bg-gray-900 text-white text-[10px] px-2 py-1 rounded shadow-lg" style={{ left: `${coords[hoverIdx].x}%`, top: `${coords[hoverIdx].y}%`, transform: 'translate(-50%, -130%)' }}>
+              {points[hoverIdx]}
+            </div>
+          )}
         </div>
       </div>
       <div className="flex justify-between text-[8px] text-gray-400 pl-6"><span>12AM</span><span>6AM</span><span>12PM</span><span>6PM</span><span>Now</span></div>
@@ -178,30 +200,70 @@ function PieChartWidget({ color }: { color: string }) {
   )
 }
 
-function KPIWidget({ title, color }: { title: string; color: string }) {
+function KPIWidget({ title }: { title: string; color: string }) {
   const values: Record<string, { value: string; change: string; up: boolean }> = {
     'Active Cases': { value: '247', change: '+12%', up: true },
     'SLA Compliance': { value: '94.2%', change: '+2.1%', up: true },
+    // Overview dashboard
+    'Process Activity': { value: '234', change: '+18 today', up: true },
+    'Record Response Times': { value: '0.8s', change: '-12% avg', up: true },
+    'Security Warnings': { value: '7', change: '+2 new', up: false },
+    'Test Health': { value: '82%', change: '42/51 passing', up: true },
+    'Requests/sec': { value: '847', change: '+14.2%', up: true },
+    'Avg Latency': { value: '142ms', change: '-8.1%', up: true },
+    'Error Rate': { value: '0.9%', change: '-2.3%', up: true },
+    'CPU Usage': { value: '58%', change: '+4% peak', up: false },
+    'JVM Heap': { value: '6.2 GB', change: '78% of 8 GB', up: false },
+    'Thread Pool': { value: '142/200', change: '71% used', up: false },
+    'GC Pauses': { value: '35ms', change: 'avg every 8s', up: false },
+    'Disk I/O': { value: '124 MB/s', change: '+8%', up: false },
+    'Network Throughput': { value: '2.4 Gbps', change: 'stable', up: true },
+    'DB Connections': { value: '48/100', change: '48% used', up: true },
+    // AI Usage dashboard
+    'Total Requests': { value: '3,842', change: '+12.4%', up: true },
+    'Est. Cost (MTD)': { value: '$247.50', change: '+5.2%', up: false },
+    'MCP Tool Calls': { value: '1,847', change: '+18.3%', up: true },
+    'MCP Avg Response': { value: '320ms', change: '-12.5%', up: true },
+    'MCP Error Rate': { value: '0.4%', change: '-0.2%', up: true },
+    'MCP Available Tools': { value: '36', change: '+2 this week', up: true },
+    'AI Cost MTD': { value: '$247', change: '+5.2%', up: false },
+    // Executive
+    'Total Revenue': { value: '$1.2M', change: '+8.4%', up: true },
+    'Active Customers': { value: '4,521', change: '+142 this month', up: true },
+    'Open Cases': { value: '247', change: '-15 today', up: true },
     default: { value: '1,847', change: '+8.3%', up: true },
   }
   const kpi = values[title] || values.default
   return (
     <div className="flex flex-col items-center justify-center h-full">
-      <div className="text-3xl font-bold" style={{ color }}>{kpi.value}</div>
+      <div className="text-3xl font-bold text-gray-900">{kpi.value}</div>
       <div className={`text-xs font-medium mt-1 ${kpi.up ? 'text-green-600' : 'text-red-600'}`}>{kpi.change} vs last period</div>
     </div>
   )
 }
 
-function TableWidget() {
-  const rows = [
-    { name: 'Pending', count: 142, pct: '38%' }, { name: 'Approved', count: 98, pct: '26%' },
-    { name: 'In Review', count: 67, pct: '18%' }, { name: 'Rejected', count: 45, pct: '12%' },
-    { name: 'Draft', count: 23, pct: '6%' },
-  ]
+function TableWidget({ title }: { title?: string }) {
+  const datasets: Record<string, {name:string;count:number;pct:string}[]> = {
+    'Top Endpoints': [
+      {name:'POST /invoice-submit',count:847,pct:'245ms'},{name:'GET /customer-lookup',count:623,pct:'89ms'},
+      {name:'GET /case-summary',count:412,pct:'1.2s'},{name:'POST /employee-search',count:298,pct:'156ms'},
+      {name:'GET /dashboard-data',count:187,pct:'342ms'},
+    ],
+    'Per-Skill Breakdown': [
+      {name:'Customer Support AI',count:2156,pct:'$142'},{name:'Invoice Processing AI',count:987,pct:'$72'},
+      {name:'HR Onboarding AI',count:699,pct:'$33'},{name:'Document Classifier',count:445,pct:'$18'},
+    ],
+    default: [
+      {name:'Pending',count:142,pct:'38%'},{name:'Approved',count:98,pct:'26%'},
+      {name:'In Review',count:67,pct:'18%'},{name:'Rejected',count:45,pct:'12%'},
+      {name:'Draft',count:23,pct:'6%'},
+    ],
+  }
+  const rows = datasets[title || ''] || datasets.default
+  const headers = title === 'Top Endpoints' ? ['Endpoint','Hits','Avg'] : title === 'Per-Skill Breakdown' ? ['AI Skill','Requests','Cost'] : ['Status','Count','%']
   return (
     <table className="w-full text-xs">
-      <thead><tr className="border-b border-gray-200"><th className="text-left py-1.5 px-2 text-gray-500 font-medium">Status</th><th className="text-right py-1.5 px-2 text-gray-500 font-medium">Count</th><th className="text-right py-1.5 px-2 text-gray-500 font-medium">%</th></tr></thead>
+      <thead><tr className="border-b border-gray-200"><th className="text-left py-1.5 px-2 text-gray-500 font-medium">{headers[0]}</th><th className="text-right py-1.5 px-2 text-gray-500 font-medium">{headers[1]}</th><th className="text-right py-1.5 px-2 text-gray-500 font-medium">{headers[2]}</th></tr></thead>
       <tbody>{rows.map((r, i) => <tr key={i} className="border-b border-gray-100 hover:bg-gray-50"><td className="py-1.5 px-2 text-gray-900">{r.name}</td><td className="text-right py-1.5 px-2 text-gray-700">{r.count}</td><td className="text-right py-1.5 px-2 text-gray-500">{r.pct}</td></tr>)}</tbody>
     </table>
   )
@@ -220,11 +282,11 @@ function HeatmapWidget({ color }: { color: string }) {
 
 function renderChart(card: CardConfig) {
   switch (card.chartType) {
-    case 'bar': return <BarChartWidget color={card.color} />
+    case 'bar': return <BarChartWidget color={card.color} title={card.title} />
     case 'line': return <LineChartWidget color={card.color} />
     case 'pie': return <PieChartWidget color={card.color} />
     case 'kpi': return <KPIWidget title={card.title} color={card.color} />
-    case 'table': return <TableWidget />
+    case 'table': return <TableWidget title={card.title} />
     case 'heatmap': return <HeatmapWidget color={card.color} />
   }
 }
@@ -372,33 +434,44 @@ function CardEditPanel({ card, onSave, onClose }: { card: CardConfig; onSave: (c
 
 // ── Dashboard Tab Bar ──
 
-type TabBarProps = { tabs: any[]; activeTab: string; setActiveTab: (id: string) => void; editingTabName: string | null; setEditingTabName: (id: string | null) => void; renameTab: (id: string, name: string) => void; addTab: () => void; deleteTab: (id: string) => void; addCard: () => void }
+type TabBarProps = { tabs: any[]; activeTab: string; setActiveTab: (id: string) => void; editingTabName: string | null; setEditingTabName: (id: string | null) => void; renameTab: (id: string, name: string) => void; addTab: () => void; deleteTab: (id: string) => void; addCard: () => void; editMode: boolean; setEditMode: (v: boolean) => void }
 
-function DashTabs({ tabs, activeTab, setActiveTab, editingTabName, setEditingTabName, renameTab, addTab, deleteTab, addCard }: TabBarProps) {
+function DashTabs({ tabs, activeTab, setActiveTab, editingTabName, setEditingTabName, renameTab, addTab, deleteTab, addCard, editMode, setEditMode }: TabBarProps) {
   return (
     <div className="bg-white border-b border-gray-200 px-8">
       <div className="flex items-center justify-between pt-5 pb-2">
         <HeadingField text="Dashboard" size="LARGE" marginBelow="NONE" />
+        <div className="flex items-center gap-2">
+          {editMode ? (
+            <button onClick={() => setEditMode(!editMode)} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-gray-200 text-gray-600 hover:bg-gray-50">✓ Done</button>
+          ) : (
+            <>
+              <div className="relative"><details className="inline-block"><summary className="p-2 border border-gray-200 rounded-lg text-gray-400 hover:text-gray-600 cursor-pointer list-none transition-colors open:bg-blue-50 open:border-blue-300 open:text-blue-600"><SlidersHorizontal size={14} /></summary><div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4 space-y-3"><div><label className="block text-xs font-medium text-gray-700 mb-1">Application</label><div className="space-y-1">{['Customer Onboarding','Invoice Processing','HR Portal','Document Management','Finance','Vendor Onboarding'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div><div><label className="block text-xs font-medium text-gray-700 mb-1">Environment</label><div className="space-y-1">{['Production','Staging','Test','Development'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div><div><label className="block text-xs font-medium text-gray-700 mb-1">Time Range</label><div className="space-y-1">{['Last 24 hours','Last 7 days','Last 30 days','Last 90 days'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div></div></details></div>
+              <button onClick={() => setEditMode(!editMode)} className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-gray-200 text-gray-600 hover:bg-gray-50">✎ Customize Dashboard</button>
+              <button className="p-1.5 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg"><RefreshCw size={14} /></button>
+            </>
+          )}
+        </div>
       </div>
       <div className="flex gap-0">
         {tabs.map(tab => (
           <div key={tab.id} className="relative group">
-            {editingTabName === tab.id ? (
+            {editMode && editingTabName === tab.id ? (
               <input autoFocus defaultValue={tab.name} onBlur={e => renameTab(tab.id, e.target.value)} onKeyDown={e => { if (e.key === 'Enter') renameTab(tab.id, (e.target as HTMLInputElement).value) }} className="px-4 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 bg-transparent focus:outline-none w-32" />
             ) : (
-              <button onClick={() => setActiveTab(tab.id)} onDoubleClick={() => setEditingTabName(tab.id)} className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                <span className={tabs.length > 1 ? "group-hover:opacity-60 transition-opacity" : ""}>{tab.name}</span>{tabs.length > 1 && <span onClick={e => { e.stopPropagation(); deleteTab(tab.id) }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity text-xs cursor-pointer">×</span>}
+              <button onClick={() => setActiveTab(tab.id)} onDoubleClick={() => editMode && setEditingTabName(tab.id)} className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                <span className={editMode && tabs.length > 1 ? "group-hover:opacity-60 transition-opacity" : ""}>{tab.name}</span>{editMode && tabs.length > 1 && <span onClick={e => { e.stopPropagation(); deleteTab(tab.id) }} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity text-xs cursor-pointer">×</span>}
               </button>
             )}
           </div>
         ))}
-        <button onClick={addTab} className="px-3 py-3 text-sm text-gray-400 hover:text-gray-600 border-b-2 border-transparent"><Plus size={14} /></button>
+        {editMode && <button onClick={addTab} className="px-3 py-3 text-sm text-gray-400 hover:text-gray-600 border-b-2 border-transparent"><Plus size={14} /></button>}
       </div>
     </div>
   )
 }
 
-function DashHeader({ tabs, activeTab, setActiveTab, editingTabName, setEditingTabName, renameTab, addTab, deleteTab, addCard }: TabBarProps) {
+function DashHeader({ tabs, activeTab, setActiveTab, editingTabName, setEditingTabName, renameTab, addTab, deleteTab, addCard, editMode, setEditMode }: TabBarProps) {
   return (
     <div className="bg-white border-b border-gray-200 px-8">
       <div className="flex items-center justify-between pt-5 pb-2">
@@ -441,6 +514,21 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
   const setCards = (fn: (prev: CardConfig[]) => CardConfig[]) => setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, cards: fn(t.cards) } : t))
   const setLayout = (fn: (prev: LayoutCard[]) => LayoutCard[]) => setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, layout: fn(t.layout) } : t))
   const [editingCard, setEditingCard] = useState<CardConfig | null>(null)
+  const [editMode, setEditMode] = useState(false)
+
+  const toggleEditMode = () => {
+    if (editMode) {
+      // Exiting edit mode — remove empty tabs
+      const nonEmpty = tabs.filter(t => t.cards.length > 0)
+      if (nonEmpty.length < tabs.length) {
+        setTabs(nonEmpty.length > 0 ? nonEmpty : tabs)
+        if (!nonEmpty.find(t => t.id === activeTab) && nonEmpty.length > 0) {
+          setActiveTab(nonEmpty[0].id)
+        }
+      }
+    }
+    setEditMode(!editMode)
+  }
 
   // ── Custom Layout Engine ──
   const ROW_HEIGHT = 80
@@ -508,8 +596,10 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
     const newCard: CardConfig = { id, title: 'New Card', chartType: 'bar', dataSource: '', dataField: '', color: chartColors[cards.length % chartColors.length] }
     setCards(prev => [...prev, newCard])
     setLayout(prev => {
-      const newLayout: LayoutCard = { id, row: 999, col: 0, w: 4, h: 2 }
-      return repack([...prev, newLayout])
+      const newLayout: LayoutCard = { id, row: 0, col: 0, w: 4, h: 2 }
+      // Shift existing cards down
+      const shifted = prev.map(c => ({ ...c, row: c.row + 1 }))
+      return repack([newLayout, ...shifted])
     })
     setEditingCard(newCard)
   }
@@ -523,7 +613,7 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
     setCards(prev => prev.map(c => c.id === updated.id ? updated : c))
   }
 
-  const [onboardStep, setOnboardStep] = useState<'idle' | 'pick-cards'>('idle')
+  const [onboardStep, setOnboardStep] = useState<'idle' | 'loading' | 'pick-cards' | 'creating'>('idle')
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [selectedCardIds, setSelectedCardIds] = useState<Set<string>>(new Set())
 
@@ -552,21 +642,33 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
       { id: 'tc5', title: 'Model Latency', chartType: 'line', dataSource: 'AI Calls Summary', dataField: 'Avg Latency', color: '#10b981' },
       { id: 'tc6', title: 'Token Usage', chartType: 'kpi', dataSource: 'AI Calls Summary', dataField: 'Total Calls', color: '#06b6d4' },
     ],
+    'Executive': [
+      { id: 'te1', title: 'Total Revenue', chartType: 'kpi', dataSource: 'Invoice', dataField: 'Total Amount', color: '#10b981' },
+      { id: 'te2', title: 'Active Customers', chartType: 'kpi', dataSource: 'Customer', dataField: 'Total Count', color: '#3b82f6' },
+      { id: 'te3', title: 'AI Cost MTD', chartType: 'kpi', dataSource: 'AI Cost by Skill', dataField: 'Budget vs Actual', color: '#8b5cf6' },
+      { id: 'te4', title: 'Open Cases', chartType: 'kpi', dataSource: 'Case', dataField: 'Open Cases', color: '#f59e0b' },
+      { id: 'te5', title: 'Revenue Trend', chartType: 'line', dataSource: 'Invoice', dataField: 'Monthly Trend', color: '#10b981' },
+      { id: 'te6', title: 'SLA Compliance', chartType: 'line', dataSource: 'Case', dataField: 'SLA Compliance', color: '#3b82f6' },
+    ],
   }
 
   const startTemplate = (role: string) => {
     setSelectedRole(role)
     const tmplCards = roleTemplates[role] || []
     setSelectedCardIds(new Set(tmplCards.map(c => c.id)))
-    setOnboardStep('pick-cards')
+    setOnboardStep('loading')
+    setTimeout(() => setOnboardStep('pick-cards'), 1200)
   }
 
   const applyTemplate = () => {
     if (!selectedRole) return
-    const tmplCards = (roleTemplates[selectedRole] || []).filter(c => selectedCardIds.has(c.id))
-    const layoutCards: LayoutCard[] = tmplCards.map((c, i) => ({ id: c.id, row: Math.floor(i / 3), col: i % 3, w: 4, h: 2 }))
-    setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, cards: tmplCards, layout: repack(layoutCards) } : t))
-    setOnboardStep('idle')
+    setOnboardStep('creating')
+    setTimeout(() => {
+      const tmplCards = (roleTemplates[selectedRole] || []).filter(c => selectedCardIds.has(c.id))
+      const layoutCards: LayoutCard[] = tmplCards.map((c, i) => ({ id: c.id, row: Math.floor(i / 3), col: i % 3, w: 4, h: 2 }))
+      setTabs(prev => prev.map(t => t.id === activeTab ? { ...t, cards: tmplCards, layout: repack(layoutCards) } : t))
+      setOnboardStep('idle')
+    }, 1500)
   }
 
   const toggleCard = (id: string) => setSelectedCardIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
@@ -574,8 +676,8 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
   if (cards.length === 0) {
     return (
       <div className={embedded ? '' : 'min-h-screen bg-gray-50'}>
-        {!embedded && <DashHeader tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} />}
-        {embedded && <DashTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} />}
+        {!embedded && <DashHeader tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} editMode={editMode} setEditMode={toggleEditMode} />}
+        {embedded && <DashTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} editMode={editMode} setEditMode={toggleEditMode} />}
         <div className="flex flex-col items-center justify-center py-24">
           <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4"><BarChart3 size={28} className="text-gray-400" /></div>
           <h2 className="text-lg font-semibold text-gray-900 mb-1">Get started with a template</h2>
@@ -585,6 +687,7 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
               { role: 'System Admin', icon: <Settings size={16} className="text-blue-500" />, desc: 'Server health, errors, sync' },
               { role: 'Analyst', icon: <TrendingUp size={16} className="text-green-500" />, desc: 'KPIs, trends, SLA' },
               { role: 'Developer', icon: <Activity size={16} className="text-purple-500" />, desc: 'AI, MCP, guardrails' },
+              { role: 'Executive', icon: <BarChart3 size={16} className="text-amber-500" />, desc: 'High-level KPIs, costs, ROI' },
             ].map(r => (
               <button key={r.role} onClick={() => startTemplate(r.role)} className="w-44 text-left p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/30 transition-colors">
                 <div className="mb-2">{r.icon}</div>
@@ -595,6 +698,20 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
           </div>
           <button onClick={addCard} className="text-sm text-gray-500 hover:text-blue-600">or start from scratch</button>
         </div>
+
+        {/* Loading modal */}
+        {(onboardStep === 'loading' || onboardStep === 'creating') && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl w-[520px] py-16 flex flex-col items-center">
+              <div className="relative mb-5">
+                <div className="w-12 h-12 rounded-full border-2 border-purple-200 border-t-purple-500 animate-spin"></div>
+                <Sparkles size={16} className="text-purple-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              </div>
+              <p className="text-sm font-medium text-gray-700 mb-1">{onboardStep === 'loading' ? 'Scanning your environment...' : 'Building your dashboard...'}</p>
+              <p className="text-xs text-gray-400">{onboardStep === 'loading' ? 'Checking processes, data, portals, AI skills, and RPA' : 'Setting up cards and configuring layout'}</p>
+            </div>
+          </div>
+        )}
 
         {/* Card selection modal */}
         {onboardStep === 'pick-cards' && selectedRole && (
@@ -633,12 +750,11 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
 
   return (
     <div className={embedded ? '' : 'min-h-screen bg-gray-50'}>
-      {!embedded && <DashHeader tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} />}
-      {embedded && <DashTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} />}
+      {!embedded && <DashHeader tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} editMode={editMode} setEditMode={toggleEditMode} />}
+      {embedded && <DashTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} editingTabName={editingTabName} setEditingTabName={setEditingTabName} renameTab={renameTab} addTab={addTab} deleteTab={deleteTab} addCard={addCard} editMode={editMode} setEditMode={toggleEditMode} />}
 
       <div className="container mx-auto px-6 py-6 max-w-7xl">
         <div className="flex justify-end mb-4">
-          <button onClick={addCard} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2"><Plus size={14} />Add Card</button>
         </div>
         <div ref={gridRef} className="relative" style={{ minHeight: totalHeight || 200 }}>
           {/* Drop zone: swap highlight */}
@@ -658,7 +774,7 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
             if (!row) return null
             let xFrac = 0
             for (let i = 0; i < Math.min(currentZone.insertAt, row.cards.length); i++) {
-              if (row.cards[i].id !== draggedId) xFrac += row.cards[i].w / 12
+              xFrac += row.cards[i].w / 12
             }
             let yOffset = 0
             for (let i = 0; i < currentZone.rowIndex; i++) yOffset += rows[i].height * ROW_HEIGHT + GAP
@@ -673,6 +789,17 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
             else yPos -= GAP / 2
             return <div className="pointer-events-none absolute z-20 left-2 right-2" style={{ top: yPos }}><div className="h-1 bg-blue-500 rounded-full" /></div>
           })()}
+
+          {/* Ghost placeholder for dragged card's original position */}
+          {draggedId && positions[draggedId] && (
+            <div className="absolute pointer-events-none" style={{
+              left: `${positions[draggedId].x * 100}%`,
+              top: positions[draggedId].y,
+              width: `${positions[draggedId].w * 100}%`,
+              height: positions[draggedId].h,
+              padding: `0 ${GAP / 2}px`,
+            }}><div className="w-full h-full border-2 border-dashed border-gray-300 bg-gray-100/50 rounded-lg" /></div>
+          )}
 
           {/* Cards */}
           {cards.map(card => {
@@ -696,13 +823,13 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
                 <div className={`h-full bg-white rounded-lg border shadow-sm hover:shadow-md transition-all overflow-hidden group ${isSwapTarget ? 'border-blue-400 ring-2 ring-blue-200 bg-blue-50/30' : 'border-gray-200'}`}>
                   <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
                     <div className="flex items-center min-w-0">
-                      <div onMouseDown={e => handleDragStart(card.id, e)} className="drag-handle cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-100 text-gray-400 w-0 opacity-0 group-hover:w-5 group-hover:opacity-100 transition-all overflow-hidden"><GripVertical size={14} /></div>
+                      {editMode && <div onMouseDown={e => handleDragStart(card.id, e)} className="drag-handle cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-100 text-gray-400 w-0 opacity-0 group-hover:w-5 group-hover:opacity-100 transition-all overflow-hidden"><GripVertical size={14} /></div>}
                       <span className="text-xs font-semibold text-gray-800 truncate">{card.title}</span>
                     </div>
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {editMode && <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => setEditingCard(card)} className="p-1 rounded hover:bg-gray-100 text-gray-400"><Settings size={12} /></button>
                       <button onClick={() => deleteCard(card.id)} className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={12} /></button>
-                    </div>
+                    </div>}
                   </div>
                   <div className="p-2" style={{ height: 'calc(100% - 37px)' }}>
                     {renderChart(card)}
@@ -713,6 +840,14 @@ export default function CustomDashboard({ embedded = false }: { embedded?: boole
           })}
         </div>
       </div>
+
+      {editMode && (
+        <div className="sticky bottom-6 flex justify-center z-40 pointer-events-none mt-4">
+          <button onClick={addCard} className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center gap-2 shadow-lg pointer-events-auto">
+            <Plus size={16} />Add Card
+          </button>
+        </div>
+      )}
 
       {editingCard && <CardEditPanel card={editingCard} onSave={saveCard} onClose={() => setEditingCard(null)} />}
     </div>

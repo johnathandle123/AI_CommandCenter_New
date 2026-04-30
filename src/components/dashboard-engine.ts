@@ -11,27 +11,34 @@ const MAX_PER_ROW = 6
 export function buildRows(cards: LayoutCard[]): RowData[] {
   if (!cards.length) return []
   const sorted = [...cards].sort((a, b) => a.row - b.row || a.col - b.col)
+  
+  // Group by row, then enforce max per row
   const rowMap = new Map<number, LayoutCard[]>()
   sorted.forEach(c => {
     if (!rowMap.has(c.row)) rowMap.set(c.row, [])
     rowMap.get(c.row)!.push(c)
   })
-  const rows: RowData[] = []
+  
+  // Flatten into sequential rows, splitting any that exceed MAX_PER_ROW
+  const rawRows: LayoutCard[][] = []
   const keys = [...rowMap.keys()].sort((a, b) => a - b)
-  keys.forEach((key, ri) => {
+  keys.forEach(key => {
     const rowCards = rowMap.get(key)!
+    for (let i = 0; i < rowCards.length; i += MAX_PER_ROW) {
+      rawRows.push(rowCards.slice(i, i + MAX_PER_ROW))
+    }
+  })
+  
+  // Redistribute widths in each row
+  const rows: RowData[] = rawRows.map((rowCards, ri) => {
     const n = rowCards.length
     const w = Math.floor(MAX_COLS / n)
     const remainder = MAX_COLS - w * n
-    let x = 0
-    const distributed = rowCards.map((c, ci) => {
-      const cw = w + (ci < remainder ? 1 : 0)
-      const card = { ...c, row: ri, col: ci, w: cw }
-      x += cw
-      return card
-    })
+    const distributed = rowCards.map((c, ci) => ({
+      ...c, row: ri, col: ci, w: w + (ci < remainder ? 1 : 0)
+    }))
     const height = Math.max(...distributed.map(c => c.h), 2)
-    rows.push({ cards: distributed, height })
+    return { cards: distributed, height }
   })
   return rows
 }
@@ -56,8 +63,8 @@ export type DropZone =
 export function detectDropZone(
   rows: RowData[],
   draggedId: string,
-  mouseXFrac: number, // 0-1 across container width
-  mouseY: number,     // px from top of grid
+  mouseXFrac: number,
+  mouseY: number,
   rowHeight: number,
   gap: number
 ): DropZone | null {
@@ -67,53 +74,51 @@ export function detectDropZone(
     const row = rows[ri]
     const rh = row.height * rowHeight
     const rowTop = yOffset
-    const rowMid = yOffset + rh / 2
     const rowBottom = yOffset + rh
 
-    // Above row (top 10px zone)
-    if (mouseY >= rowTop - gap / 2 && mouseY < rowTop + 10) {
+    // Above row zone
+    if (mouseY >= rowTop - gap && mouseY < rowTop + 8) {
       return { type: 'above-row', rowIndex: ri }
     }
 
     // Within row
-    if (mouseY >= rowTop && mouseY < rowBottom) {
-      // Check each card in the row
+    if (mouseY >= rowTop + 8 && mouseY < rowBottom - 8) {
       let xStart = 0
       for (let ci = 0; ci < row.cards.length; ci++) {
         const card = row.cards[ci]
-        if (card.id === draggedId) { xStart += card.w / MAX_COLS; continue }
         const cardLeft = xStart
         const cardRight = xStart + card.w / MAX_COLS
-        const cardMid = (cardLeft + cardRight) / 2
-        const edgeZone = (cardRight - cardLeft) * 0.2 // 20% edges for between
+        
+        if (card.id === draggedId) {
+          xStart = cardRight
+          continue
+        }
 
         if (mouseXFrac >= cardLeft && mouseXFrac < cardRight) {
-          // Left edge → insert before
-          if (mouseXFrac < cardLeft + edgeZone) {
+          const cardWidth = cardRight - cardLeft
+          // Left 15% = insert before, Right 15% = insert after, Center = swap
+          if (mouseXFrac < cardLeft + cardWidth * 0.15) {
             return { type: 'between', rowIndex: ri, insertAt: ci }
           }
-          // Right edge → insert after
-          if (mouseXFrac > cardRight - edgeZone) {
+          if (mouseXFrac > cardRight - cardWidth * 0.15) {
             return { type: 'between', rowIndex: ri, insertAt: ci + 1 }
           }
-          // Center → swap
           return { type: 'swap', targetId: card.id, rowIndex: ri }
         }
         xStart = cardRight
       }
-      // Past all cards → insert at end
+      // Past all cards
       return { type: 'between', rowIndex: ri, insertAt: row.cards.length }
     }
 
-    // Below row (bottom gap zone)
-    if (mouseY >= rowBottom && mouseY < rowBottom + gap) {
+    // Below row zone
+    if (mouseY >= rowBottom - 8 && mouseY < rowBottom + gap) {
       return { type: 'below-row', rowIndex: ri }
     }
 
     yOffset = rowBottom + gap
   }
 
-  // Below everything
   if (rows.length > 0) return { type: 'below-row', rowIndex: rows.length - 1 }
   return null
 }
@@ -140,32 +145,37 @@ export function applyDrop(
   }
 
   if (zone.type === 'between') {
-    // Remove dragged from current position
     const without = allCards.filter(c => c.id !== draggedId)
     const tempRows = buildRows(without)
-    const targetRow = tempRows[zone.rowIndex]
+    const ri = Math.min(zone.rowIndex, tempRows.length - 1)
+    const targetRow = tempRows[ri]
 
     if (targetRow) {
-      // Insert into row at position
-      const insertCol = Math.min(zone.insertAt, targetRow.cards.length)
-      targetRow.cards.splice(insertCol, 0, { ...dragged, row: zone.rowIndex, col: insertCol })
+      // Adjust insertAt: if dragged was in same row before the insert point, shift down by 1
+      const origRow = rows[zone.rowIndex]
+      let adjustedInsert = zone.insertAt
+      if (origRow) {
+        const dragIdx = origRow.cards.findIndex(c => c.id === draggedId)
+        if (dragIdx !== -1 && dragIdx < zone.insertAt) adjustedInsert--
+      }
+      const insertCol = Math.max(0, Math.min(adjustedInsert, targetRow.cards.length))
 
-      // If row exceeds max, push last card to next row
-      if (targetRow.cards.length > MAX_PER_ROW) {
+      if (targetRow.cards.length < MAX_PER_ROW) {
+        targetRow.cards.splice(insertCol, 0, { ...dragged, row: ri, col: insertCol })
+      } else {
+        // Row is full — insert and push overflow
+        targetRow.cards.splice(insertCol, 0, { ...dragged, row: ri, col: insertCol })
         const overflow = targetRow.cards.pop()!
-        overflow.row = zone.rowIndex + 1
+        overflow.row = ri + 1
         overflow.col = 0
-        // Insert overflow into next row
-        if (zone.rowIndex + 1 < tempRows.length) {
-          tempRows[zone.rowIndex + 1].cards.unshift(overflow)
-          // Cascade if needed
-          cascadeOverflow(tempRows, zone.rowIndex + 1)
+        if (ri + 1 < tempRows.length) {
+          tempRows[ri + 1].cards.unshift(overflow)
+          cascadeOverflow(tempRows, ri + 1)
         } else {
           tempRows.push({ cards: [overflow], height: overflow.h })
         }
       }
     } else {
-      // New row
       tempRows.push({ cards: [{ ...dragged, row: tempRows.length, col: 0 }], height: dragged.h })
     }
     return repack(flattenRows(tempRows))

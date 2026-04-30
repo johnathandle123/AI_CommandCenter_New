@@ -230,22 +230,7 @@ function EvaluateContent() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-5 gap-4">
-        {[
-          { label: 'Relevance', value: '88%', change: '+2.1%' },
-          { label: 'Accuracy', value: '92%', change: '+1.4%' },
-          { label: 'Helpfulness', value: '97%', change: '+0.8%' },
-          { label: 'Clarity', value: '93%', change: '-0.3%' },
-          { label: 'Safety', value: '98%', change: '+0.5%' },
-        ].map((kpi, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-5">
-            <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">{kpi.label}</div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{kpi.value}</div>
-            <div className={`text-xs font-medium ${kpi.change.startsWith('+') ? 'text-green-600' : 'text-red-500'}`}>{kpi.change}</div>
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between">
         <div className="relative w-80"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search AI calls..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
         <div className="relative"><details className="inline-block"><summary className="p-2 border border-gray-200 rounded-lg text-gray-400 hover:text-gray-600 cursor-pointer list-none"><SlidersHorizontal size={14} /></summary><div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4 space-y-3"><div><label className="block text-xs font-medium text-gray-700 mb-1">Object</label><div className="space-y-1">{['CO_Agent_Customer_Onboarding','DR_Agent_Document_Review','TX_Agent_Tax_Calculator'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div><div><label className="block text-xs font-medium text-gray-700 mb-1">Status</label><div className="space-y-1">{['Success','Error','Timeout'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div></div></details></div>
       </div>
@@ -1309,10 +1294,12 @@ const navItems = [
   { id: 'record-response', label: 'Record Response Times', icon: Clock },
   { id: 'record-sync', label: 'Record Sync Status', icon: RefreshCw },
   { id: 'query-perf', label: 'Query Performance', icon: Database },
+  { id: 'rule-perf', label: 'Rule Performance', icon: Activity },
   { id: 'ai', label: 'AI', icon: Brain },
   { id: 'rpa', label: 'RPA', icon: Bot },
   { id: 'portals', label: 'Portal Monitoring', icon: Globe },
   { id: 'logs', label: 'Log', icon: List },
+  { id: 'history', label: 'History', icon: FileText },
 ]
 // Keep these available for future use
 void HealthDashboard; void ProcessInstancesContent
@@ -1672,6 +1659,180 @@ function HomeContent({ editing }: { editing: boolean }) {
         </table>
       </div>
       </Card>
+    </div>
+  )
+}
+
+function HistoryContent() {
+  const [histTab, setHistTab] = useState<'imports' | 'activity'>('imports')
+  return (
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="bg-white border-b border-gray-200 px-8">
+        <div className="flex items-center pt-5 pb-2"><HeadingField text="History" size="LARGE" marginBelow="NONE" /></div>
+        <div className="flex gap-0">
+          <button onClick={() => setHistTab('imports')} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${histTab === 'imports' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Imports</button>
+          <button onClick={() => setHistTab('activity')} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${histTab === 'activity' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>User Activity</button>
+        </div>
+      </div>
+      <div className="flex-1 overflow-auto"><div className="container mx-auto px-6 py-6 max-w-7xl">
+        {histTab === 'imports' && <ImportsTable />}
+        {histTab === 'activity' && <UserActivityTable />}
+      </div></div>
+    </div>
+  )
+}
+
+function ImportsTable() {
+  const [page, setPage] = useState(1)
+  const perPage = 15
+  const pkgs = ['Customer Onboarding','HR Portal','Finance Module','Document Review','Asset Management','Shared Components','Reporting Suite','Integration Connectors']
+  const users = ['john.smith','jane.doe','mike.wilson','sarah.jones','david.brown','lisa.garcia','tom.anderson','amy.taylor','chris.lee','nina.patel']
+  const results = ['Success','Success','Success','Partial Success','Failed','Success','Success','Success','Success','Failed'] as const
+  const allImports = Array.from({ length: 120 }, (_, i) => ({
+    pkg: `${pkgs[i % 8]} v${Math.floor(i / 8) + 1}.${i % 5}.${i % 3}`,
+    result: results[i % 10],
+    user: users[i % 10],
+    time: `4/${28 - Math.floor(i / 8)}/2026 ${((10 + i) % 12) || 12}:${String((i * 7) % 60).padStart(2, '0')} ${i % 2 ? 'AM' : 'PM'}`,
+    auto: i % 3 !== 0,
+  }))
+  const totalPages = Math.ceil(allImports.length / perPage)
+  const paginated = allImports.slice((page - 1) * perPage, page * perPage)
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="relative w-80"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search imports..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+        <div className="relative"><details className="inline-block"><summary className="p-2 border border-gray-200 rounded-lg text-gray-400 hover:text-gray-600 cursor-pointer list-none"><SlidersHorizontal size={14} /></summary><div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4 space-y-3"><div><label className="block text-xs font-medium text-gray-700 mb-1">Result</label><div className="space-y-1">{['Success','Partial Success','Failed'].map(s => <label key={s} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"><input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600" />{s}</label>)}</div></div></div></details></div>
+      </div>
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-white border-b border-gray-200"><tr><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Package Name</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Import Time</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Imported By</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Automated</th><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th></tr></thead>
+          <tbody className="divide-y divide-gray-200">{paginated.map((imp, i) => (
+            <tr key={i} className="hover:bg-gray-50 transition-colors">
+              <td className="px-6 py-4 text-sm font-medium text-gray-900">{imp.pkg}</td>
+              <td className="px-6 py-4 text-sm text-gray-500">{imp.time}</td>
+              <td className="px-6 py-4 text-sm text-gray-700">{imp.user}</td>
+              <td className="px-6 py-4 text-sm text-gray-700">{imp.auto ? 'Yes' : 'No'}</td>
+              <td className="px-6 py-4"><span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${imp.result === 'Success' ? 'bg-green-100 text-green-800' : imp.result === 'Failed' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{imp.result}</span></td>
+            </tr>
+          ))}</tbody>
+        </table>
+        <div className="p-3 border-t border-gray-200 flex items-center justify-between text-sm">
+          <span className="text-gray-500">Showing {(page-1)*perPage+1}–{Math.min(page*perPage, allImports.length)} of {allImports.length}</span>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, page - 3), page + 2).map(p => (
+              <button key={p} onClick={() => setPage(p)} className={`px-3 py-1 rounded-md ${p === page ? 'bg-blue-600 text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{p}</button>
+            ))}
+            <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function UserActivityTable() {
+  const [page, setPage] = useState(1)
+  const [sortCol, setSortCol] = useState('lastActivity')
+  const [sortDir, setSortDir] = useState<'asc'|'desc'>('desc')
+  const perPage = 15
+  const users = ['john.smith','jane.doe','mike.wilson','sarah.jones','david.brown','lisa.garcia','tom.anderson','amy.taylor','chris.lee','nina.patel','maria.chen','james.wilson']
+  const clients = ['Chrome 124 / Windows','Safari 18 / macOS','Edge 124 / Windows','Firefox 126 / Linux','Chrome 124 / macOS','Safari 18 / iOS']
+  const servers = ['app-prod-01','app-prod-02','app-prod-03']
+  const allUsers = Array.from({ length: 51 }, (_, i) => ({
+    user: users[i % 12],
+    lastActivity: `4/28/2026 ${((1 + i) % 12) || 12}:${String(59 - ((i * 3) % 60)).padStart(2, '0')}:${String((i * 7) % 60).padStart(2, '0')} PM`,
+    server: servers[i % 3],
+    clientIp: `10.0.${(i % 4) + 1}.${(i * 7) % 255}`,
+    client: clients[i % 6],
+  }))
+  const toggleSort = (col: string) => { if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortCol(col); setSortDir('desc') } }
+  const totalPages = Math.ceil(allUsers.length / perPage)
+  const paginated = allUsers.slice((page - 1) * perPage, page * perPage)
+  const SortHeader = ({ col, label }: { col: string; label: string }) => (
+    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"><button onClick={() => toggleSort(col)} className="flex items-center gap-1 hover:text-blue-600">{label}<span className="text-gray-400">{sortCol === col ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}</span></button></th>
+  )
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="relative w-80"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search users..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+        <div className="text-xs text-gray-500">{allUsers.length} items · Sorted by Last Activity descending</div>
+      </div>
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-white border-b border-gray-200"><tr><SortHeader col="user" label="User" /><SortHeader col="lastActivity" label="Last Activity" /><SortHeader col="server" label="Server" /><th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Client IP</th><SortHeader col="client" label="Client" /></tr></thead>
+          <tbody className="divide-y divide-gray-200">{paginated.map((u, i) => (
+            <tr key={i} className="hover:bg-gray-50 transition-colors">
+              <td className="px-6 py-4 text-sm font-medium text-blue-600">{u.user}</td>
+              <td className="px-6 py-4 text-sm text-gray-900">{u.lastActivity}</td>
+              <td className="px-6 py-4 text-sm text-gray-700">{u.server}</td>
+              <td className="px-6 py-4 text-sm font-mono text-gray-700">{u.clientIp}</td>
+              <td className="px-6 py-4 text-sm text-gray-700">{u.client}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+        <div className="p-3 border-t border-gray-200 flex items-center justify-between text-sm">
+          <span className="text-gray-500">Showing {(page-1)*perPage+1}–{Math.min(page*perPage, allUsers.length)} of {allUsers.length}</span>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, page - 3), page + 2).map(p => (
+              <button key={p} onClick={() => setPage(p)} className={`px-3 py-1 rounded-md ${p === page ? 'bg-blue-600 text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{p}</button>
+            ))}
+            <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RulePerformanceContent() {
+  const [page, setPage] = useState(1)
+  const [sortCol, setSortCol] = useState('avgTime')
+  const [sortDir, setSortDir] = useState<'asc'|'desc'>('desc')
+  const perPage = 15
+  const ruleNames = ['getCustomerDetails','calculateTaxLiability','processInvoiceValidation','generateComplianceReport','lookupEmployeeBenefits','validateDocumentSignature','routeApprovalWorkflow','syncExternalRecords','formatCurrencyDisplay','checkUserPermissions','aggregateDashboardMetrics','parseEmailAttachments','buildSearchIndex','evaluateRiskScore','transformDataPayload','renderRecordSummary','validateAddressFormat','computeShippingCost','mergeContactRecords','generatePDFExport']
+  const allRules = Array.from({ length: 298 }, (_, i) => {
+    const avgTime = Math.floor(Math.random() * 3400) + 12
+    return { rule: ruleNames[i % 20] + (i >= 20 ? `_${Math.floor(i / 20) + 1}` : ''), executions: Math.floor(Math.random() * 34000) + 500, avgTime, minTime: Math.max(1, Math.floor(avgTime * 0.05)), maxTime: Math.floor(avgTime * (2 + Math.random() * 4)) }
+  }).sort((a, b) => b.avgTime - a.avgTime)
+  const toggleSort = (col: string) => { if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortCol(col); setSortDir('desc') } }
+  const sorted = [...allRules].sort((a, b) => { const av = a[sortCol as keyof typeof a] as number; const bv = b[sortCol as keyof typeof b] as number; return sortDir === 'asc' ? av - bv : bv - av })
+  const totalPages = Math.ceil(sorted.length / perPage)
+  const paginated = sorted.slice((page - 1) * perPage, page * perPage)
+  const SortHeader = ({ col, label }: { col: string; label: string }) => (
+    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider"><button onClick={() => { toggleSort(col); setPage(1) }} className="flex items-center gap-1 hover:text-blue-600">{label}<span className="text-gray-400">{sortCol === col ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}</span></button></th>
+  )
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="relative w-80"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search rules..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+        <div className="text-xs text-gray-500">{allRules.length} items · Sorted by Average Time descending</div>
+      </div>
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-white border-b border-gray-200"><tr><SortHeader col="rule" label="Rule" /><SortHeader col="executions" label="Number of Executions" /><SortHeader col="avgTime" label="Average Time (ms)" /><SortHeader col="minTime" label="Minimum Time (ms)" /><SortHeader col="maxTime" label="Maximum Time (ms)" /></tr></thead>
+          <tbody className="divide-y divide-gray-200">{paginated.map((r, i) => (
+            <tr key={i} className="hover:bg-gray-50 transition-colors">
+              <td className="px-6 py-4 text-sm font-medium text-blue-600">{r.rule}</td>
+              <td className="px-6 py-4 text-sm text-gray-700">{r.executions.toLocaleString()}</td>
+              <td className="px-6 py-4 text-sm text-gray-700">{r.avgTime.toLocaleString()}</td>
+              <td className="px-6 py-4 text-sm text-gray-700">{r.minTime.toLocaleString()}</td>
+              <td className="px-6 py-4 text-sm text-gray-700">{r.maxTime.toLocaleString()}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+        <div className="p-3 border-t border-gray-200 flex items-center justify-between text-sm">
+          <span className="text-gray-500">Showing {(page-1)*perPage+1}–{Math.min(page*perPage, sorted.length)} of {sorted.length}</span>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, page - 3), page + 2).map(p => (
+              <button key={p} onClick={() => setPage(p)} className={`px-3 py-1 rounded-md ${p === page ? 'bg-blue-600 text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{p}</button>
+            ))}
+            <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages} className="px-3 py-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -2080,7 +2241,7 @@ export default function AppianMonitor() {
             </div>
           )}
           {/* Normal header for all other views */}
-          {!(activeItem === 'ops-ai' && opsAiView === 'rules') && !(activeItem === 'ai' && !isV5) && activeItem !== 'rpa' && activeItem !== 'dashboard' && (() => {
+          {!(activeItem === 'ops-ai' && opsAiView === 'rules') && !(activeItem === 'ai' && !isV5) && activeItem !== 'rpa' && activeItem !== 'dashboard' && activeItem !== 'history' && (() => {
           return (
           <div className="bg-white border-b border-gray-200 px-8 flex-shrink-0 flex items-center" style={{ minHeight: '80px' }}>
             <div className="flex items-center justify-between w-full">
@@ -2223,6 +2384,8 @@ export default function AppianMonitor() {
             <RPAContent />
           ) : activeItem === 'dashboard' ? (
             <div className="flex-1 overflow-auto"><CustomDashboard embedded /></div>
+          ) : activeItem === 'history' ? (
+            <HistoryContent />
           ) : activeItem === 'ops-ai' ? (
             <InsightsChat view={opsAiView} setView={setOpsAiView} />
           ) : (
@@ -2236,6 +2399,7 @@ export default function AppianMonitor() {
             {activeItem === 'record-sync' && <RecordSyncStatus />}
             {activeItem === 'query-perf' && <QueryPerformance />}
             {activeItem === 'portals' && <PortalMonitoring />}
+            {activeItem === 'rule-perf' && <RulePerformanceContent />}
             {activeItem === 'logs' && <LogSearchContent />}
           </div>
           </div>
